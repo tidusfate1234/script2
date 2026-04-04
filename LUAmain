@@ -1,0 +1,176 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+
+-- Variables
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character
+local Mouse = LocalPlayer:GetMouse()
+local AimbotEnabled = false
+local AimbotSensitivity = 0.1
+local AimbotRange = 1000
+local AimbotFOV = 10
+local AimbotSmoothness = 5
+local AimbotPrediction = true
+local BulletVelocity = 1000
+local AutoShoot = false
+
+-- GUI
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "AimbotGUI"
+GUI.Parent = game.CoreGui
+
+local AimbotToggle = Instance.new("TextButton")
+AimbotToggle.Name = "AimbotToggle"
+AimbotToggle.Text = "Aimbot: Off"
+AimbotToggle.Size = UDim2.new(0, 100, 0, 20)
+AimbotToggle.Position = UDim2.new(0, 10, 0, 10)
+AimbotToggle.Parent = GUI
+
+local PredictionToggle = Instance.new("TextButton")
+PredictionToggle.Name = "PredictionToggle"
+PredictionToggle.Text = "Prediction: On"
+PredictionToggle.Size = UDim2.new(0, 100, 0, 20)
+PredictionToggle.Position = UDim2.new(0, 10, 0, 40)
+PredictionToggle.Parent = GUI
+
+local AutoShootToggle = Instance.new("TextButton")
+AutoShootToggle.Name = "AutoShootToggle"
+AutoShootToggle.Text = "Auto Shoot: Off"
+AutoShootToggle.Size = UDim2.new(0, 100, 0, 20)
+AutoShootToggle.Position = UDim2.new(0, 10, 0, 70)
+AutoShootToggle.Parent = GUI
+
+local FOVSlider = Instance.new("Slider")
+FOVSlider.Name = "FOVSlider"
+FOVSlider.Size = UDim2.new(0, 100, 0, 20)
+FOVSlider.Position = UDim2.new(0, 10, 0, 100)
+FOVSlider.MinValue = 1
+FOVSlider.MaxValue = 100
+FOVSlider.Value = AimbotFOV
+FOVSlider.Parent = GUI
+
+local SmoothnessSlider = Instance.new("Slider")
+SmoothnessSlider.Name = "SmoothnessSlider"
+SmoothnessSlider.Size = UDim2.new(0, 100, 0, 20)
+SmoothnessSlider.Position = UDim2.new(0, 10, 0, 130)
+SmoothnessSlider.MinValue = 1
+SmoothnessSlider.MaxValue = 100
+SmoothnessSlider.Value = AimbotSmoothness
+SmoothnessSlider.Parent = GUI
+
+-- Functions
+local function GetClosestEnemy()
+    local closestEnemy = nil
+    local closestDistance = math.huge
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local distance = (Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+            if distance < closestDistance and distance <= AimbotRange then
+                closestEnemy = player
+                closestDistance = distance
+            end
+        end
+    end
+    return closestEnemy
+end
+
+local function GetAimbotDirection(enemy)
+    local direction = (enemy.Character.HumanoidRootPart.Position - Character.HumanoidRootPart.Position).Unit
+    return direction
+end
+
+local function PredictBulletTrajectory(startPosition, endPosition, velocity)
+    local deltaTime = (endPosition - startPosition).Magnitude / velocity
+    local predictedPosition = endPosition + (endPosition - startPosition).Unit * deltaTime * velocity
+    return predictedPosition
+end
+
+local function Aimbot()
+    if AimbotEnabled then
+        local closestEnemy = GetClosestEnemy()
+        if closestEnemy then
+            local direction = GetAimbotDirection(closestEnemy)
+            local rotation = math.atan2(direction.X, direction.Z)
+            local yaw = math.deg(rotation)
+            local pitch = math.deg(math.asin(direction.Y))
+            
+            -- Apply smoothing
+            local smoothedYaw = yaw * AimbotSmoothness / 100
+            local smoothedPitch = pitch * AimbotSmoothness / 100
+            
+            -- Apply prediction
+            if AimbotPrediction then
+                local predictedPosition = PredictBulletTrajectory(Character.HumanoidRootPart.Position, closestEnemy.Character.HumanoidRootPart.Position, BulletVelocity)
+                local predictedDirection = (predictedPosition - Character.HumanoidRootPart.Position).Unit
+                local predictedRotation = math.atan2(predictedDirection.X, predictedDirection.Z)
+                local predictedYaw = math.deg(predictedRotation)
+                local predictedPitch = math.deg(math.asin(predictedDirection.Y))
+                smoothedYaw = predictedYaw * AimbotSmoothness / 100
+                smoothedPitch = predictedPitch * AimbotSmoothness / 100
+            end
+            
+            Mouse.Rotate = Vector2.new(smoothedYaw, smoothedPitch)
+            
+            -- Auto-shoot
+            if AutoShoot then
+                local mouseButton1 = UserInputService:GetMouseButtonsPressed()
+                if mouseButton1 then
+                    local character = closestEnemy.Character
+                    local head = character:FindFirstChild("Head")
+                    if head then
+                        local raycastParams = RaycastParams.new()
+                        raycastParams.FilterDescendantsInstances = {Character}
+                        raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                        local raycastResult = Workspace:Raycast(head.Position, (head.Position - Character.HumanoidRootPart.Position).Unit * 1000, raycastParams)
+                        if raycastResult then
+                            local humanoid = closestEnemy.Character:FindFirstChild("Humanoid")
+                            if humanoid then
+                                humanoid:TakeDamage(100)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Event Listeners
+AimbotToggle.MouseButton1Click:Connect(function()
+    AimbotEnabled = not AimbotEnabled
+    if AimbotEnabled then
+        AimbotToggle.Text = "Aimbot: On"
+    else
+        AimbotToggle.Text = "Aimbot: Off"
+    end
+end)
+
+PredictionToggle.MouseButton1Click:Connect(function()
+    AimbotPrediction = not AimbotPrediction
+    if AimbotPrediction then
+        PredictionToggle.Text = "Prediction: On"
+    else
+        PredictionToggle.Text = "Prediction: Off"
+    end
+end)
+
+AutoShootToggle.MouseButton1Click:Connect(function()
+    AutoShoot = not AutoShoot
+    if AutoShoot then
+        AutoShootToggle.Text = "Auto Shoot: On"
+    else
+        AutoShootToggle.Text = "Auto Shoot: Off"
+    end
+end)
+
+FOVSlider.ValueChanged:Connect(function(value)
+    AimbotFOV = value
+end)
+
+SmoothnessSlider.ValueChanged:Connect(function(value)
+    AimbotSmoothness = value
+end)
+
+RunService.RenderStepped:Connect(Aimbot)
