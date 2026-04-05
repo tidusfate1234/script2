@@ -1,0 +1,314 @@
+local Camera = workspace.CurrentCamera
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- // ========== CONFIGURATION ==========
+local Settings = {
+    AimbotEnabled = true,
+    AutoShoot = true,        -- Auto shoots when aiming at enemy
+    AimPart = "Head",        -- "Head", "HumanoidRootPart", "UpperTorso"
+    Smoothness = 0.25,       -- 0 = instant, higher = smoother
+    FOVRadius = 200,         -- Aim radius in pixels
+    TeamCheck = false,       -- Ignore teammates
+    WallCheck = true,        -- Don't shoot through walls (BLACKLIST)
+    ShowFOV = true,
+    FOVColor = Color3.fromRGB(255, 50, 50),
+    FOVTransparency = 0.5
+}
+
+-- // ========== CREATE GUI ==========
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AimbotGUI"
+screenGui.Parent = game.CoreGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 220, 0, 280)
+mainFrame.Position = UDim2.new(0, 10, 0.5, -140)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+-- Shadow/corner effect
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = mainFrame
+
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+titleBar.BackgroundTransparency = 0.2
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleBar
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 1, 0)
+title.BackgroundTransparency = 1
+title.Text = "ARSENAL AIMBOT"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.Parent = titleBar
+
+-- // Toggle Button (Aimbot On/Off)
+local aimbotToggle = Instance.new("TextButton")
+aimbotToggle.Size = UDim2.new(0.9, 0, 0, 40)
+aimbotToggle.Position = UDim2.new(0.05, 0, 0.15, 0)
+aimbotToggle.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+aimbotToggle.Text = "AIMBOT: ON"
+aimbotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+aimbotToggle.Font = Enum.Font.GothamBold
+aimbotToggle.TextScaled = true
+aimbotToggle.BorderSizePixel = 0
+aimbotToggle.Parent = mainFrame
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 6)
+toggleCorner.Parent = aimbotToggle
+
+-- // Auto-Shoot Toggle
+local autoShootToggle = Instance.new("TextButton")
+autoShootToggle.Size = UDim2.new(0.9, 0, 0, 40)
+autoShootToggle.Position = UDim2.new(0.05, 0, 0.35, 0)
+autoShootToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+autoShootToggle.Text = "AUTO-SHOOT: ON"
+autoShootToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoShootToggle.Font = Enum.Font.GothamBold
+autoShootToggle.TextScaled = true
+autoShootToggle.BorderSizePixel = 0
+autoShootToggle.Parent = mainFrame
+
+local autoShootCorner = Instance.new("UICorner")
+autoShootCorner.CornerRadius = UDim.new(0, 6)
+autoShootCorner.Parent = autoShootToggle
+
+-- // FOV Radius Slider Label
+local fovLabel = Instance.new("TextLabel")
+fovLabel.Size = UDim2.new(0.9, 0, 0, 25)
+fovLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
+fovLabel.BackgroundTransparency = 1
+fovLabel.Text = "FOV RADIUS: " .. Settings.FOVRadius
+fovLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+fovLabel.Font = Enum.Font.Gotham
+fovLabel.TextSize = 14
+fovLabel.Parent = mainFrame
+
+-- // FOV Slider
+local fovSlider = Instance.new("TextBox")
+fovSlider.Size = UDim2.new(0.9, 0, 0, 30)
+fovSlider.Position = UDim2.new(0.05, 0, 0.62, 0)
+fovSlider.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+fovSlider.Text = tostring(Settings.FOVRadius)
+fovSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+fovSlider.Font = Enum.Font.Gotham
+fovSlider.TextSize = 14
+fovSlider.PlaceholderText = "50-500"
+fovSlider.BorderSizePixel = 0
+fovSlider.Parent = mainFrame
+
+local fovSliderCorner = Instance.new("UICorner")
+fovSliderCorner.CornerRadius = UDim.new(0, 6)
+fovSliderCorner.Parent = fovSlider
+
+-- // Drag to move GUI
+local dragging = false
+local dragStart
+local startPos
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- // Button Logic
+aimbotToggle.MouseButton1Click:Connect(function()
+    Settings.AimbotEnabled = not Settings.AimbotEnabled
+    aimbotToggle.BackgroundColor3 = Settings.AimbotEnabled and Color3.fromRGB(255, 70, 70) or Color3.fromRGB(70, 70, 70)
+    aimbotToggle.Text = Settings.AimbotEnabled and "AIMBOT: ON" or "AIMBOT: OFF"
+end)
+
+autoShootToggle.MouseButton1Click:Connect(function()
+    Settings.AutoShoot = not Settings.AutoShoot
+    autoShootToggle.BackgroundColor3 = Settings.AutoShoot and Color3.fromRGB(255, 70, 70) or Color3.fromRGB(70, 70, 70)
+    autoShootToggle.Text = Settings.AutoShoot and "AUTO-SHOOT: ON" or "AUTO-SHOOT: OFF"
+end)
+
+fovSlider.FocusLost:Connect(function()
+    local num = tonumber(fovSlider.Text)
+    if num then
+        Settings.FOVRadius = math.clamp(num, 50, 500)
+        fovSlider.Text = tostring(Settings.FOVRadius)
+        fovLabel.Text = "FOV RADIUS: " .. Settings.FOVRadius
+        if FOVCircle then FOVCircle.Radius = Settings.FOVRadius end
+    else
+        fovSlider.Text = tostring(Settings.FOVRadius)
+    end
+end)
+
+-- // ========== WALL CHECK (RAYCAST WITH BLACKLIST) ==========
+local function canSeeTarget(targetPart)
+    if not Settings.WallCheck then return true end
+    
+    local origin = Camera.CFrame.Position
+    local direction = (targetPart.Position - origin).Unit * (targetPart.Position - origin).Magnitude
+    
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    -- BLACKLIST: Ignore local player and the target's character (so we only hit walls)
+    raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, targetPart.Parent}
+    
+    local rayResult = workspace:Raycast(origin, direction, raycastParams)
+    
+    -- If ray hits nothing, target is visible
+    -- If ray hits something that's NOT the target, it's behind a wall
+    if not rayResult then
+        return true
+    end
+    
+    -- Check if the hit object is part of the target's character
+    local hitCharacter = rayResult.Instance:FindFirstAncestor("Character")
+    return hitCharacter == targetPart.Parent
+end
+
+-- // ========== HELPER FUNCTIONS ==========
+local function isAlive(character)
+    local humanoid = character:FindFirstChild("Humanoid")
+    return humanoid and humanoid.Health > 0
+end
+
+local function getValidAimPart(character)
+    local part = character:FindFirstChild(Settings.AimPart)
+    if part then return part end
+    return character:FindFirstChild("HumanoidRootPart")
+end
+
+local function getClosestPlayer()
+    local closest = nil
+    local shortestDist = Settings.FOVRadius
+    local mousePos = UserInputService:GetMouseLocation()
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LocalPlayer then goto continue end
+        if Settings.TeamCheck and player.Team == LocalPlayer.Team then goto continue end
+        
+        local character = player.Character
+        if not character then goto continue end
+        if not isAlive(character) then goto continue end
+        
+        local aimPart = getValidAimPart(character)
+        if not aimPart then goto continue end
+        
+        -- Wall check (BLACKLIST)
+        if not canSeeTarget(aimPart) then goto continue end
+        
+        local screenPoint, onScreen = Camera:WorldToScreenPoint(aimPart.Position)
+        if not onScreen then goto continue end
+        
+        local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).Magnitude
+        
+        if distance < shortestDist then
+            shortestDist = distance
+            closest = player
+        end
+        
+        ::continue::
+    end
+    
+    return closest
+end
+
+-- // ========== AUTO SHOOT (TRIGGERBOT) ==========
+local lastShotTime = 0
+local function triggerbot(target)
+    if not Settings.AutoShoot then return end
+    if not target then return end
+    
+    -- Rate limit shooting (prevents spam)
+    local now = tick()
+    if now - lastShotTime < 0.05 then return end
+    lastShotTime = now
+    
+    -- Simulate mouse click
+    UserInputService:SetMouseButtonDown(Enum.UserInputType.MouseButton1)
+    task.wait(0.02)
+    UserInputService:SetMouseButtonUp(Enum.UserInputType.MouseButton1)
+end
+
+-- // ========== FOV CIRCLE ==========
+local FOVCircle = nil
+if Settings.ShowFOV and Drawing then
+    FOVCircle = Drawing.new("Circle")
+    FOVCircle.Thickness = 1.5
+    FOVCircle.NumSides = 72
+    FOVCircle.Color = Settings.FOVColor
+    FOVCircle.Transparency = Settings.FOVTransparency
+    FOVCircle.Filled = false
+    FOVCircle.Visible = true
+    FOVCircle.Radius = Settings.FOVRadius
+end
+
+-- // ========== MAIN AIMBOT LOOP ==========
+local currentTarget = nil
+
+RunService.RenderStepped:Connect(function()
+    -- Update FOV Circle
+    if FOVCircle then
+        FOVCircle.Position = UserInputService:GetMouseLocation()
+        FOVCircle.Radius = Settings.FOVRadius
+        FOVCircle.Color = Settings.FOVColor
+        FOVCircle.Transparency = Settings.FOVTransparency
+        FOVCircle.Visible = Settings.ShowFOV and Settings.AimbotEnabled
+    end
+    
+    if not Settings.AimbotEnabled then return end
+    
+    -- Get closest target
+    currentTarget = getClosestPlayer()
+    
+    if currentTarget then
+        local character = currentTarget.Character
+        if character then
+            local aimPart = getValidAimPart(character)
+            if aimPart then
+                -- Smooth camera movement
+                local targetCFrame = CFrame.new(Camera.CFrame.Position, aimPart.Position)
+                if Settings.Smoothness > 0 then
+                    Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 - (0.5 ^ (1 / (Settings.Smoothness * 60))))
+                else
+                    Camera.CFrame = targetCFrame
+                end
+                
+                -- Auto shoot
+                triggerbot(currentTarget)
+            end
+        end
+    end
+end)
+
+-- // ========== CLEANUP ON SCRIPT STOP ==========
+game:GetService("Players").LocalPlayer.OnTeleport:Connect(function()
+    if screenGui then screenGui:Destroy() end
+    if FOVCircle then FOVCircle:Remove() end
+end)
