@@ -7,22 +7,24 @@ local LocalPlayer = Players.LocalPlayer
 -- // ========== CONFIGURATION ==========
 local Settings = {
     AimbotEnabled = true,
-    AutoShoot = true,        -- Auto shoots when aiming at enemy
-    AimPart = "Head",        -- "Head", "HumanoidRootPart", "UpperTorso"
-    Smoothness = 0.25,       -- 0 = instant, higher = smoother
-    FOVRadius = 200,         -- Aim radius in pixels
-    TeamCheck = false,       -- Ignore teammates
-    WallCheck = true,        -- Don't shoot through walls (BLACKLIST)
+    AutoShoot = true,
+    AimPart = "Head",
+    Smoothness = 0.25,
+    FOVRadius = 200,
+    TeamCheck = false,
+    WallCheck = true,
     ShowFOV = true,
     FOVColor = Color3.fromRGB(255, 50, 50),
     FOVTransparency = 0.5
 }
 
--- // ========== CREATE GUI ==========
+-- // ========== FIXED GUI FOR XENO ==========
+-- Use PlayerGui instead of CoreGui (Xeno compatibility)
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AimbotGUI"
-screenGui.Parent = game.CoreGui
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Rest of GUI creation (same as before, but using PlayerGui)
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 220, 0, 280)
 mainFrame.Position = UDim2.new(0, 10, 0.5, -140)
@@ -31,7 +33,6 @@ mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
--- Shadow/corner effect
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 8)
 corner.Parent = mainFrame
@@ -56,7 +57,6 @@ title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.Parent = titleBar
 
--- // Toggle Button (Aimbot On/Off)
 local aimbotToggle = Instance.new("TextButton")
 aimbotToggle.Size = UDim2.new(0.9, 0, 0, 40)
 aimbotToggle.Position = UDim2.new(0.05, 0, 0.15, 0)
@@ -72,7 +72,6 @@ local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(0, 6)
 toggleCorner.Parent = aimbotToggle
 
--- // Auto-Shoot Toggle
 local autoShootToggle = Instance.new("TextButton")
 autoShootToggle.Size = UDim2.new(0.9, 0, 0, 40)
 autoShootToggle.Position = UDim2.new(0.05, 0, 0.35, 0)
@@ -88,7 +87,6 @@ local autoShootCorner = Instance.new("UICorner")
 autoShootCorner.CornerRadius = UDim.new(0, 6)
 autoShootCorner.Parent = autoShootToggle
 
--- // FOV Radius Slider Label
 local fovLabel = Instance.new("TextLabel")
 fovLabel.Size = UDim2.new(0.9, 0, 0, 25)
 fovLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
@@ -99,7 +97,6 @@ fovLabel.Font = Enum.Font.Gotham
 fovLabel.TextSize = 14
 fovLabel.Parent = mainFrame
 
--- // FOV Slider
 local fovSlider = Instance.new("TextBox")
 fovSlider.Size = UDim2.new(0.9, 0, 0, 30)
 fovSlider.Position = UDim2.new(0.05, 0, 0.62, 0)
@@ -116,7 +113,7 @@ local fovSliderCorner = Instance.new("UICorner")
 fovSliderCorner.CornerRadius = UDim.new(0, 6)
 fovSliderCorner.Parent = fovSlider
 
--- // Drag to move GUI
+-- Drag to move GUI
 local dragging = false
 local dragStart
 local startPos
@@ -142,7 +139,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- // Button Logic
 aimbotToggle.MouseButton1Click:Connect(function()
     Settings.AimbotEnabled = not Settings.AimbotEnabled
     aimbotToggle.BackgroundColor3 = Settings.AimbotEnabled and Color3.fromRGB(255, 70, 70) or Color3.fromRGB(70, 70, 70)
@@ -167,7 +163,7 @@ fovSlider.FocusLost:Connect(function()
     end
 end)
 
--- // ========== WALL CHECK (RAYCAST WITH BLACKLIST) ==========
+-- // ========== WALL CHECK ==========
 local function canSeeTarget(targetPart)
     if not Settings.WallCheck then return true end
     
@@ -176,18 +172,11 @@ local function canSeeTarget(targetPart)
     
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-    -- BLACKLIST: Ignore local player and the target's character (so we only hit walls)
     raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, targetPart.Parent}
     
     local rayResult = workspace:Raycast(origin, direction, raycastParams)
     
-    -- If ray hits nothing, target is visible
-    -- If ray hits something that's NOT the target, it's behind a wall
-    if not rayResult then
-        return true
-    end
-    
-    -- Check if the hit object is part of the target's character
+    if not rayResult then return true end
     local hitCharacter = rayResult.Instance:FindFirstAncestor("Character")
     return hitCharacter == targetPart.Parent
 end
@@ -220,7 +209,6 @@ local function getClosestPlayer()
         local aimPart = getValidAimPart(character)
         if not aimPart then goto continue end
         
-        -- Wall check (BLACKLIST)
         if not canSeeTarget(aimPart) then goto continue end
         
         local screenPoint, onScreen = Camera:WorldToScreenPoint(aimPart.Position)
@@ -239,52 +227,52 @@ local function getClosestPlayer()
     return closest
 end
 
--- // ========== AUTO SHOOT (TRIGGERBOT) ==========
+-- // ========== AUTO SHOOT ==========
 local lastShotTime = 0
 local function triggerbot(target)
     if not Settings.AutoShoot then return end
     if not target then return end
     
-    -- Rate limit shooting (prevents spam)
     local now = tick()
     if now - lastShotTime < 0.05 then return end
     lastShotTime = now
     
-    -- Simulate mouse click
     UserInputService:SetMouseButtonDown(Enum.UserInputType.MouseButton1)
     task.wait(0.02)
     UserInputService:SetMouseButtonUp(Enum.UserInputType.MouseButton1)
 end
 
--- // ========== FOV CIRCLE ==========
+-- // ========== FOV CIRCLE (Xeno Compatible) ==========
 local FOVCircle = nil
-if Settings.ShowFOV and Drawing then
-    FOVCircle = Drawing.new("Circle")
-    FOVCircle.Thickness = 1.5
-    FOVCircle.NumSides = 72
-    FOVCircle.Color = Settings.FOVColor
-    FOVCircle.Transparency = Settings.FOVTransparency
-    FOVCircle.Filled = false
-    FOVCircle.Visible = true
-    FOVCircle.Radius = Settings.FOVRadius
-end
+pcall(function()
+    if Settings.ShowFOV and Drawing then
+        FOVCircle = Drawing.new("Circle")
+        FOVCircle.Thickness = 1.5
+        FOVCircle.NumSides = 72
+        FOVCircle.Color = Settings.FOVColor
+        FOVCircle.Transparency = Settings.FOVTransparency
+        FOVCircle.Filled = false
+        FOVCircle.Visible = true
+        FOVCircle.Radius = Settings.FOVRadius
+    end
+end)
 
--- // ========== MAIN AIMBOT LOOP ==========
+-- // ========== MAIN LOOP ==========
 local currentTarget = nil
 
 RunService.RenderStepped:Connect(function()
-    -- Update FOV Circle
-    if FOVCircle then
-        FOVCircle.Position = UserInputService:GetMouseLocation()
-        FOVCircle.Radius = Settings.FOVRadius
-        FOVCircle.Color = Settings.FOVColor
-        FOVCircle.Transparency = Settings.FOVTransparency
-        FOVCircle.Visible = Settings.ShowFOV and Settings.AimbotEnabled
-    end
+    pcall(function()
+        if FOVCircle then
+            FOVCircle.Position = UserInputService:GetMouseLocation()
+            FOVCircle.Radius = Settings.FOVRadius
+            FOVCircle.Color = Settings.FOVColor
+            FOVCircle.Transparency = Settings.FOVTransparency
+            FOVCircle.Visible = Settings.ShowFOV and Settings.AimbotEnabled
+        end
+    end)
     
     if not Settings.AimbotEnabled then return end
     
-    -- Get closest target
     currentTarget = getClosestPlayer()
     
     if currentTarget then
@@ -292,23 +280,22 @@ RunService.RenderStepped:Connect(function()
         if character then
             local aimPart = getValidAimPart(character)
             if aimPart then
-                -- Smooth camera movement
                 local targetCFrame = CFrame.new(Camera.CFrame.Position, aimPart.Position)
                 if Settings.Smoothness > 0 then
                     Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 - (0.5 ^ (1 / (Settings.Smoothness * 60))))
                 else
                     Camera.CFrame = targetCFrame
                 end
-                
-                -- Auto shoot
                 triggerbot(currentTarget)
             end
         end
     end
 end)
 
--- // ========== CLEANUP ON SCRIPT STOP ==========
-game:GetService("Players").LocalPlayer.OnTeleport:Connect(function()
+-- Cleanup
+LocalPlayer.OnTeleport:Connect(function()
     if screenGui then screenGui:Destroy() end
     if FOVCircle then FOVCircle:Remove() end
 end)
+
+print("✅ Xeno Arsenal Aimbot Loaded - GUI Fixed!")
