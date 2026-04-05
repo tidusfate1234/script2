@@ -1,0 +1,316 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character
+local Mouse = LocalPlayer:GetMouse()
+local Camera = Workspace.CurrentCamera
+local AimbotEnabled = false
+local AimbotRange = 350
+local AimbotFOV = 15
+local AimbotSmoothness = 8
+local AimbotPrediction = true
+local AutoShoot = false
+local LockedTarget = nil
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "AimbotGUI"
+GUI.Parent = game.CoreGui
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = GUI
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = TitleBar
+local TitleText = Instance.new("TextLabel")
+TitleText.Text = "⚡ ARSENAL AIMBOT V2"
+TitleText.Size = UDim2.new(1, -40, 1, 0)
+TitleText.Position = UDim2.new(0, 15, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextSize = 16
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Font = Enum.Font.GothamSemibold
+TitleText.Parent = TitleBar
+local CloseButton = Instance.new("TextButton")
+CloseButton.Text = "✕"
+CloseButton.Size = UDim2.new(0, 35, 1, 0)
+CloseButton.Position = UDim2.new(1, -35, 0, 0)
+CloseButton.BackgroundTransparency = 1
+CloseButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+CloseButton.TextSize = 18
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = TitleBar
+local dragging = false
+local dragStart = nil
+local startPos = nil
+TitleBar.InputBegan:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = true
+dragStart = input.Position
+startPos = MainFrame.Position
+end
+end)
+TitleBar.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = false
+end
+end)
+UserInputService.InputChanged:Connect(function(input)
+if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+local delta = input.Position - dragStart
+MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+end)
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, -20, 1, -60)
+ContentFrame.Position = UDim2.new(0, 10, 0, 50)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = MainFrame
+local function StyleButton(button, color)
+button.BackgroundColor3 = color
+button.BackgroundTransparency = 0.2
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.TextSize = 14
+button.Font = Enum.Font.Gotham
+button.BorderSizePixel = 0
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 6)
+corner.Parent = button
+end
+local AimbotToggle = Instance.new("TextButton")
+AimbotToggle.Text = "🎯 AIMBOT: OFF"
+AimbotToggle.Size = UDim2.new(1, 0, 0, 40)
+AimbotToggle.Position = UDim2.new(0, 0, 0, 0)
+StyleButton(AimbotToggle, Color3.fromRGB(255, 70, 70))
+AimbotToggle.Parent = ContentFrame
+local PredictionToggle = Instance.new("TextButton")
+PredictionToggle.Text = "🔮 PREDICTION: ON"
+PredictionToggle.Size = UDim2.new(1, 0, 0, 40)
+PredictionToggle.Position = UDim2.new(0, 0, 0, 50)
+StyleButton(PredictionToggle, Color3.fromRGB(70, 70, 255))
+PredictionToggle.Parent = ContentFrame
+local AutoShootToggle = Instance.new("TextButton")
+AutoShootToggle.Text = "🔫 AUTO SHOOT: OFF"
+AutoShootToggle.Size = UDim2.new(1, 0, 0, 40)
+AutoShootToggle.Position = UDim2.new(0, 0, 0, 100)
+StyleButton(AutoShootToggle, Color3.fromRGB(255, 170, 70))
+AutoShootToggle.Parent = ContentFrame
+local FOVLabel = Instance.new("TextLabel")
+FOVLabel.Text = "FOV Range: " .. AimbotFOV
+FOVLabel.Size = UDim2.new(1, 0, 0, 25)
+FOVLabel.Position = UDim2.new(0, 0, 0, 155)
+FOVLabel.BackgroundTransparency = 1
+FOVLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+FOVLabel.TextSize = 13
+FOVLabel.Font = Enum.Font.Gotham
+FOVLabel.Parent = ContentFrame
+local FOVSlider = Instance.new("Frame")
+FOVSlider.Size = UDim2.new(1, 0, 0, 6)
+FOVSlider.Position = UDim2.new(0, 0, 0, 180)
+FOVSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+FOVSlider.BorderSizePixel = 0
+FOVSlider.Parent = ContentFrame
+local FOVSliderCorner = Instance.new("UICorner")
+FOVSliderCorner.CornerRadius = UDim.new(0, 3)
+FOVSliderCorner.Parent = FOVSlider
+local FOVFill = Instance.new("Frame")
+FOVFill.Size = UDim2.new(AimbotFOV / 100, 0, 1, 0)
+FOVFill.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+FOVFill.BorderSizePixel = 0
+FOVFill.Parent = FOVSlider
+local FOVFillCorner = Instance.new("UICorner")
+FOVFillCorner.CornerRadius = UDim.new(0, 3)
+FOVFillCorner.Parent = FOVFill
+local FOVGrip = Instance.new("TextButton")
+FOVGrip.Text = "●"
+FOVGrip.Size = UDim2.new(0, 18, 0, 18)
+FOVGrip.Position = UDim2.new(AimbotFOV / 100, -9, 0.5, -9)
+FOVGrip.BackgroundTransparency = 1
+FOVGrip.TextColor3 = Color3.fromRGB(255, 255, 255)
+FOVGrip.TextSize = 18
+FOVGrip.Parent = FOVSlider
+local SmoothnessLabel = Instance.new("TextLabel")
+SmoothnessLabel.Text = "Smoothness: " .. AimbotSmoothness
+SmoothnessLabel.Size = UDim2.new(1, 0, 0, 25)
+SmoothnessLabel.Position = UDim2.new(0, 0, 0, 210)
+SmoothnessLabel.BackgroundTransparency = 1
+SmoothnessLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+SmoothnessLabel.TextSize = 13
+SmoothnessLabel.Font = Enum.Font.Gotham
+SmoothnessLabel.Parent = ContentFrame
+local SmoothnessSlider = Instance.new("Frame")
+SmoothnessSlider.Size = UDim2.new(1, 0, 0, 6)
+SmoothnessSlider.Position = UDim2.new(0, 0, 0, 235)
+SmoothnessSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+SmoothnessSlider.BorderSizePixel = 0
+SmoothnessSlider.Parent = ContentFrame
+local SmoothnessCorner = Instance.new("UICorner")
+SmoothnessCorner.CornerRadius = UDim.new(0, 3)
+SmoothnessCorner.Parent = SmoothnessSlider
+local SmoothnessFill = Instance.new("Frame")
+SmoothnessFill.Size = UDim2.new(AimbotSmoothness / 100, 0, 1, 0)
+SmoothnessFill.BackgroundColor3 = Color3.fromRGB(70, 255, 70)
+SmoothnessFill.BorderSizePixel = 0
+SmoothnessFill.Parent = SmoothnessSlider
+local SmoothnessFillCorner = Instance.new("UICorner")
+SmoothnessFillCorner.CornerRadius = UDim.new(0, 3)
+SmoothnessFillCorner.Parent = SmoothnessFill
+local SmoothnessGrip = Instance.new("TextButton")
+SmoothnessGrip.Text = "●"
+SmoothnessGrip.Size = UDim2.new(0, 18, 0, 18)
+SmoothnessGrip.Position = UDim2.new(AimbotSmoothness / 100, -9, 0.5, -9)
+SmoothnessGrip.BackgroundTransparency = 1
+SmoothnessGrip.TextColor3 = Color3.fromRGB(255, 255, 255)
+SmoothnessGrip.TextSize = 18
+SmoothnessGrip.Parent = SmoothnessSlider
+local function SetupSlider(sliderFrame, fill, grip, label, minVal, maxVal, callback)
+local draggingSlider = false
+local function updateSlider(input)
+local relativeX = math.clamp((input.Position.X - sliderFrame.AbsolutePosition.X) / sliderFrame.AbsoluteSize.X, 0, 1)
+local value = math.floor(minVal + (maxVal - minVal) * relativeX + 0.5)
+fill.Size = UDim2.new(relativeX, 0, 1, 0)
+grip.Position = UDim2.new(relativeX, -9, 0.5, -9)
+label.Text = label.Text:gsub("%d+", value):match("(.+): %d+") .. ": " .. value
+callback(value)
+end
+grip.MouseButton1Down:Connect(function()
+draggingSlider = true
+end)
+UserInputService.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+draggingSlider = false
+end
+end)
+UserInputService.InputChanged:Connect(function(input)
+if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
+updateSlider(input)
+end
+end)
+sliderFrame.InputBegan:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+updateSlider(input)
+end
+end)
+end
+SetupSlider(FOVSlider, FOVFill, FOVGrip, FOVLabel, 1, 100, function(value)
+AimbotFOV = value
+end)
+SetupSlider(SmoothnessSlider, SmoothnessFill, SmoothnessGrip, SmoothnessLabel, 1, 100, function(value)
+AimbotSmoothness = value
+end)
+CloseButton.MouseButton1Click:Connect(function()
+GUI:Destroy()
+end)
+local function CheckWall(targetPart)
+local origin = Camera.CFrame.Position
+local direction = (targetPart.Position - origin).Unit * AimbotRange
+local raycastParams = RaycastParams.new()
+raycastParams.FilterDescendantsInstances = {Character}
+raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+local raycastResult = Workspace:Raycast(origin, direction, raycastParams)
+if raycastResult and raycastResult.Instance then
+local hitChar = raycastResult.Instance:FindFirstAncestorOfClass("Model")
+if hitChar and hitChar:FindFirstChild("Humanoid") and hitChar ~= Character then
+return true
+end
+return false
+end
+return true
+end
+local function GetClosestEnemy()
+local closestEnemy = nil
+local closestDistance = math.huge
+local closestFOV = math.huge
+for _, player in pairs(Players:GetPlayers()) do
+if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+local head = player.Character:FindFirstChild("Head") or player.Character.HumanoidRootPart
+local screenPoint, onScreen = Camera:WorldToScreenPoint(head.Position)
+if onScreen then
+local mousePos = UserInputService:GetMouseLocation()
+local fovDistance = (Vector2.new(screenPoint.X, screenPoint.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
+local distance = (Character.HumanoidRootPart.Position - head.Position).Magnitude
+if fovDistance <= AimbotFOV and distance <= AimbotRange then
+if CheckWall(head) then
+if fovDistance < closestFOV then
+closestEnemy = player
+closestDistance = distance
+closestFOV = fovDistance
+end
+end
+end
+end
+end
+end
+return closestEnemy
+end
+local function MoveMouse(deltaX, deltaY)
+pcall(function()
+if mousemoverel then
+mousemoverel(deltaX, deltaY)
+elseif mouse_move then
+mouse_move(deltaX, deltaY)
+end
+end)
+end
+local function OnAimbot()
+if AimbotEnabled and Character and Character:FindFirstChild("HumanoidRootPart") then
+local target = GetClosestEnemy()
+if target then
+LockedTarget = target
+local targetHead = target.Character:FindFirstChild("Head") or target.Character.HumanoidRootPart
+local targetPos = targetHead.Position
+if AimbotPrediction then
+local enemyVelocity = target.Character.HumanoidRootPart.Velocity
+local distance = (targetPos - Character.HumanoidRootPart.Position).Magnitude
+local travelTime = distance / 2500
+targetPos = targetPos + (enemyVelocity * travelTime)
+end
+local screenPoint, onScreen = Camera:WorldToScreenPoint(targetPos)
+if onScreen then
+local mousePos = UserInputService:GetMouseLocation()
+local targetScreen = Vector2.new(screenPoint.X, screenPoint.Y)
+local currentMouse = Vector2.new(mousePos.X, mousePos.Y)
+local delta = (targetScreen - currentMouse) / (AimbotSmoothness / 2)
+MoveMouse(delta.X, delta.Y)
+if AutoShoot and CheckWall(targetHead) then
+pcall(function()
+if mouse1press then
+mouse1press()
+task.wait(0.03)
+mouse1release()
+end
+end)
+end
+end
+else
+LockedTarget = nil
+end
+end
+end
+AimbotToggle.MouseButton1Click:Connect(function()
+AimbotEnabled = not AimbotEnabled
+AimbotToggle.Text = AimbotEnabled and "🎯 AIMBOT: ON" or "🎯 AIMBOT: OFF"
+AimbotToggle.BackgroundColor3 = AimbotEnabled and Color3.fromRGB(70, 255, 70) or Color3.fromRGB(255, 70, 70)
+end)
+PredictionToggle.MouseButton1Click:Connect(function()
+AimbotPrediction = not AimbotPrediction
+PredictionToggle.Text = AimbotPrediction and "🔮 PREDICTION: ON" or "🔮 PREDICTION: OFF"
+end)
+AutoShootToggle.MouseButton1Click:Connect(function()
+AutoShoot = not AutoShoot
+AutoShootToggle.Text = AutoShoot and "🔫 AUTO SHOOT: ON" or "🔫 AUTO SHOOT: OFF"
+end)
+RunService.RenderStepped:Connect(OnAimbot)
