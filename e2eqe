@@ -1,0 +1,128 @@
+local KEYBIND = Enum.KeyCode.G
+
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+
+local Aiming = false
+local currentTarget = nil
+local MAX_DISTANCE = 600
+
+local toggleSound = Instance.new("Sound")
+toggleSound.SoundId = "rbxassetid://12221967"
+toggleSound.Volume = 1
+toggleSound.Parent = player:WaitForChild("PlayerGui")
+
+local function Notify(text)
+	StarterGui:SetCore("SendNotification", {
+		Title = "faven.lua",
+		Text = text,
+		Duration = 2
+	})
+end
+
+local function IsTeammate(plr)
+	if player.Team and plr.Team then
+		return player.Team == plr.Team
+	end
+	return false
+end
+
+local function IsValidTarget(plr)
+	if not plr
+		or plr == player
+		or IsTeammate(plr)
+		or not plr.Character
+		or not plr.Character:FindFirstChild("Humanoid")
+		or not plr.Character:FindFirstChild("Head")
+	then
+		return false
+	end
+
+	local hum = plr.Character.Humanoid
+
+	if hum.Health <= 0 then
+		return false
+	end
+
+	if hum.Health == math.huge
+		or hum.MaxHealth == math.huge
+		or hum.Health > 1e6
+		or hum.MaxHealth > 1e6
+	then
+		return false
+	end
+
+	if plr.Character:FindFirstChildOfClass("ForceField") then
+		return false
+	end
+
+	return true
+end
+
+local function GetClosestToMouse()
+	local closest = nil
+	local shortest = math.huge
+	local mousePos = mouse.Hit.p
+
+	for _, plr in ipairs(game.Players:GetPlayers()) do
+		if IsValidTarget(plr) then
+			local head = plr.Character.Head
+			local dist = (head.Position - mousePos).Magnitude
+
+			if dist < shortest and dist <= MAX_DISTANCE then
+				shortest = dist
+				closest = plr
+			end
+		end
+	end
+
+	return closest
+end
+
+local function AimLock()
+	currentTarget = GetClosestToMouse()
+
+	if currentTarget and IsValidTarget(currentTarget) then
+		local cam = workspace.CurrentCamera
+		local camPos = cam.CFrame.Position
+		local headPos = currentTarget.Character.Head.Position
+
+		cam.CFrame = CFrame.new(camPos, headPos)
+	end
+end
+
+UserInputService.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if input.KeyCode == KEYBIND then
+		Aiming = not Aiming
+		toggleSound:Play()
+
+		if Aiming then
+			Notify("Aimlock has been enabled")
+		else
+			Notify("Aimlock has been disabled")
+			currentTarget = nil
+		end
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if Aiming then
+		AimLock()
+	end
+end)
+
+game.Players.PlayerAdded:Connect(function()
+	if Aiming then
+		currentTarget = nil
+	end
+end)
+
+game.Players.PlayerRemoving:Connect(function(plr)
+	if plr == currentTarget then
+		currentTarget = nil
+	end
+end)
