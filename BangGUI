@@ -1,0 +1,312 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "WestysGUI"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 280, 0, 340)
+MainFrame.Position = UDim2.new(0.5, -140, 0.5, -170)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 36)
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.BorderSizePixel = 0
+Title.Text = "Westys GUI"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 20
+Title.Parent = MainFrame
+Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 8)
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 36, 0, 36)
+CloseButton.Position = UDim2.new(1, -36, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseButton.BorderSizePixel = 0
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 18
+CloseButton.Parent = Title
+Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0, 8)
+CloseButton.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+local TargetLabel = Instance.new("TextLabel")
+TargetLabel.Size = UDim2.new(1, -20, 0, 24)
+TargetLabel.Position = UDim2.new(0, 10, 0, 50)
+TargetLabel.BackgroundTransparency = 1
+TargetLabel.Text = "Target Player"
+TargetLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+TargetLabel.Font = Enum.Font.Gotham
+TargetLabel.TextSize = 14
+TargetLabel.TextXAlignment = Enum.TextXAlignment.Left
+TargetLabel.Parent = MainFrame
+
+local TargetDropdown = Instance.new("Frame")
+TargetDropdown.Size = UDim2.new(1, -20, 0, 30)
+TargetDropdown.Position = UDim2.new(0, 10, 0, 78)
+TargetDropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+TargetDropdown.BorderSizePixel = 0
+TargetDropdown.Parent = MainFrame
+Instance.new("UICorner", TargetDropdown).CornerRadius = UDim.new(0, 6)
+
+local TargetText = Instance.new("TextLabel")
+TargetText.Size = UDim2.new(1, -10, 1, 0)
+TargetText.Position = UDim2.new(0, 5, 0, 0)
+TargetText.BackgroundTransparency = 1
+TargetText.Text = "Select player"
+TargetText.TextColor3 = Color3.fromRGB(180, 180, 180)
+TargetText.Font = Enum.Font.Gotham
+TargetText.TextSize = 14
+TargetText.TextXAlignment = Enum.TextXAlignment.Left
+TargetText.Parent = TargetDropdown
+
+local TargetArrow = Instance.new("ImageLabel")
+TargetArrow.Size = UDim2.new(0, 20, 0, 20)
+TargetArrow.Position = UDim2.new(1, -25, 0.5, -10)
+TargetArrow.BackgroundTransparency = 1
+TargetArrow.Image = "rbxassetid://7072707111"
+TargetArrow.ImageColor3 = Color3.fromRGB(180, 180, 180)
+TargetArrow.Parent = TargetDropdown
+
+local TargetList = Instance.new("ScrollingFrame")
+TargetList.Size = UDim2.new(1, -20, 0, 120)
+TargetList.Position = UDim2.new(0, 10, 0, 110)
+TargetList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TargetList.BorderSizePixel = 0
+TargetList.CanvasSize = UDim2.new(0, 0, 0, 0)
+TargetList.ScrollBarThickness = 4
+TargetList.Visible = false
+TargetList.Parent = MainFrame
+Instance.new("UICorner", TargetList).CornerRadius = UDim.new(0, 6)
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Padding = UDim.new(0, 2)
+UIListLayout.Parent = TargetList
+
+local AnimLabel = Instance.new("TextLabel")
+AnimLabel.Size = UDim2.new(1, -20, 0, 24)
+AnimLabel.Position = UDim2.new(0, 10, 0, 130)
+AnimLabel.BackgroundTransparency = 1
+AnimLabel.Text = "Animation"
+AnimLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+AnimLabel.Font = Enum.Font.Gotham
+AnimLabel.TextSize = 14
+AnimLabel.TextXAlignment = Enum.TextXAlignment.Left
+AnimLabel.Parent = MainFrame
+
+local AnimDropdown = Instance.new("Frame")
+AnimDropdown.Size = UDim2.new(1, -20, 0, 30)
+AnimDropdown.Position = UDim2.new(0, 10, 0, 158)
+AnimDropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+AnimDropdown.BorderSizePixel = 0
+AnimDropdown.Parent = MainFrame
+Instance.new("UICorner", AnimDropdown).CornerRadius = UDim.new(0, 6)
+
+local AnimText = Instance.new("TextLabel")
+AnimText.Size = UDim2.new(1, -10, 1, 0)
+AnimText.Position = UDim2.new(0, 5, 0, 0)
+AnimText.BackgroundTransparency = 1
+AnimText.Text = "Select animation"
+AnimText.TextColor3 = Color3.fromRGB(180, 180, 180)
+AnimText.Font = Enum.Font.Gotham
+AnimText.TextSize = 14
+AnimText.TextXAlignment = Enum.TextXAlignment.Left
+AnimText.Parent = AnimDropdown
+
+local AnimArrow = Instance.new("ImageLabel")
+AnimArrow.Size = UDim2.new(0, 20, 0, 20)
+AnimArrow.Position = UDim2.new(1, -25, 0.5, -10)
+AnimArrow.BackgroundTransparency = 1
+AnimArrow.Image = "rbxassetid://7072707111"
+AnimArrow.ImageColor3 = Color3.fromRGB(180, 180, 180)
+AnimArrow.Parent = AnimDropdown
+
+local AnimList = Instance.new("ScrollingFrame")
+AnimList.Size = UDim2.new(1, -20, 0, 120)
+AnimList.Position = UDim2.new(0, 10, 0, 190)
+AnimList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+AnimList.BorderSizePixel = 0
+AnimList.CanvasSize = UDim2.new(0, 0, 0, 0)
+AnimList.ScrollBarThickness = 4
+AnimList.Visible = false
+AnimList.Parent = MainFrame
+Instance.new("UICorner", AnimList).CornerRadius = UDim.new(0, 6)
+
+local AnimUIListLayout = Instance.new("UIListLayout")
+AnimUIListLayout.Padding = UDim.new(0, 2)
+AnimUIListLayout.Parent = AnimList
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(1, -20, 0, 36)
+ToggleButton.Position = UDim2.new(0, 10, 1, -46)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Text = "ACTIVATE"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 16
+ToggleButton.Parent = MainFrame
+Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0, 8)
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, -20, 0, 20)
+StatusLabel.Position = UDim2.new(0, 10, 1, -8)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Inactive"
+StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.TextSize = 12
+StatusLabel.Parent = MainFrame
+
+local Animations = {
+	["Ninja Run"] = "rbxassetid://656118852",
+	["Zombie Walk"] = "rbxassetid://3293435723",
+	["Cartwheel"] = "rbxassetid://3368289772",
+	["Elder Idle"] = "rbxassetid://4891647197",
+	["Dance"] = "rbxassetid://27789359"
+}
+
+local TargetPlayer = nil
+local SelectedAnimID = nil
+local IsActive = false
+local FollowConnection = nil
+
+local function AddTargetButtons()
+	for _, child in ipairs(TargetList:GetChildren()) do
+		if child:IsA("TextButton") then child:Destroy() end
+	end
+	local totalHeight = 0
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			local btn = Instance.new("TextButton")
+			btn.Size = UDim2.new(1, 0, 0, 28)
+			btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+			btn.BorderSizePixel = 0
+			btn.Text = player.Name
+			btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			btn.Font = Enum.Font.Gotham
+			btn.TextSize = 14
+			btn.Parent = TargetList
+			Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+			btn.MouseButton1Click:Connect(function()
+				TargetPlayer = player
+				TargetText.Text = player.Name
+				TargetList.Visible = false
+			end)
+			totalHeight = totalHeight + 30
+		end
+	end
+	TargetList.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+end
+
+local function AddAnimButtons()
+	for _, child in ipairs(AnimList:GetChildren()) do
+		if child:IsA("TextButton") then child:Destroy() end
+	end
+	local totalHeight = 0
+	for name, id in pairs(Animations) do
+		local btn = Instance.new("TextButton")
+		btn.Size = UDim2.new(1, 0, 0, 28)
+		btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+		btn.BorderSizePixel = 0
+		btn.Text = name
+		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		btn.Font = Enum.Font.Gotham
+		btn.TextSize = 14
+		btn.Parent = AnimList
+		Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+		btn.MouseButton1Click:Connect(function()
+			SelectedAnimID = id
+			AnimText.Text = name
+			AnimList.Visible = false
+		end)
+		totalHeight = totalHeight + 30
+	end
+	AnimList.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+end
+
+AddTargetButtons()
+AddAnimButtons()
+Players.PlayerAdded:Connect(AddTargetButtons)
+Players.PlayerRemoving:Connect(AddTargetButtons)
+
+TargetDropdown.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		TargetList.Visible = not TargetList.Visible
+		AnimList.Visible = false
+	end
+end)
+
+AnimDropdown.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		AnimList.Visible = not AnimList.Visible
+		TargetList.Visible = false
+	end
+end)
+
+ToggleButton.MouseButton1Click:Connect(function()
+	if not TargetPlayer or not SelectedAnimID then
+		return
+	end
+	IsActive = not IsActive
+	if IsActive then
+		ToggleButton.Text = "DEACTIVATE"
+		ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+		StatusLabel.Text = "Active - " .. TargetPlayer.Name
+		if FollowConnection then FollowConnection:Disconnect() end
+		FollowConnection = RunService.Heartbeat:Connect(function()
+			if TargetPlayer and TargetPlayer.Parent and TargetPlayer.Character and LocalPlayer.Character then
+				local targetHum = TargetPlayer.Character:FindFirstChildOfClass("Humanoid")
+				local targetRoot = TargetPlayer.Character:FindFirstChild("HumanoidRootPart")
+				local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				if targetHum and targetRoot and localRoot then
+					local anim = targetHum:LoadAnimation(Instance.new("Animation", targetHum))
+					anim.AnimationId = SelectedAnimID
+					anim:Play()
+					local direction = (localRoot.Position - targetRoot.Position).Unit
+					targetHum:Move(direction, true)
+				end
+			end
+		end)
+	else
+		ToggleButton.Text = "ACTIVATE"
+		ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+		StatusLabel.Text = "Inactive"
+		if FollowConnection then
+			FollowConnection:Disconnect()
+			FollowConnection = nil
+		end
+	end
+end)
+
+UserInputService.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		local pos = input.Position
+		if not TargetList.AbsolutePosition.X <= pos.X and pos.X <= TargetList.AbsolutePosition.X + TargetList.AbsoluteSize.X or not TargetList.AbsolutePosition.Y <= pos.Y and pos.Y <= TargetList.AbsolutePosition.Y + TargetList.AbsoluteSize.Y then
+			if not TargetDropdown.AbsolutePosition.X <= pos.X and pos.X <= TargetDropdown.AbsolutePosition.X + TargetDropdown.AbsoluteSize.X or not TargetDropdown.AbsolutePosition.Y <= pos.Y and pos.Y <= TargetDropdown.AbsolutePosition.Y + TargetDropdown.AbsoluteSize.Y then
+				TargetList.Visible = false
+			end
+		end
+		if not AnimList.AbsolutePosition.X <= pos.X and pos.X <= AnimList.AbsolutePosition.X + AnimList.AbsoluteSize.X or not AnimList.AbsolutePosition.Y <= pos.Y and pos.Y <= AnimList.AbsolutePosition.Y + AnimList.AbsoluteSize.Y then
+			if not AnimDropdown.AbsolutePosition.X <= pos.X and pos.X <= AnimDropdown.AbsolutePosition.X + AnimDropdown.AbsoluteSize.X or not AnimDropdown.AbsolutePosition.Y <= pos.Y and pos.Y <= AnimDropdown.AbsolutePosition.Y + AnimDropdown.AbsoluteSize.Y then
+				AnimList.Visible = false
+			end
+		end
+	end
+end)
