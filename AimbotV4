@@ -7,9 +7,9 @@ local Window = Rayfield:CreateWindow({
     ConfigurationSaving = { Enabled = false }
 })
 
-local Tab = Window:CreateTab("Main", 4483362458)
-local TabSettings = Window:CreateTab("Settings", 4483362458)
-local TabPriority = Window:CreateTab("Priority", 4483362458)
+local Tab = Window:CreateTab("Main")
+local TabSettings = Window:CreateTab("Settings")
+local TabPriority = Window:CreateTab("Priority")
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -17,11 +17,9 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualInputManager = game:GetService("VirtualInputManager")
-local HttpService = game:GetService("HttpService")
 
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
 
 local Settings = {
     Enabled = false,
@@ -527,31 +525,16 @@ local function SetupDamageTracker()
         
         Humanoid.HealthChanged:Connect(function(NewHealth)
             if NewHealth < LastHealth then
-                local Damage = LastHealth - NewHealth
-                
                 local Attacker = nil
-                local Children = Workspace:GetChildren()
-                for _, Child in ipairs(Children) do
-                    if Child:IsA("Tool") and Child.Parent and Child.Parent:IsA("Model") then
-                        local Handle = Child:FindFirstChild("Handle")
-                        if Handle and (Handle.Position - Char.HumanoidRootPart.Position).Magnitude < 5 then
-                            Attacker = Child.Parent
-                            break
-                        end
-                    end
-                end
-                
-                if not Attacker then
-                    local PlayersList = Players:GetPlayers()
-                    for _, Player in ipairs(PlayersList) do
-                        if Player ~= LocalPlayer then
-                            local PlayerChar = Player.Character
-                            if PlayerChar then
-                                local PlayerRoot = PlayerChar:FindFirstChild("HumanoidRootPart")
-                                if PlayerRoot and (PlayerRoot.Position - Char.HumanoidRootPart.Position).Magnitude < 10 then
-                                    Attacker = PlayerChar
-                                    break
-                                end
+                local PlayersList = Players:GetPlayers()
+                for _, Player in ipairs(PlayersList) do
+                    if Player ~= LocalPlayer then
+                        local PlayerChar = Player.Character
+                        if PlayerChar then
+                            local PlayerRoot = PlayerChar:FindFirstChild("HumanoidRootPart")
+                            if PlayerRoot and (PlayerRoot.Position - Char.HumanoidRootPart.Position).Magnitude < 15 then
+                                Attacker = PlayerChar
+                                break
                             end
                         end
                     end
@@ -572,16 +555,18 @@ end
 
 SetupDamageTracker()
 
+local SectionMain = Tab:CreateSection("Main Settings")
 Tab:CreateToggle({ Name = "Aimbot Enabled", CurrentValue = false, Callback = function(v) Settings.Enabled = v end })
 Tab:CreateToggle({ Name = "Silent Aim", CurrentValue = false, Callback = function(v) Settings.SilentAim = v end })
 Tab:CreateToggle({ Name = "Trigger Bot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v end })
 Tab:CreateToggle({ Name = "Auto Shoot", CurrentValue = false, Callback = function(v) Settings.AutoShoot = v end })
 Tab:CreateToggle({ Name = "Team Check", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end })
-Tab:CreateToggle({ Name = "Visibility Check (No Wallbang)", CurrentValue = true, Callback = function(v) Settings.VisibilityCheck = v end })
+Tab:CreateToggle({ Name = "Visibility Check", CurrentValue = true, Callback = function(v) Settings.VisibilityCheck = v end })
 Tab:CreateToggle({ Name = "Show FOV Circle", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end })
 Tab:CreateToggle({ Name = "Sticky Aim", CurrentValue = true, Callback = function(v) Settings.StickyAim = v end })
-Tab:CreateToggle({ Name = "Require On Target (Trigger)", CurrentValue = true, Callback = function(v) Settings.TriggerRequiresOnTarget = v end })
+Tab:CreateToggle({ Name = "Require On Target", CurrentValue = true, Callback = function(v) Settings.TriggerRequiresOnTarget = v end })
 
+local SectionSliders = Tab:CreateSection("Sliders")
 Tab:CreateSlider({ Name = "FOV Size", Range = {50, 500}, Increment = 5, CurrentValue = Settings.FOV, Callback = function(v) Settings.FOV = v end })
 Tab:CreateSlider({ Name = "Smoothness", Range = {0.05, 1}, Increment = 0.01, CurrentValue = Settings.Smoothness, Callback = function(v) Settings.Smoothness = v end })
 Tab:CreateSlider({ Name = "Prediction", Range = {0.05, 0.3}, Increment = 0.005, CurrentValue = Settings.Prediction, Callback = function(v) Settings.Prediction = v end })
@@ -589,9 +574,10 @@ Tab:CreateSlider({ Name = "Hit Chance", Range = {0, 100}, Increment = 1, Current
 Tab:CreateSlider({ Name = "Trigger Delay", Range = {0, 0.2}, Increment = 0.01, CurrentValue = Settings.TriggerDelay, Callback = function(v) Settings.TriggerDelay = v end })
 Tab:CreateSlider({ Name = "Velocity Clamp", Range = {10, 100}, Increment = 5, CurrentValue = Settings.VelocityClamp, Callback = function(v) Settings.VelocityClamp = v end })
 
-Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, CurrentOption = {Settings.AimPart}, Callback = function(o) Settings.AimPart = o[1] end })
-Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; if FOVCircle then FOVCircle.Color = c end end })
+Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, CurrentOption = "Head", Callback = function(v) Settings.AimPart = v end })
+Tab:CreateColorPicker({ Name = "FOV Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; if FOVCircle then FOVCircle.Color = c end end })
 
+local SectionSettings = TabSettings:CreateSection("Advanced Settings")
 TabSettings:CreateToggle({ Name = "Smart Targeting", CurrentValue = true, Callback = function(v) Settings.SmartTargeting = v end })
 TabSettings:CreateToggle({ Name = "Dynamic Prediction", CurrentValue = true, Callback = function(v) Settings.DynamicPrediction = v end })
 TabSettings:CreateToggle({ Name = "Parallel Scanning", CurrentValue = true, Callback = function(v) Settings.ParallelScanning = v end })
@@ -600,13 +586,13 @@ TabSettings:CreateToggle({ Name = "Adaptive Smoothness", CurrentValue = false, C
 TabSettings:CreateSlider({ Name = "Scan Interval", Range = {0.01, 0.1}, Increment = 0.005, CurrentValue = Settings.ScanInterval, Callback = function(v) Settings.ScanInterval = v end })
 TabSettings:CreateSlider({ Name = "Prediction Multiplier", Range = {0.5, 2}, Increment = 0.1, CurrentValue = Settings.PredictionMultiplier, Callback = function(v) Settings.PredictionMultiplier = v end })
 
+local SectionPriority = TabPriority:CreateSection("Priority Settings")
 TabPriority:CreateDropdown({ 
     Name = "Priority System", 
     Options = {"Crosshair", "Health", "Distance", "Damage"}, 
-    CurrentOption = {Settings.PrioritySystem}, 
-    Callback = function(o) Settings.PrioritySystem = o[1] end 
+    CurrentOption = "Crosshair", 
+    Callback = function(v) Settings.PrioritySystem = v end 
 })
-
 TabPriority:CreateSlider({ Name = "Crosshair Weight", Range = {0, 5}, Increment = 0.1, CurrentValue = Settings.CrosshairWeight, Callback = function(v) Settings.CrosshairWeight = v end })
 TabPriority:CreateSlider({ Name = "Distance Weight", Range = {0, 1}, Increment = 0.01, CurrentValue = Settings.DistanceWeight, Callback = function(v) Settings.DistanceWeight = v end })
 TabPriority:CreateSlider({ Name = "Velocity Weight", Range = {0, 1}, Increment = 0.01, CurrentValue = Settings.VelocityWeight, Callback = function(v) Settings.VelocityWeight = v end })
