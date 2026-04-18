@@ -1,0 +1,672 @@
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Arsenal Aimbot V5 Insane",
+    LoadingTitle = "Arsenal Aimbot",
+    LoadingSubtitle = "by West",
+    ConfigurationSaving = { Enabled = false }
+})
+
+local Tab = Window:CreateTab("Main", 4483362458)
+local TabSettings = Window:CreateTab("Settings", 4483362458)
+local TabPriority = Window:CreateTab("Priority", 4483362458)
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+-- Variables
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+
+-- Settings
+local Settings = {
+    Enabled = false,
+    SilentAim = false,
+    TeamCheck = true,
+    AimPart = "Head",
+    FOV = 120,
+    Smoothness = 0.12,
+    Prediction = 0.13,
+    ShowFOV = true,
+    FOVColor = Color3.fromRGB(255, 0, 255),
+    TriggerBot = false,
+    AutoShoot = false,
+    TriggerDelay = 0.05,
+    VisibilityCheck = true,
+    -- Premium Settings
+    SmartTargeting = true,
+    DynamicPrediction = true,
+    Humanization = true,
+    TargetLockTime = 0.3,
+    CrosshairWeight = 1.2,
+    DistanceWeight = 0.02,
+    VelocityWeight = 0.4,
+    HealthWeight = 0.1,
+    JitterAmount = 0.02,
+    SmoothVariation = 0.02,
+    -- V5 Insane Settings
+    AdaptiveFOV = true,
+    HitChance = 100,
+    ParallelScanning = true,
+    ScanInterval = 0.1,
+    PrioritySystem = "Crosshair", -- Crosshair, Health, Distance, Damage
+    AdaptiveSmoothness = true,
+    RecoilControl = false
+}
+
+-- FOV Circle
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Thickness = 2
+FOVCircle.NumSides = 64
+FOVCircle.Filled = false
+FOVCircle.Color = Settings.FOVColor
+FOVCircle.Transparency = 0.85
+FOVCircle.Visible = false
+
+-- Global RaycastParams (reused for performance)
+local RaycastParams = RaycastParams.new()
+RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+RaycastParams.IgnoreWater = true
+
+-- Silent Aim System
+local SilentAimConnection = nil
+local OldNamecall = nil
+local HookEnabled = false
+
+-- Target Lock System
+local TargetLock = {
+    Player = nil,
+    Part = nil,
+    ExpireTime = 0,
+    LockStartTime = 0
+}
+
+-- Damage Tracker for Priority System
+local DamageTracker = {
+    LastDamager = nil,
+    DamageTime = 0
+}
+
+-- Parallel Scanner Cache
+local ScanCache = {
+    Players = {},
+    LastScan = 0,
+    BestTarget = nil,
+    BestPlayer = nil
+}
+
+-- Cache
+local TargetCache = {
+    Part = nil,
+    LastUpdate = 0,
+    Player = nil
+}
+
+local RenderConnection
+local HeartbeatConnection
+
+-- Executor Capability Check
+local ExecutorCapabilities = {
+    SupportsHooking = pcall(function() return hookmetamethod end),
+    SupportsNewCclosure = pcall(function() return newcclosure end),
+    SupportsGetNamecallMethod = pcall(function() return getnamecallmethod end)
+}
+
+-- Premium Helper Functions
+local function HumanizePosition(Position)
+    if not Settings.Humanization then return Position end
+    
+    local Jitter = Vector3.new(
+        (math.random() - 0.5) * Settings.JitterAmount * 2,
+        (math.random() - 0.5) * Settings.JitterAmount * 2,
+        (math.random() - 0.5) * Settings.JitterAmount * 2
+    )
+    return Position + Jitter
+end
+
+local function GetDynamicPrediction(Part)
+    if not Settings.DynamicPrediction then return Settings.Prediction end
+    
+    local Velocity = Part.AssemblyLinearVelocity.Magnitude
+    
+    if Velocity < 5 then
+        return 0.09
+    elseif Velocity < 20 then
+        return 0.12
+    else
+        return 0.16
+    end
+end
+
+local function GetSmoothedSmoothness()
+    local BaseSmooth = Settings.Smoothness
+    
+    if Settings.AdaptiveSmoothness then
+        local Target, _ = GetBestTarget()
+        if Target then
+            local Distance = (Camera.CFrame.Position - Target.Position).Magnitude
+            -- Smoother for close targets, faster for far targets
+            if Distance < 30 then
+                BaseSmooth = BaseSmooth * 1.3
+            elseif Distance > 100 then
+                BaseSmooth = BaseSmooth * 0.8
+            end
+        end
+    end
+    
+    if not Settings.Humanization then return BaseSmooth end
+    
+    local Variation = (math.random() - 0.5) * Settings.SmoothVariation * 2
+    return math.clamp(BaseSmooth + Variation, 0.05, 1)
+end
+
+-- Adaptive FOV System
+local function GetAdaptiveFOV()
+    if not Settings.AdaptiveFOV then return Settings.FOV end
+    
+    local Target, _ = GetBestTarget()
+    if Target then
+        local Distance = (Camera.CFrame.Position - Target.Position).Magnitude
+        
+        -- Smaller FOV when enemies are close (more precise)
+        if Distance < 30 then
+            return Settings.FOV * 0.6
+        elseif Distance < 60 then
+            return Settings.FOV * 0.8
+        else
+            return Settings.FOV
+        end
+    end
+    
+    return Settings.FOV
+end
+
+-- Hit Chance System
+local function ShouldHit()
+    if Settings.HitChance >= 100 then return true end
+    return math.random(1, 100) <= Settings.HitChance
+end
+
+-- Cleaned up ScoreTarget function
+local function ScoreTarget(Player, CrosshairDistance, Distance, Velocity, Health)
+    local Score = 
+        (CrosshairDistance * Settings.CrosshairWeight) +
+        (Distance * Settings.DistanceWeight) +
+        (Velocity * Settings.VelocityWeight) +
+        ((100 - Health) * Settings.HealthWeight)
+    
+    -- Priority system bonuses
+    if Settings.PrioritySystem == "Health" then
+        Score = Score * (1 - (Health / 200)) -- Lower health = higher priority
+    elseif Settings.PrioritySystem == "Distance" then
+        Score = Score * (1 / (Distance + 1)) -- Closer = higher priority
+    elseif Settings.PrioritySystem == "Damage" and DamageTracker.LastDamager == Player then
+        if tick() - DamageTracker.DamageTime < 3 then
+            Score = Score * 0.5 -- 50% bonus for recent damager
+        end
+    end
+    
+    -- Bonus for currently locked target
+    if TargetLock.Player == Player and tick() < TargetLock.ExpireTime then
+        Score = Score * 0.7
+    end
+    
+    return Score
+end
+
+-- Helper Functions
+local function IsTeammate(Player)
+    if not Settings.TeamCheck then return false end
+    if not Player.Team or not LocalPlayer.Team then return false end
+    return Player.Team == LocalPlayer.Team
+end
+
+local function IsAlive(Character)
+    local Humanoid = Character and Character:FindFirstChild("Humanoid")
+    return Humanoid and Humanoid.Health > 0
+end
+
+local function IsVisible(Part)
+    if not Settings.VisibilityCheck then return true end
+    if not Part then return false end
+    
+    local Origin = Camera.CFrame.Position
+    local Direction = (Part.Position - Origin)
+    local Distance = Direction.Magnitude
+    
+    if Distance > 500 then return false end
+    
+    -- Update filter for current character
+    local Char = LocalPlayer.Character
+    if Char then
+        RaycastParams.FilterDescendantsInstances = {Char}
+    end
+    
+    local Result = Workspace:Raycast(Origin, Direction.Unit * Distance, RaycastParams)
+    
+    if not Result then return true end
+    
+    local HitInstance = Result.Instance
+    local HitModel = HitInstance:FindFirstAncestorWhichIsA("Model")
+    
+    return HitModel == Part.Parent or HitInstance:IsDescendantOf(Part.Parent)
+end
+
+local function GetPredictedPosition(Part)
+    if not Part then return nil end
+    
+    local Velocity = Part.AssemblyLinearVelocity or Vector3.zero
+    local PredictionAmount = GetDynamicPrediction(Part)
+    local PredictedPos = Part.Position + (Velocity * PredictionAmount)
+    
+    return HumanizePosition(PredictedPos)
+end
+
+-- Deep argument modifier
+local function ModifyArguments(Args, PredictedPos)
+    for i = 1, math.min(#Args, 20) do
+        local Arg = Args[i]
+        local ArgType = typeof(Arg)
+        
+        if ArgType == "Vector3" then
+            Args[i] = PredictedPos
+            return true
+        elseif ArgType == "CFrame" then
+            Args[i] = CFrame.new(PredictedPos)
+            return true
+        elseif ArgType == "table" then
+            if Arg.Position and typeof(Arg.Position) == "Vector3" then
+                Arg.Position = PredictedPos
+                return true
+            end
+            
+            if Arg.hit and Arg.hit.Position and typeof(Arg.hit.Position) == "Vector3" then
+                Arg.hit.Position = PredictedPos
+                return true
+            end
+            
+            for k, v in pairs(Arg) do
+                if typeof(v) == "Vector3" then
+                    Arg[k] = PredictedPos
+                    return true
+                elseif typeof(v) == "table" then
+                    for k2, v2 in pairs(v) do
+                        if typeof(v2) == "Vector3" then
+                            v[k2] = PredictedPos
+                            return true
+                        elseif typeof(v2) == "CFrame" then
+                            v[k2] = CFrame.new(PredictedPos)
+                            return true
+                        end
+                    end
+                elseif typeof(v) == "CFrame" then
+                    Arg[k] = CFrame.new(PredictedPos)
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+-- Parallel Target Scanner (runs on separate interval)
+local function ScanTargets()
+    local CurrentTime = tick()
+    
+    if not Settings.ParallelScanning then return end
+    if CurrentTime - ScanCache.LastScan < Settings.ScanInterval then return end
+    
+    ScanCache.LastScan = CurrentTime
+    local BestPart = nil
+    local BestPlayer = nil
+    local BestScore = math.huge
+    
+    local CameraPos = Camera.CFrame.Position
+    local ViewportSize = Camera.ViewportSize
+    local ScreenCenter = Vector2.new(ViewportSize.X / 2, ViewportSize.Y / 2)
+    local CurrentFOV = GetAdaptiveFOV()
+    
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player ~= LocalPlayer then
+            local Character = Player.Character
+            if Character and IsAlive(Character) and not IsTeammate(Player) then
+                local AimPart = Character:FindFirstChild(Settings.AimPart) or Character:FindFirstChild("HumanoidRootPart")
+                
+                if AimPart and IsVisible(AimPart) then
+                    local ScreenPos, OnScreen = Camera:WorldToViewportPoint(AimPart.Position)
+                    
+                    if OnScreen then
+                        local CrosshairDistance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - ScreenCenter).Magnitude
+                        
+                        if CrosshairDistance < CurrentFOV then
+                            if Settings.SmartTargeting then
+                                local Distance = (CameraPos - AimPart.Position).Magnitude
+                                local Velocity = AimPart.AssemblyLinearVelocity.Magnitude
+                                local Health = 100
+                                local Humanoid = Character:FindFirstChild("Humanoid")
+                                if Humanoid then
+                                    Health = Humanoid.Health
+                                end
+                                
+                                local Score = ScoreTarget(Player, CrosshairDistance, Distance, Velocity, Health)
+                                if Score < BestScore then
+                                    BestScore = Score
+                                    BestPart = AimPart
+                                    BestPlayer = Player
+                                end
+                            else
+                                if CrosshairDistance < BestScore then
+                                    BestScore = CrosshairDistance
+                                    BestPart = AimPart
+                                    BestPlayer = Player
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    ScanCache.BestTarget = BestPart
+    ScanCache.BestPlayer = BestPlayer
+end
+
+-- Premium Target Selection (uses cached results from parallel scanner)
+local function GetBestTarget()
+    local CurrentTime = tick()
+    
+    -- Check target lock first
+    if TargetLock.Player and CurrentTime < TargetLock.ExpireTime then
+        local LockChar = TargetLock.Player.Character
+        if LockChar and IsAlive(LockChar) and not IsTeammate(TargetLock.Player) then
+            local LockPart = LockChar:FindFirstChild(Settings.AimPart) or LockChar:FindFirstChild("HumanoidRootPart")
+            if LockPart and IsVisible(LockPart) then
+                local ScreenPos, OnScreen = Camera:WorldToViewportPoint(LockPart.Position)
+                if OnScreen then
+                    local ScreenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                    local Distance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - ScreenCenter).Magnitude
+                    if Distance < Settings.FOV then
+                        return LockPart, TargetLock.Player
+                    end
+                end
+            end
+        end
+        TargetLock.Player = nil
+        TargetLock.Part = nil
+    end
+    
+    -- Use cached result if parallel scanning is enabled
+    if Settings.ParallelScanning and ScanCache.BestTarget then
+        TargetCache.Part = ScanCache.BestTarget
+        TargetCache.Player = ScanCache.BestPlayer
+        TargetCache.LastUpdate = CurrentTime
+        return ScanCache.BestTarget, ScanCache.BestPlayer
+    end
+    
+    -- Fallback to real-time scanning
+    ScanTargets()
+    TargetCache.Part = ScanCache.BestTarget
+    TargetCache.Player = ScanCache.BestPlayer
+    TargetCache.LastUpdate = CurrentTime
+    return ScanCache.BestTarget, ScanCache.BestPlayer
+end
+
+-- Silent Aim with improved remote filtering
+local function IsValidWeaponRemote(Remote)
+    -- Check if it's in ReplicatedStorage (Arsenal standard)
+    if Remote.Parent == ReplicatedStorage then
+        return true
+    end
+    
+    -- Check if it's part of a tool
+    if Remote:FindFirstAncestorWhichIsA("Tool") then
+        return true
+    end
+    
+    -- Check common remote names
+    local Name = Remote.Name:lower()
+    local WeaponPatterns = {"bullet", "shoot", "fire", "hit", "damage", "weapon", "gun"}
+    for _, Pattern in ipairs(WeaponPatterns) do
+        if Name:find(Pattern) then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Fallback Silent Aim Method
+local function FallbackSilentAim()
+    if not Settings.Enabled or not Settings.SilentAim then return end
+    if not ShouldHit() then return end
+    
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    
+    local Tool = Character:FindFirstChildWhichIsA("Tool")
+    if not Tool then return end
+    
+    for _, Remote in ipairs(Tool:GetDescendants()) do
+        if Remote:IsA("RemoteEvent") or Remote:IsA("RemoteFunction") then
+            if IsValidWeaponRemote(Remote) then
+                local Target, _ = GetBestTarget()
+                if Target then
+                    local PredictedPos = GetPredictedPosition(Target)
+                    
+                    pcall(function()
+                        Remote:FireServer(PredictedPos)
+                    end)
+                end
+            end
+        end
+    end
+end
+
+-- Safe Silent Aim Setup
+local function SetupSilentAim()
+    if HookEnabled then return end
+    
+    if ExecutorCapabilities.SupportsHooking and 
+       ExecutorCapabilities.SupportsNewCclosure and 
+       ExecutorCapabilities.SupportsGetNamecallMethod then
+        
+        local Success, Err = pcall(function()
+            OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
+                local Method = getnamecallmethod()
+                local Args = {...}
+                
+                if Settings.Enabled and Settings.SilentAim and Method == "FireServer" then
+                    if (Self:IsA("RemoteEvent") or Self:IsA("RemoteFunction")) and IsValidWeaponRemote(Self) then
+                        if ShouldHit() then
+                            local Target, _ = GetBestTarget()
+                            
+                            if Target then
+                                local PredictedPos = GetPredictedPosition(Target)
+                                ModifyArguments(Args, PredictedPos)
+                            end
+                        end
+                    end
+                end
+                
+                return OldNamecall(Self, unpack(Args))
+            end))
+        end)
+        
+        if Success then
+            HookEnabled = true
+            print("V5 Insane Silent Aim: Hook active")
+            return
+        end
+    end
+    
+    print("V5 Insane Silent Aim: Fallback active")
+    SilentAimConnection = RunService.Heartbeat:Connect(FallbackSilentAim)
+    HookEnabled = true
+end
+
+-- Trigger Bot
+local function TriggerBotCheck()
+    if not (Settings.TriggerBot and Settings.Enabled) then return end
+    if not ShouldHit() then return end
+    
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    
+    local Tool = Character:FindFirstChildWhichIsA("Tool")
+    if not Tool then return end
+    
+    local Target, Player = GetBestTarget()
+    if not (Target and Player) then return end
+    
+    local MousePos = UserInputService:GetMouseLocation()
+    local MouseTarget = Mouse.Target
+    
+    if MouseTarget and MouseTarget:IsDescendantOf(Player.Character) then
+        if Settings.AutoShoot then
+            VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, true, game, 1)
+            task.wait(Settings.TriggerDelay)
+            VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, false, game, 1)
+        end
+    end
+end
+
+-- Damage tracking for priority system
+LocalPlayer.CharacterAdded:Connect(function(Character)
+    local Humanoid = Character:WaitForChild("Humanoid")
+    
+    Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+        local CurrentHealth = Humanoid.Health
+        local MaxHealth = Humanoid.MaxHealth
+        
+        if CurrentHealth < MaxHealth then
+            -- Try to find who damaged us
+            for _, Player in ipairs(Players:GetPlayers()) do
+                if Player ~= LocalPlayer and Player.Character then
+                    local TheirHumanoid = Player.Character:FindFirstChild("Humanoid")
+                    if TheirHumanoid then
+                        -- Simple damage tracking (in a real script you'd use DamageTaken event)
+                        DamageTracker.LastDamager = Player
+                        DamageTracker.DamageTime = tick()
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+-- Initialize
+SetupSilentAim()
+
+-- Parallel Scanner (runs on separate heartbeat)
+HeartbeatConnection = RunService.Heartbeat:Connect(function()
+    if Settings.Enabled and Settings.ParallelScanning then
+        ScanTargets()
+    end
+end)
+
+-- Premium Main Loop
+RenderConnection = RunService.RenderStepped:Connect(function()
+    local CurrentFOV = GetAdaptiveFOV()
+    local ViewportSize = Camera.ViewportSize
+    
+    -- Update FOV Circle with adaptive size
+    FOVCircle.Position = Vector2.new(ViewportSize.X / 2, ViewportSize.Y / 2)
+    FOVCircle.Radius = CurrentFOV
+    FOVCircle.Visible = Settings.Enabled and Settings.ShowFOV
+    FOVCircle.Color = Settings.FOVColor
+
+    if not Settings.Enabled then return end
+
+    -- Normal Aimbot
+    if not Settings.SilentAim and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+        if ShouldHit() then
+            local Target, _ = GetBestTarget()
+            if Target then
+                local TargetPos = GetPredictedPosition(Target)
+                local TargetCFrame = CFrame.new(Camera.CFrame.Position, TargetPos)
+                local Smoothness = GetSmoothedSmoothness()
+                Camera.CFrame = Camera.CFrame:Lerp(TargetCFrame, Smoothness)
+            end
+        end
+    end
+
+    -- Trigger Bot
+    TriggerBotCheck()
+end)
+
+-- UI Elements - Main Tab
+Tab:CreateToggle({ Name = "Aimbot Enabled", CurrentValue = false, Callback = function(v) Settings.Enabled = v end })
+Tab:CreateToggle({ Name = "Silent Aim", CurrentValue = false, Callback = function(v) Settings.SilentAim = v end })
+Tab:CreateToggle({ Name = "Trigger Bot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v end })
+Tab:CreateToggle({ Name = "Auto Shoot", CurrentValue = false, Callback = function(v) Settings.AutoShoot = v end })
+Tab:CreateToggle({ Name = "Team Check", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end })
+Tab:CreateToggle({ Name = "Visibility Check", CurrentValue = true, Callback = function(v) Settings.VisibilityCheck = v end })
+Tab:CreateToggle({ Name = "Show FOV Circle", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end })
+
+Tab:CreateSlider({ Name = "FOV Size", Range = {50, 500}, Increment = 5, CurrentValue = Settings.FOV, Callback = function(v) Settings.FOV = v end })
+Tab:CreateSlider({ Name = "Smoothness", Range = {0.05, 1}, Increment = 0.01, CurrentValue = Settings.Smoothness, Callback = function(v) Settings.Smoothness = v end })
+Tab:CreateSlider({ Name = "Hit Chance", Range = {0, 100}, Increment = 1, CurrentValue = Settings.HitChance, Callback = function(v) Settings.HitChance = v end })
+Tab:CreateSlider({ Name = "Trigger Delay", Range = {0.01, 0.2}, Increment = 0.01, CurrentValue = Settings.TriggerDelay, Callback = function(v) Settings.TriggerDelay = v end })
+
+Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, CurrentOption = {Settings.AimPart}, Callback = function(o) Settings.AimPart = o[1] end })
+Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; FOVCircle.Color = c end })
+
+-- Premium Settings Tab
+TabSettings:CreateToggle({ Name = "Smart Targeting", CurrentValue = true, Callback = function(v) Settings.SmartTargeting = v end })
+TabSettings:CreateToggle({ Name = "Dynamic Prediction", CurrentValue = true, Callback = function(v) Settings.DynamicPrediction = v end })
+TabSettings:CreateToggle({ Name = "Humanization", CurrentValue = true, Callback = function(v) Settings.Humanization = v end })
+TabSettings:CreateToggle({ Name = "Adaptive FOV", CurrentValue = true, Callback = function(v) Settings.AdaptiveFOV = v end })
+TabSettings:CreateToggle({ Name = "Adaptive Smoothness", CurrentValue = true, Callback = function(v) Settings.AdaptiveSmoothness = v end })
+TabSettings:CreateToggle({ Name = "Parallel Scanning", CurrentValue = true, Callback = function(v) Settings.ParallelScanning = v end })
+
+TabSettings:CreateSlider({ Name = "Target Lock Time", Range = {0, 1}, Increment = 0.05, CurrentValue = Settings.TargetLockTime, Callback = function(v) Settings.TargetLockTime = v end })
+TabSettings:CreateSlider({ Name = "Scan Interval", Range = {0.05, 0.5}, Increment = 0.01, CurrentValue = Settings.ScanInterval, Callback = function(v) Settings.ScanInterval = v end })
+TabSettings:CreateSlider({ Name = "Jitter Amount", Range = {0, 0.1}, Increment = 0.005, CurrentValue = Settings.JitterAmount, Callback = function(v) Settings.JitterAmount = v end })
+
+-- Priority Tab
+TabPriority:CreateDropdown({ 
+    Name = "Priority System", 
+    Options = {"Crosshair", "Health", "Distance", "Damage"}, 
+    CurrentOption = {Settings.PrioritySystem}, 
+    Callback = function(o) Settings.PrioritySystem = o[1] end 
+})
+
+TabPriority:CreateSlider({ Name = "Crosshair Weight", Range = {0, 5}, Increment = 0.1, CurrentValue = Settings.CrosshairWeight, Callback = function(v) Settings.CrosshairWeight = v end })
+TabPriority:CreateSlider({ Name = "Distance Weight", Range = {0, 1}, Increment = 0.01, CurrentValue = Settings.DistanceWeight, Callback = function(v) Settings.DistanceWeight = v end })
+TabPriority:CreateSlider({ Name = "Velocity Weight", Range = {0, 1}, Increment = 0.01, CurrentValue = Settings.VelocityWeight, Callback = function(v) Settings.VelocityWeight = v end })
+TabPriority:CreateSlider({ Name = "Health Weight", Range = {0, 1}, Increment = 0.01, CurrentValue = Settings.HealthWeight, Callback = function(v) Settings.HealthWeight = v end })
+
+-- Unload Button
+Tab:CreateButton({
+    Name = "Unload Script",
+    Callback = function()
+        Settings.Enabled = false
+        Settings.SilentAim = false
+        
+        if RenderConnection then RenderConnection:Disconnect() end
+        if HeartbeatConnection then HeartbeatConnection:Disconnect() end
+        if SilentAimConnection then SilentAimConnection:Disconnect() end
+        
+        FOVCircle:Remove()
+        Rayfield:Destroy()
+    end
+})
+
+-- Camera & Respawn Handling
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    TargetCache.Part = nil
+    TargetLock.Player = nil
+    ScanCache.BestTarget = nil
+end)
+
+Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+    Camera = Workspace.CurrentCamera
+end)
