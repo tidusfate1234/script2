@@ -37,8 +37,6 @@ local Settings = {
     ESPNames = true,
     ESPDistance = true,
     ESPHealth = true,
-    ESPHeadDot = false,
-    ESPTracers = false,
     ESPColor = Color3.fromRGB(255, 0, 0),
     ESPTeamColor = Color3.fromRGB(0, 255, 0),
     ESPRefreshRate = 0.1,
@@ -55,7 +53,6 @@ FOVCircle.Transparency = 0.85
 FOVCircle.Visible = false
 
 local ESPCache = {}
-local ESPConnections = {}
 
 local RaycastParams = RaycastParams.new()
 RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -69,8 +66,7 @@ local LastESPUpdate = 0
 local FrameSkip = 0
 
 local RenderConnection
-local HeartbeatConnection
-local SilentAimConnections = {}
+local SilentAimConnection
 local OldNamecall = nil
 
 local function GetCharacter(Player)
@@ -93,36 +89,6 @@ local function IsTeammate(Player)
     if not Settings.TeamCheck then return false end
     if not Player.Team or not LocalPlayer.Team then return false end
     return Player.Team == LocalPlayer.Team
-end
-
-local function IsVisible(Part)
-    if not Settings.VisibilityCheck then return true end
-    if not Part then return false end
-    
-    local Origin = Camera.CFrame.Position
-    local Direction = (Part.Position - Origin)
-    local Distance = Direction.Magnitude
-    
-    if Distance > 500 then return false end
-    
-    local Char = LocalPlayer.Character
-    if Char then
-        RaycastParams.FilterDescendantsInstances = {Char}
-    end
-    
-    local Result = Workspace:Raycast(Origin, Direction.Unit * Distance, RaycastParams)
-    
-    if not Result then return true end
-    local HitInstance = Result.Instance
-    local HitModel = HitInstance:FindFirstAncestorWhichIsA("Model")
-    return HitModel == Part.Parent or HitInstance:IsDescendantOf(Part.Parent)
-end
-
-local function GetPredictedPosition(TargetPart)
-    if not TargetPart then return nil end
-    local Velocity = TargetPart.Velocity or TargetPart.AssemblyLinearVelocity or Vector3.zero
-    local PingCompensation = 0.05
-    return TargetPart.Position + (Velocity * PingCompensation)
 end
 
 local function CreateESP(Player)
@@ -166,16 +132,6 @@ local function CreateESP(Player)
     ESPCache[Player] = ESP
 end
 
-local function RemoveESP(Player)
-    local ESP = ESPCache[Player]
-    if ESP then
-        for _, drawing in pairs(ESP) do
-            pcall(function() drawing:Remove() end)
-        end
-        ESPCache[Player] = nil
-    end
-end
-
 local function UpdateESP()
     if not Settings.ESPEnabled then
         for _, ESP in pairs(ESPCache) do
@@ -190,7 +146,7 @@ local function UpdateESP()
     end
     
     FrameSkip = FrameSkip + 1
-    if FrameSkip < 3 then return end
+    if FrameSkip < 2 then return end
     FrameSkip = 0
     
     local CurrentTime = tick()
@@ -217,7 +173,6 @@ local function UpdateESP()
                     
                     if HeadOnScreen or RootOnScreen then
                         local BoxHeight = (Head.Position - Root.Position).Magnitude * 1.8
-                        local BoxWidth = BoxHeight * 0.5
                         local BoxTop = Head.Position + Vector3.new(0, BoxHeight * 0.15, 0)
                         local BoxBottom = Root.Position - Vector3.new(0, BoxHeight * 0.25, 0)
                         
@@ -292,7 +247,12 @@ local function UpdateESP()
                     end
                 end
             else
-                RemoveESP(Player)
+                if ESPCache[Player] then
+                    for _, drawing in pairs(ESPCache[Player]) do
+                        pcall(function() drawing:Remove() end)
+                    end
+                    ESPCache[Player] = nil
+                end
             end
         end
     end
@@ -323,7 +283,7 @@ local function FindTarget()
         end
         LockedTarget = nil
         LockedPlayer = nil
-    end
+    fi
     
     local BestTarget = nil
     local BestPlayer = nil
@@ -355,33 +315,10 @@ local function FindTarget()
     return LockedTarget, LockedPlayer
 end
 
-local function TriggerBotCheck()
-    if not (Settings.TriggerBot and Settings.Enabled) then return end
-    if not ShouldHit() then return end
-    
-    local CurrentTime = tick()
-    if CurrentTime - LastTriggerTime < Settings.TriggerDelay then return end
-    
-    local Character = GetCharacter(LocalPlayer)
-    if not Character then return end
-    
-    local Target = LockedTarget
-    if not Target then return end
-    
-    if Settings.AutoShoot then
-        LastTriggerTime = CurrentTime
-        local MousePos = UserInputService:GetMouseLocation()
-        VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, true, game, 1)
-        task.wait(0.01)
-        VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, false, game, 1)
-    end
-end
-
 local function SetupSilentAim()
-    for _, conn in ipairs(SilentAimConnections) do
-        pcall(function() conn:Disconnect() end)
+    if SilentAimConnection then
+        pcall(function() SilentAimConnection:Disconnect() end)
     end
-    SilentAimConnections = {}
     
     local Success, Err = pcall(function()
         OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
@@ -395,8 +332,6 @@ local function SetupSilentAim()
                         local Target = LockedTarget
                         if Target then
                             local TargetPos = Target.Position
-                            local Velocity = Target.Velocity or Target.AssemblyLinearVelocity or Vector3.zero
-                            TargetPos = TargetPos + (Velocity * 0.05)
                             
                             for i, Arg in pairs(Args) do
                                 if typeof(Arg) == "Vector3" then
@@ -425,24 +360,7 @@ local function SetupSilentAim()
     end)
 end
 
-local function SetupPlayerTracking()
-    for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= LocalPlayer then
-            CreateESP(Player)
-        end
-    end
-    
-    table.insert(ESPConnections, Players.PlayerAdded:Connect(function(Player)
-        CreateESP(Player)
-    end))
-    
-    table.insert(ESPConnections, Players.PlayerRemoving:Connect(function(Player)
-        RemoveESP(Player)
-    end))
-end
-
 SetupSilentAim()
-SetupPlayerTracking()
 
 RenderConnection = RunService.RenderStepped:Connect(function()
     UpdateESP()
@@ -459,43 +377,156 @@ RenderConnection = RunService.RenderStepped:Connect(function()
 
     if not Settings.SilentAim and Target then
         if ShouldHit() then
-            local TargetPos = Target.Position
-            local Velocity = Target.Velocity or Target.AssemblyLinearVelocity or Vector3.zero
-            TargetPos = TargetPos + (Velocity * 0.05)
-            Camera.CFrame = CFrame.new(Camera.CFrame.Position, TargetPos)
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, Target.Position)
         end
     end
 
-    TriggerBotCheck()
+    if Settings.TriggerBot and Settings.Enabled and Settings.AutoShoot then
+        local CurrentTime = tick()
+        if CurrentTime - LastTriggerTime >= Settings.TriggerDelay then
+            if Target and ShouldHit() then
+                LastTriggerTime = CurrentTime
+                local MousePos = UserInputService:GetMouseLocation()
+                VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, true, game, 1)
+                task.wait(0.01)
+                VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, false, game, 1)
+            end
+        end
+    end
 end)
 
-Tab:CreateToggle({ Name = "Aimbot Enabled", CurrentValue = false, Callback = function(v) Settings.Enabled = v end })
-Tab:CreateToggle({ Name = "Silent Aim", CurrentValue = false, Callback = function(v) Settings.SilentAim = v end })
-Tab:CreateToggle({ Name = "Trigger Bot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v end })
-Tab:CreateToggle({ Name = "Auto Shoot", CurrentValue = false, Callback = function(v) Settings.AutoShoot = v end })
-Tab:CreateToggle({ Name = "Team Check", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end })
-Tab:CreateToggle({ Name = "Show FOV Circle", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end })
+local Toggle1 = Tab:CreateToggle({
+    Name = "Aimbot Enabled",
+    CurrentValue = false,
+    Callback = function(v) Settings.Enabled = v end
+})
 
-Tab:CreateSlider({ Name = "FOV Size", Range = {50, 500}, Increment = 5, CurrentValue = Settings.FOV, Callback = function(v) Settings.FOV = v end })
-Tab:CreateSlider({ Name = "Hit Chance", Range = {0, 100}, Increment = 1, CurrentValue = Settings.HitChance, Callback = function(v) Settings.HitChance = v end })
-Tab:CreateSlider({ Name = "Trigger Delay", Range = {0.001, 0.1}, Increment = 0.001, CurrentValue = Settings.TriggerDelay, Callback = function(v) Settings.TriggerDelay = v end })
+local Toggle2 = Tab:CreateToggle({
+    Name = "Silent Aim",
+    CurrentValue = false,
+    Callback = function(v) Settings.SilentAim = v end
+})
 
-Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, CurrentOption = {Settings.AimPart}, Callback = function(o) Settings.AimPart = o[1] end })
-Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; FOVCircle.Color = c end })
+local Toggle3 = Tab:CreateToggle({
+    Name = "Trigger Bot",
+    CurrentValue = false,
+    Callback = function(v) Settings.TriggerBot = v end
+})
 
-TabESP:CreateToggle({ Name = "ESP Enabled", CurrentValue = true, Callback = function(v) Settings.ESPEnabled = v end })
-TabESP:CreateToggle({ Name = "Boxes", CurrentValue = true, Callback = function(v) Settings.ESPBoxes = v end })
-TabESP:CreateToggle({ Name = "Names", CurrentValue = true, Callback = function(v) Settings.ESPNames = v end })
-TabESP:CreateToggle({ Name = "Distance", CurrentValue = true, Callback = function(v) Settings.ESPDistance = v end })
-TabESP:CreateToggle({ Name = "Health Bar", CurrentValue = true, Callback = function(v) Settings.ESPHealth = v end })
-TabESP:CreateSlider({ Name = "ESP Refresh Rate", Range = {0.05, 0.5}, Increment = 0.01, CurrentValue = Settings.ESPRefreshRate, Callback = function(v) Settings.ESPRefreshRate = v end })
+local Toggle4 = Tab:CreateToggle({
+    Name = "Auto Shoot",
+    CurrentValue = false,
+    Callback = function(v) Settings.AutoShoot = v end
+})
 
-TabESP:CreateColorPicker({ Name = "Enemy Color", Color = Settings.ESPColor, Callback = function(c) Settings.ESPColor = c end })
-TabESP:CreateColorPicker({ Name = "Team Color", Color = Settings.ESPTeamColor, Callback = function(c) Settings.ESPTeamColor = c end })
+local Toggle5 = Tab:CreateToggle({
+    Name = "Team Check",
+    CurrentValue = true,
+    Callback = function(v) Settings.TeamCheck = v end
+})
 
-TabSettings:CreateSlider({ Name = "Scan Interval", Range = {0.0001, 0.01}, Increment = 0.0001, CurrentValue = Settings.ScanInterval, Callback = function(v) Settings.ScanInterval = v end })
+local Toggle6 = Tab:CreateToggle({
+    Name = "Show FOV Circle",
+    CurrentValue = true,
+    Callback = function(v) Settings.ShowFOV = v end
+})
 
-Tab:CreateButton({
+local Slider1 = Tab:CreateSlider({
+    Name = "FOV Size",
+    Range = {50, 500},
+    Increment = 5,
+    CurrentValue = Settings.FOV,
+    Callback = function(v) Settings.FOV = v end
+})
+
+local Slider2 = Tab:CreateSlider({
+    Name = "Hit Chance",
+    Range = {0, 100},
+    Increment = 1,
+    CurrentValue = Settings.HitChance,
+    Callback = function(v) Settings.HitChance = v end
+})
+
+local Slider3 = Tab:CreateSlider({
+    Name = "Trigger Delay",
+    Range = {0.001, 0.1},
+    Increment = 0.001,
+    CurrentValue = Settings.TriggerDelay,
+    Callback = function(v) Settings.TriggerDelay = v end
+})
+
+local Dropdown1 = Tab:CreateDropdown({
+    Name = "Aim Part",
+    Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"},
+    CurrentOption = {Settings.AimPart},
+    Callback = function(o) Settings.AimPart = o[1] end
+})
+
+local ColorPicker1 = Tab:CreateColorPicker({
+    Name = "FOV Circle Color",
+    Color = Settings.FOVColor,
+    Callback = function(c) Settings.FOVColor = c; FOVCircle.Color = c end
+})
+
+local Toggle7 = TabESP:CreateToggle({
+    Name = "ESP Enabled",
+    CurrentValue = true,
+    Callback = function(v) Settings.ESPEnabled = v end
+})
+
+local Toggle8 = TabESP:CreateToggle({
+    Name = "Boxes",
+    CurrentValue = true,
+    Callback = function(v) Settings.ESPBoxes = v end
+})
+
+local Toggle9 = TabESP:CreateToggle({
+    Name = "Names",
+    CurrentValue = true,
+    Callback = function(v) Settings.ESPNames = v end
+})
+
+local Toggle10 = TabESP:CreateToggle({
+    Name = "Distance",
+    CurrentValue = true,
+    Callback = function(v) Settings.ESPDistance = v end
+})
+
+local Toggle11 = TabESP:CreateToggle({
+    Name = "Health Bar",
+    CurrentValue = true,
+    Callback = function(v) Settings.ESPHealth = v end
+})
+
+local Slider4 = TabESP:CreateSlider({
+    Name = "ESP Refresh Rate",
+    Range = {0.05, 0.5},
+    Increment = 0.01,
+    CurrentValue = Settings.ESPRefreshRate,
+    Callback = function(v) Settings.ESPRefreshRate = v end
+})
+
+local ColorPicker2 = TabESP:CreateColorPicker({
+    Name = "Enemy Color",
+    Color = Settings.ESPColor,
+    Callback = function(c) Settings.ESPColor = c end
+})
+
+local ColorPicker3 = TabESP:CreateColorPicker({
+    Name = "Team Color",
+    Color = Settings.ESPTeamColor,
+    Callback = function(c) Settings.ESPTeamColor = c end
+})
+
+local Slider5 = TabSettings:CreateSlider({
+    Name = "Scan Interval",
+    Range = {0.0001, 0.01},
+    Increment = 0.0001,
+    CurrentValue = Settings.ScanInterval,
+    Callback = function(v) Settings.ScanInterval = v end
+})
+
+local Button1 = Tab:CreateButton({
     Name = "Unload Script",
     Callback = function()
         Settings.Enabled = false
@@ -503,14 +534,9 @@ Tab:CreateButton({
         Settings.ESPEnabled = false
         
         if RenderConnection then RenderConnection:Disconnect() end
-        if HeartbeatConnection then HeartbeatConnection:Disconnect() end
         
-        for _, conn in ipairs(SilentAimConnections) do
-            pcall(function() conn:Disconnect() end)
-        end
-        
-        for _, conn in ipairs(ESPConnections) do
-            pcall(function() conn:Disconnect() end)
+        if SilentAimConnection then
+            pcall(function() SilentAimConnection:Disconnect() end)
         end
         
         for _, ESP in pairs(ESPCache) do
@@ -532,4 +558,23 @@ end)
 
 Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
     Camera = Workspace.CurrentCamera
+end)
+
+for _, Player in ipairs(Players:GetPlayers()) do
+    if Player ~= LocalPlayer then
+        CreateESP(Player)
+    end
+end
+
+Players.PlayerAdded:Connect(function(Player)
+    CreateESP(Player)
+end)
+
+Players.PlayerRemoving:Connect(function(Player)
+    if ESPCache[Player] then
+        for _, drawing in pairs(ESPCache[Player]) do
+            pcall(function() drawing:Remove() end)
+        end
+        ESPCache[Player] = nil
+    end
 end)
