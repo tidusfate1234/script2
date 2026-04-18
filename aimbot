@@ -1,0 +1,223 @@
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Aimbot V2 by West",
+    LoadingTitle = "Aimbot V2 by West",
+    LoadingSubtitle = "Arsenal",
+    ConfigurationSaving = {Enabled = false}
+})
+
+local Tab = Window:CreateTab("Main", 4483362458)
+
+local Enabled = false
+local SilentAim = false
+local TeamCheck = true
+local AimPart = "Head"
+local FOV = 120
+local Smooth = 0.12
+local Prediction = 0.13
+local ShowCircle = true
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+Mouse.TargetFilter = workspace
+
+local Circle = Drawing.new("Circle")
+Circle.Thickness = 2
+Circle.NumSides = 64
+Circle.Filled = false
+Circle.Color = Color3.fromRGB(255,0,255)
+Circle.Transparency = 0.85
+Circle.Visible = true
+
+local OldNamecall = nil
+local HookActive = false
+
+-- Raycast Params (modern & faster)
+local RaycastParams = RaycastParams.new()
+RaycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
+RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+RaycastParams.IgnoreWater = true
+
+local LastTargetUpdate = 0
+local CachedTarget = nil
+
+local function SameTeam(p)
+    if not TeamCheck then return false end
+    if not p.Team or not LocalPlayer.Team then return false end
+    return p.Team == LocalPlayer.Team
+end
+
+local function IsVisible(part)
+    local origin = Camera.CFrame.Position
+    local direction = (part.Position - origin) * 500
+    local result = workspace:Raycast(origin, direction, RaycastParams)
+    return result and result.Instance and result.Instance:IsDescendantOf(part.Parent)
+end
+
+local function GetClosest()
+    local now = tick()
+    if now - LastTargetUpdate < 0.08 and CachedTarget and CachedTarget.Parent then
+        return CachedTarget
+    end
+
+    local closest = nil
+    local shortest = FOV
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Humanoid") then
+            local hum = p.Character.Humanoid
+            if hum.Health <= 0 then continue end
+            if SameTeam(p) then continue end
+
+            local part = p.Character:FindFirstChild(AimPart) or p.Character:FindFirstChild("HumanoidRootPart")
+            if part then
+                if not IsVisible(part) then continue end
+
+                local vel = part.AssemblyLinearVelocity or Vector3.new()
+                local predictedPos = part.Position + (vel * Prediction)
+
+                local pos, onscreen = Camera:WorldToViewportPoint(predictedPos)
+                if onscreen then
+                    local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                    if dist < shortest then
+                        shortest = dist
+                        closest = part
+                    end
+                end
+            end
+        end
+    end
+
+    CachedTarget = closest
+    LastTargetUpdate = now
+    return closest
+end
+
+local function SetupSilentAim()
+    if HookActive then return end
+    HookActive = true
+
+    OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+
+        if SilentAim and Enabled and method == "FireServer" then
+            local name = self.Name:lower()
+            if name:find("bullet") or name:find("shoot") or name:find("fire") or name:find("hit") or name:find("damage") then
+                local targetPart = GetClosest()
+                if targetPart then
+                    local vel = targetPart.AssemblyLinearVelocity or Vector3.new()
+                    local predictedPos = targetPart.Position + (vel * Prediction)
+
+                    if #args >= 1 and typeof(args[1]) == "Vector3" then
+                        args[1] = predictedPos
+                    elseif #args >= 2 and typeof(args[2]) == "Vector3" then
+                        args[2] = predictedPos
+                    end
+                end
+            end
+        end
+
+        return OldNamecall(self, unpack(args))
+    end))
+end
+
+SetupSilentAim()
+
+local target = nil
+RunService.RenderStepped:Connect(function()
+    Circle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    Circle.Radius = FOV
+    Circle.Visible = ShowCircle and Enabled
+
+    if not Enabled then return end
+
+    if not SilentAim then
+        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+            target = GetClosest()
+            if target then
+                local goalCFrame = CFrame.new(Camera.CFrame.Position, target.Position)
+                Camera.CFrame = Camera.CFrame:Lerp(goalCFrame, Smooth)
+            end
+        else
+            target = nil
+        end
+    end
+end)
+
+Tab:CreateToggle({
+    Name = "Aimbot Enabled",
+    CurrentValue = false,
+    Callback = function(v) Enabled = v end
+})
+
+Tab:CreateToggle({
+    Name = "Silent Aim",
+    CurrentValue = false,
+    Callback = function(v) SilentAim = v end
+})
+
+Tab:CreateToggle({
+    Name = "Team Check",
+    CurrentValue = true,
+    Callback = function(v) TeamCheck = v end
+})
+
+Tab:CreateToggle({
+    Name = "Show FOV Circle",
+    CurrentValue = true,
+    Callback = function(v) ShowCircle = v end
+})
+
+Tab:CreateSlider({
+    Name = "FOV",
+    Range = {50, 500},
+    Increment = 5,
+    CurrentValue = FOV,
+    Callback = function(v) FOV = v end
+})
+
+Tab:CreateSlider({
+    Name = "Smoothness",
+    Range = {0.05, 1},
+    Increment = 0.01,
+    CurrentValue = Smooth,
+    Callback = function(v) Smooth = v end
+})
+
+Tab:CreateSlider({
+    Name = "Prediction",
+    Range = {0, 0.3},
+    Increment = 0.01,
+    CurrentValue = Prediction,
+    Callback = function(v) Prediction = v end
+})
+
+Tab:CreateDropdown({
+    Name = "Aim Part",
+    Options = {"Head", "HumanoidRootPart", "UpperTorso"},
+    CurrentOption = {"Head"},
+    Callback = function(opt) AimPart = opt[1] end
+})
+
+Tab:CreateColorPicker({
+    Name = "FOV Circle Color",
+    Color = Color3.fromRGB(255,0,255),
+    Callback = function(c) Circle.Color = c end
+})
+
+Tab:CreateButton({
+    Name = "Unload",
+    Callback = function()
+        if OldNamecall then
+            hookmetamethod(game, "__namecall", OldNamecall)
+        end
+        Circle:Remove()
+        Rayfield:Destroy()
+    end
+})
