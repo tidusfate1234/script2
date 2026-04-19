@@ -1,14 +1,16 @@
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Arsenal Aimbot V7 Fixed",
+    Name = "Arsenal Aimbot V6",
     LoadingTitle = "Arsenal Aimbot",
     LoadingSubtitle = "by West",
     ConfigurationSaving = { Enabled = false }
 })
 
-local Tab = Window:CreateTab("Main")
-local TabESP = Window:CreateTab("ESP")
+local Tab = Window:CreateTab("Main", 4483362458)
+local TabESP = Window:CreateTab("ESP", 4483362458)
+local TabSettings = Window:CreateTab("Settings", 4483362458)
+local TabWeapon = Window:CreateTab("Weapon", 4483362458)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -31,7 +33,7 @@ local Settings = {
     TriggerBot = false,
     AutoShoot = false,
     TriggerDelay = 0.01,
-    VisibilityCheck = true,
+    VisibilityCheck = false,
     ESPEnabled = true,
     ESPBoxes = true,
     ESPNames = true,
@@ -39,7 +41,13 @@ local Settings = {
     ESPHealth = true,
     ESPColor = Color3.fromRGB(255, 0, 0),
     ESPTeamColor = Color3.fromRGB(0, 255, 0),
-    HitChance = 100
+    ESPRefreshRate = 0.1,
+    HitChance = 100,
+    ScanInterval = 0.001,
+    InfiniteAmmo = false,
+    NoReload = false,
+    RapidFire = false,
+    FireRateMultiplier = 2
 }
 
 local FOVCircle = Drawing.new("Circle")
@@ -50,16 +58,27 @@ FOVCircle.Color = Settings.FOVColor
 FOVCircle.Transparency = 0.85
 FOVCircle.Visible = false
 
+local ESPCache = {}
+
 local RaycastParams = RaycastParams.new()
 RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 RaycastParams.IgnoreWater = true
 
-local ESPCache = {}
 local LockedTarget = nil
 local LockedPlayer = nil
+local LastScanTime = 0
 local LastTriggerTime = 0
-local OldNamecall
-local CreatingESP = {}
+local LastESPUpdate = 0
+local LastAmmoCheck = 0
+local FrameSkip = 0
+
+local RenderConnection
+local HeartbeatConnection
+local OldNamecall = nil
+
+local AmmoConnections = {}
+local CurrentAmmo = 0
+local MaxAmmo = 0
 
 local function GetCharacter(Player)
     local Char = Player.Character
@@ -83,32 +102,85 @@ local function IsTeammate(Player)
     return Player.Team == LocalPlayer.Team
 end
 
-local function IsVisible(Part)
-    if not Settings.VisibilityCheck then return true end
-    if not Part then return false end
-    
-    local Origin = Camera.CFrame.Position
-    local Direction = (Part.Position - Origin)
-    local Distance = Direction.Magnitude
-    
-    if Distance > 500 then return false end
-    
+local function GetCurrentWeapon()
     local Char = LocalPlayer.Character
-    if Char then
-        RaycastParams.FilterDescendantsInstances = {Char}
+    if not Char then return nil end
+    return Char:FindFirstChildWhichIsA("Tool")
+end
+
+local function UpdateAmmo()
+    if not Settings.InfiniteAmmo then return end
+    
+    local CurrentTime = tick()
+    if CurrentTime - LastAmmoCheck < 0.1 then return end
+    LastAmmoCheck = CurrentTime
+    
+    local Weapon = GetCurrentWeapon()
+    if not Weapon then return end
+    
+    local AmmoValue = Weapon:FindFirstChild("Ammo") or Weapon:FindFirstChild("ammo") or Weapon:FindFirstChild("CurrentAmmo")
+    local MaxAmmoValue = Weapon:FindFirstChild("MaxAmmo") or Weapon:FindFirstChild("maxAmmo") or Weapon:FindFirstChild("StoredAmmo")
+    
+    if AmmoValue and AmmoValue:IsA("IntValue") then
+        if MaxAmmoValue and MaxAmmoValue:IsA("IntValue") then
+            AmmoValue.Value = MaxAmmoValue.Value
+        else
+            AmmoValue.Value = 999
+        end
     end
     
-    local Result = Workspace:Raycast(Origin, Direction.Unit * Distance, RaycastParams)
+    local AmmoGui = Weapon:FindFirstChild("AmmoGui") or Weapon:FindFirstChild("AmmoDisplay")
+    if AmmoGui then
+        for _, v in pairs(AmmoGui:GetDescendants()) do
+            if v:IsA("TextLabel") and (v.Name:lower():find("ammo") or v.Text:find("/")) then
+                local parts = v.Text:split("/")
+                if #parts == 2 then
+                    local maxPart = tonumber(parts[2]) or 999
+                    v.Text = maxPart .. "/" .. maxPart
+                end
+            end
+        end
+    end
+end
+
+local function SetupInfiniteAmmo()
+    for _, conn in pairs(AmmoConnections) do
+        pcall(function() conn:Disconnect() end)
+    end
+    AmmoConnections = {}
     
-    if not Result then return true end
-    local HitInstance = Result.Instance
-    local HitModel = HitInstance:FindFirstAncestorWhichIsA("Model")
-    return HitModel == Part.Parent or HitInstance:IsDescendantOf(Part.Parent)
+    table.insert(AmmoConnections, LocalPlayer.CharacterAdded:Connect(function(Char)
+        Char.ChildAdded:Connect(function(Child)
+            if Child:IsA("Tool") and Settings.InfiniteAmmo then
+                task.wait(0.1)
+                UpdateAmmo()
+            end
+        end)
+    end))
+    
+    if Settings.NoReload then
+        pcall(function()
+            local OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
+                local Method = getnamecallmethod()
+                local Args = {...}
+                
+                if Method == "FireServer" and Settings.NoReload then
+                    if Self:IsA("RemoteEvent") then
+                        local Name = Self.Name:lower()
+                        if Name:find("reload") or Name:find("ammo") then
+                            return
+                        end
+                    end
+                end
+                
+                return OldNamecall(Self, unpack(Args))
+            end))
+        end)
+    end
 end
 
 local function CreateESP(Player)
-    if ESPCache[Player] or CreatingESP[Player] then return end
-    CreatingESP[Player] = true
+    if ESPCache[Player] then return end
     
     local ESP = {
         BoxOutline = Drawing.new("Square"),
@@ -146,21 +218,28 @@ local function CreateESP(Player)
     ESP.HealthFill.Visible = false
     
     ESPCache[Player] = ESP
-    CreatingESP[Player] = nil
 end
 
 local function UpdateESP()
     if not Settings.ESPEnabled then
         for _, ESP in pairs(ESPCache) do
-            if ESP.BoxOutline then ESP.BoxOutline.Visible = false end
-            if ESP.Box then ESP.Box.Visible = false end
-            if ESP.Name then ESP.Name.Visible = false end
-            if ESP.Distance then ESP.Distance.Visible = false end
-            if ESP.HealthBar then ESP.HealthBar.Visible = false end
-            if ESP.HealthFill then ESP.HealthFill.Visible = false end
+            ESP.BoxOutline.Visible = false
+            ESP.Box.Visible = false
+            ESP.Name.Visible = false
+            ESP.Distance.Visible = false
+            ESP.HealthBar.Visible = false
+            ESP.HealthFill.Visible = false
         end
         return
     end
+    
+    FrameSkip = FrameSkip + 1
+    if FrameSkip < 2 then return end
+    FrameSkip = 0
+    
+    local CurrentTime = tick()
+    if CurrentTime - LastESPUpdate < Settings.ESPRefreshRate then return end
+    LastESPUpdate = CurrentTime
     
     for _, Player in ipairs(Players:GetPlayers()) do
         if Player ~= LocalPlayer then
@@ -189,9 +268,7 @@ local function UpdateESP()
                         local BottomPos = Camera:WorldToViewportPoint(BoxBottom)
                         
                         if TopPos and BottomPos then
-                            local height = math.abs(TopPos.Y - BottomPos.Y)
-                            local width = height * 0.6
-                            local BoxSize = Vector2.new(width, height)
+                            local BoxSize = Vector2.new((BottomPos.X - TopPos.X) * 0.4, TopPos.Y - BottomPos.Y)
                             local BoxPosition = Vector2.new(TopPos.X - BoxSize.X * 0.5, TopPos.Y)
                             
                             if Settings.ESPBoxes then
@@ -249,20 +326,18 @@ local function UpdateESP()
                             end
                         end
                     else
-                        if ESP.BoxOutline then ESP.BoxOutline.Visible = false end
-                        if ESP.Box then ESP.Box.Visible = false end
-                        if ESP.Name then ESP.Name.Visible = false end
-                        if ESP.Distance then ESP.Distance.Visible = false end
-                        if ESP.HealthBar then ESP.HealthBar.Visible = false end
-                        if ESP.HealthFill then ESP.HealthFill.Visible = false end
+                        ESP.BoxOutline.Visible = false
+                        ESP.Box.Visible = false
+                        ESP.Name.Visible = false
+                        ESP.Distance.Visible = false
+                        ESP.HealthBar.Visible = false
+                        ESP.HealthFill.Visible = false
                     end
                 end
             else
                 if ESPCache[Player] then
-                    for _, obj in pairs(ESPCache[Player]) do
-                        if obj and obj.Remove then
-                            pcall(function() obj:Remove() end)
-                        end
+                    for _, drawing in pairs(ESPCache[Player]) do
+                        pcall(function() drawing:Remove() end)
                     end
                     ESPCache[Player] = nil
                 end
@@ -272,11 +347,17 @@ local function UpdateESP()
 end
 
 local function FindTarget()
+    local CurrentTime = tick()
+    if CurrentTime - LastScanTime < Settings.ScanInterval then 
+        return LockedTarget, LockedPlayer 
+    end
+    LastScanTime = CurrentTime
+    
     if LockedTarget and LockedPlayer then
         local LockChar = GetCharacter(LockedPlayer)
         if LockChar and not IsTeammate(LockedPlayer) then
             local LockPart = LockChar:FindFirstChild(Settings.AimPart) or LockChar:FindFirstChild("Head")
-            if LockPart and IsVisible(LockPart) then
+            if LockPart then
                 local ScreenPos, OnScreen = Camera:WorldToViewportPoint(LockPart.Position)
                 if OnScreen then
                     local ScreenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
@@ -302,7 +383,7 @@ local function FindTarget()
             local Character = GetCharacter(Player)
             if Character and not IsTeammate(Player) then
                 local TargetPart = Character:FindFirstChild(Settings.AimPart) or Character:FindFirstChild("Head")
-                if TargetPart and IsVisible(TargetPart) then
+                if TargetPart then
                     local ScreenPos, OnScreen = Camera:WorldToViewportPoint(TargetPart.Position)
                     if OnScreen then
                         local Distance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - ScreenCenter).Magnitude
@@ -322,60 +403,72 @@ local function FindTarget()
     return LockedTarget, LockedPlayer
 end
 
-pcall(function()
-    OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
-        local Method = getnamecallmethod()
-        local Args = {...}
-        
-        if Method == "FireServer" and Settings.Enabled and Settings.SilentAim and ShouldHit() then
-            if Self:IsA("RemoteEvent") then
-                local Parent = Self.Parent
-                if Parent and (Parent == ReplicatedStorage or Parent:FindFirstAncestorWhichIsA("Tool")) then
-                    local Target = LockedTarget
-                    if Target and IsVisible(Target) then
-                        local TargetPos = Target.Position
-                        local Velocity = Target.Velocity or Target.AssemblyLinearVelocity or Vector3.zero
-                        TargetPos = TargetPos + (Velocity * 0.05)
-                        
-                        for i = 1, #Args do
-                            local Arg = Args[i]
-                            if typeof(Arg) == "Vector3" then
-                                Args[i] = TargetPos
-                                break
-                            elseif typeof(Arg) == "CFrame" then
-                                Args[i] = CFrame.new(TargetPos)
-                                break
-                            elseif typeof(Arg) == "table" then
-                                if Arg.Position and typeof(Arg.Position) == "Vector3" then
-                                    Arg.Position = TargetPos
+local function SetupSilentAim()
+    local Success, Err = pcall(function()
+        OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
+            local Method = getnamecallmethod()
+            local Args = {...}
+            
+            if Method == "FireServer" and Settings.Enabled and Settings.SilentAim and ShouldHit() then
+                if Self:IsA("RemoteEvent") then
+                    local Parent = Self.Parent
+                    if Parent == ReplicatedStorage or (Parent and Parent:FindFirstAncestorWhichIsA("Tool")) then
+                        local Target = LockedTarget
+                        if Target then
+                            local TargetPos = Target.Position
+                            
+                            for i, Arg in pairs(Args) do
+                                if typeof(Arg) == "Vector3" then
+                                    Args[i] = TargetPos
                                     break
-                                elseif Arg.hit and Arg.hit.Position and typeof(Arg.hit.Position) == "Vector3" then
-                                    Arg.hit.Position = TargetPos
+                                elseif typeof(Arg) == "CFrame" then
+                                    Args[i] = CFrame.new(TargetPos)
                                     break
+                                elseif typeof(Arg) == "table" then
+                                    if Arg.Position and typeof(Arg.Position) == "Vector3" then
+                                        Arg.Position = TargetPos
+                                        break
+                                    elseif Arg.hit and Arg.hit.Position and typeof(Arg.hit.Position) == "Vector3" then
+                                        Arg.hit.Position = TargetPos
+                                        break
+                                    end
                                 end
                             end
                         end
                     end
                 end
             end
+            
+            return OldNamecall(Self, unpack(Args))
+        end))
+    end)
+end
+
+SetupSilentAim()
+SetupInfiniteAmmo()
+
+HeartbeatConnection = RunService.Heartbeat:Connect(function()
+    UpdateAmmo()
+    
+    if Settings.RapidFire and Settings.Enabled then
+        local Weapon = GetCurrentWeapon()
+        if Weapon then
+            local FireRate = Weapon:FindFirstChild("FireRate") or Weapon:FindFirstChild("fireRate")
+            if FireRate and FireRate:IsA("NumberValue") then
+                FireRate.Value = FireRate.Value / Settings.FireRateMultiplier
+            end
         end
-        
-        return OldNamecall(Self, unpack(Args))
-    end))
+    end
 end)
 
-RunService.RenderStepped:Connect(function()
+RenderConnection = RunService.RenderStepped:Connect(function()
     UpdateESP()
     
-    if Settings.Enabled then
-        local ViewportSize = Camera.ViewportSize
-        FOVCircle.Position = Vector2.new(ViewportSize.X / 2, ViewportSize.Y / 2)
-        FOVCircle.Radius = Settings.FOV
-        FOVCircle.Visible = Settings.ShowFOV
-        FOVCircle.Color = Settings.FOVColor
-    else
-        FOVCircle.Visible = false
-    end
+    local ViewportSize = Camera.ViewportSize
+    FOVCircle.Position = Vector2.new(ViewportSize.X / 2, ViewportSize.Y / 2)
+    FOVCircle.Radius = Settings.FOV
+    FOVCircle.Visible = Settings.Enabled and Settings.ShowFOV
+    FOVCircle.Color = Settings.FOVColor
 
     if not Settings.Enabled then return end
     
@@ -390,7 +483,7 @@ RunService.RenderStepped:Connect(function()
     if Settings.TriggerBot and Settings.Enabled and Settings.AutoShoot then
         local CurrentTime = tick()
         if CurrentTime - LastTriggerTime >= Settings.TriggerDelay then
-            if Target and ShouldHit() and IsVisible(Target) then
+            if Target and ShouldHit() then
                 LastTriggerTime = CurrentTime
                 local MousePos = UserInputService:GetMouseLocation()
                 VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, true, game, 1)
@@ -406,12 +499,13 @@ Tab:CreateToggle({ Name = "Silent Aim", CurrentValue = false, Callback = functio
 Tab:CreateToggle({ Name = "Trigger Bot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v end })
 Tab:CreateToggle({ Name = "Auto Shoot", CurrentValue = false, Callback = function(v) Settings.AutoShoot = v end })
 Tab:CreateToggle({ Name = "Team Check", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end })
-Tab:CreateToggle({ Name = "Visibility Check", CurrentValue = true, Callback = function(v) Settings.VisibilityCheck = v end })
 Tab:CreateToggle({ Name = "Show FOV Circle", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end })
+
 Tab:CreateSlider({ Name = "FOV Size", Range = {50, 500}, Increment = 5, CurrentValue = Settings.FOV, Callback = function(v) Settings.FOV = v end })
 Tab:CreateSlider({ Name = "Hit Chance", Range = {0, 100}, Increment = 1, CurrentValue = Settings.HitChance, Callback = function(v) Settings.HitChance = v end })
 Tab:CreateSlider({ Name = "Trigger Delay", Range = {0.001, 0.1}, Increment = 0.001, CurrentValue = Settings.TriggerDelay, Callback = function(v) Settings.TriggerDelay = v end })
-Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, CurrentOption = {"Head"}, Callback = function(o) Settings.AimPart = o[1] end })
+
+Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, CurrentOption = {Settings.AimPart}, Callback = function(o) Settings.AimPart = o[1] end })
 Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; FOVCircle.Color = c end })
 
 TabESP:CreateToggle({ Name = "ESP Enabled", CurrentValue = true, Callback = function(v) Settings.ESPEnabled = v end })
@@ -419,61 +513,39 @@ TabESP:CreateToggle({ Name = "Boxes", CurrentValue = true, Callback = function(v
 TabESP:CreateToggle({ Name = "Names", CurrentValue = true, Callback = function(v) Settings.ESPNames = v end })
 TabESP:CreateToggle({ Name = "Distance", CurrentValue = true, Callback = function(v) Settings.ESPDistance = v end })
 TabESP:CreateToggle({ Name = "Health Bar", CurrentValue = true, Callback = function(v) Settings.ESPHealth = v end })
+TabESP:CreateSlider({ Name = "ESP Refresh Rate", Range = {0.05, 0.5}, Increment = 0.01, CurrentValue = Settings.ESPRefreshRate, Callback = function(v) Settings.ESPRefreshRate = v end })
 TabESP:CreateColorPicker({ Name = "Enemy Color", Color = Settings.ESPColor, Callback = function(c) Settings.ESPColor = c end })
 TabESP:CreateColorPicker({ Name = "Team Color", Color = Settings.ESPTeamColor, Callback = function(c) Settings.ESPTeamColor = c end })
+
+TabWeapon:CreateToggle({ Name = "Infinite Ammo", CurrentValue = false, Callback = function(v) Settings.InfiniteAmmo = v; SetupInfiniteAmmo() end })
+TabWeapon:CreateToggle({ Name = "No Reload", CurrentValue = false, Callback = function(v) Settings.NoReload = v; SetupInfiniteAmmo() end })
+TabWeapon:CreateToggle({ Name = "Rapid Fire", CurrentValue = false, Callback = function(v) Settings.RapidFire = v end })
+TabWeapon:CreateSlider({ Name = "Fire Rate Multiplier", Range = {1, 10}, Increment = 0.5, CurrentValue = Settings.FireRateMultiplier, Callback = function(v) Settings.FireRateMultiplier = v end })
+
+TabSettings:CreateSlider({ Name = "Scan Interval", Range = {0.0001, 0.01}, Increment = 0.0001, CurrentValue = Settings.ScanInterval, Callback = function(v) Settings.ScanInterval = v end })
 
 Tab:CreateButton({ Name = "Unload Script", Callback = function()
     Settings.Enabled = false
     Settings.SilentAim = false
     Settings.ESPEnabled = false
+    Settings.InfiniteAmmo = false
+    
+    if RenderConnection then RenderConnection:Disconnect() end
+    if HeartbeatConnection then HeartbeatConnection:Disconnect() end
+    
+    for _, conn in pairs(AmmoConnections) do
+        pcall(function() conn:Disconnect() end)
+    end
     
     for _, ESP in pairs(ESPCache) do
-        for _, obj in pairs(ESP) do
-            if obj and obj.Remove then
-                pcall(function() obj:Remove() end)
-            end
+        for _, drawing in pairs(ESP) do
+            pcall(function() drawing:Remove() end)
         end
     end
     
     FOVCircle:Remove()
     Rayfield:Destroy()
 end})
-
-Settings.AimPart = "Head"
-
-for _, Player in ipairs(Players:GetPlayers()) do
-    if Player ~= LocalPlayer then
-        CreateESP(Player)
-    end
-end
-
-Players.PlayerAdded:Connect(function(Player)
-    CreateESP(Player)
-    Player.CharacterAdded:Connect(function()
-        if ESPCache[Player] then
-            for _, obj in pairs(ESPCache[Player]) do
-                if obj and obj.Remove then
-                    pcall(function() obj:Remove() end)
-                end
-            end
-            ESPCache[Player] = nil
-        end
-        task.wait(0.5)
-        CreateESP(Player)
-    end)
-end)
-
-Players.PlayerRemoving:Connect(function(Player)
-    if ESPCache[Player] then
-        for _, obj in pairs(ESPCache[Player]) do
-            if obj and obj.Remove then
-                pcall(function() obj:Remove() end)
-            end
-        end
-        ESPCache[Player] = nil
-    end
-    CreatingESP[Player] = nil
-end)
 
 LocalPlayer.CharacterAdded:Connect(function()
     task.wait(1)
@@ -483,4 +555,23 @@ end)
 
 Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
     Camera = Workspace.CurrentCamera
+end)
+
+for _, Player in ipairs(Players:GetPlayers()) do
+    if Player ~= LocalPlayer then
+        CreateESP(Player)
+    end
+end
+
+Players.PlayerAdded:Connect(function(Player)
+    CreateESP(Player)
+end)
+
+Players.PlayerRemoving:Connect(function(Player)
+    if ESPCache[Player] then
+        for _, drawing in pairs(ESPCache[Player]) do
+            pcall(function() drawing:Remove() end)
+        end
+        ESPCache[Player] = nil
+    end
 end)
