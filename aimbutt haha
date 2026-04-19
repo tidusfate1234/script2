@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/Siri
 local Window = Rayfield:CreateWindow({
     Name = "Arsenal Aimbot V9.5 - Fixed",
     LoadingTitle = "Arsenal Aimbot",
-    LoadingSubtitle = "by West • GDAN • DeepSeek",
+    LoadingSubtitle = "by West • Fixed UI",
     ConfigurationSaving = { Enabled = false }
 })
 
@@ -115,6 +115,7 @@ end
 
 local function IsTeammate(Player)
     if not Settings.TeamCheck then return false end
+    if not Player.Team or not LocalPlayer.Team then return false end
     return Player.Team == LocalPlayer.Team
 end
 
@@ -126,7 +127,8 @@ local function IsVisible(Part)
     local Distance = Direction.Magnitude
     if Distance > 650 then return false end
 
-    RaycastParams.FilterDescendantsInstances = {LocalPlayer.Character or {}}
+    local Char = LocalPlayer.Character
+    RaycastParams.FilterDescendantsInstances = Char and {Char} or {}
     local Result = Workspace:Raycast(Origin, Direction.Unit * Distance, RaycastParams)
     if not Result then return true end
     local HitModel = Result.Instance:FindFirstAncestorWhichIsA("Model")
@@ -190,19 +192,26 @@ local function SetupHooks()
                         local TargetPos = Target.Position
                         if Settings.Prediction > 0 then
                             local Vel = Target.Velocity or Target.AssemblyLinearVelocity or Vector3.zero
-                            TargetPos += Vel * Settings.Prediction
+                            TargetPos = TargetPos + Vel * Settings.Prediction
                         end
                         if math.random() < 0.15 then
-                            TargetPos += Vector3.new(math.random(-1,1), math.random(-0.5,0.5), math.random(-1,1))
+                            TargetPos = TargetPos + Vector3.new(math.random(-1,1), math.random(-1,1), math.random(-1,1))
                         end
 
                         for i = 1, #Args do
                             local Arg = Args[i]
-                            if typeof(Arg) == "Vector3" then Args[i] = TargetPos break
-                            elseif typeof(Arg) == "CFrame" then Args[i] = CFrame.new(TargetPos) break
+                            if typeof(Arg) == "Vector3" then
+                                Args[i] = TargetPos
+                                break
+                            elseif typeof(Arg) == "CFrame" then
+                                Args[i] = CFrame.new(TargetPos)
+                                break
                             elseif typeof(Arg) == "table" then
-                                if Arg.Position then Arg.Position = TargetPos
-                                elseif Arg.hit and Arg.hit.Position then Arg.hit.Position = TargetPos end
+                                if Arg.Position then
+                                    Arg.Position = TargetPos
+                                elseif Arg.hit and Arg.hit.Position then
+                                    Arg.hit.Position = TargetPos
+                                end
                                 break
                             end
                         end
@@ -213,7 +222,9 @@ local function SetupHooks()
 
         if Settings.NoReload and Method == "FireServer" then
             local Name = Self.Name:lower()
-            if Name:find("reload") or Name:find("ammo") then return end
+            if Name:find("reload") or Name:find("ammo") then
+                return
+            end
         end
 
         return OldNamecall(Self, unpack(Args))
@@ -229,20 +240,36 @@ local function CreateESP(Player)
         HealthBar = Drawing.new("Square"), HealthFill = Drawing.new("Square"),
         HeadDot = Drawing.new("Circle"), Snapline = Drawing.new("Line")
     }
-    ESP.BoxOutline.Thickness = 3; ESP.BoxOutline.Filled = false; ESP.BoxOutline.Color = Color3.new(0,0,0)
-    ESP.Box.Thickness = 1; ESP.Box.Filled = false
-    ESP.Name.Size = 13; ESP.Name.Center = true; ESP.Name.Outline = true; ESP.Name.Font = 2
-    ESP.Distance.Size = 12; ESP.Distance.Center = true; ESP.Distance.Outline = true
-    ESP.HealthBar.Thickness = 1; ESP.HealthBar.Filled = false; ESP.HealthBar.Color = Color3.new(0,0,0)
-    ESP.HealthFill.Thickness = 1; ESP.HealthFill.Filled = true
-    ESP.HeadDot.Radius = 4; ESP.HeadDot.Filled = true
+    ESP.BoxOutline.Thickness = 3
+    ESP.BoxOutline.Filled = false
+    ESP.BoxOutline.Color = Color3.new(0,0,0)
+    ESP.Box.Thickness = 1
+    ESP.Box.Filled = false
+    ESP.Name.Size = 13
+    ESP.Name.Center = true
+    ESP.Name.Outline = true
+    ESP.Name.Font = 2
+    ESP.Distance.Size = 12
+    ESP.Distance.Center = true
+    ESP.Distance.Outline = true
+    ESP.HealthBar.Thickness = 1
+    ESP.HealthBar.Filled = false
+    ESP.HealthBar.Color = Color3.new(0,0,0)
+    ESP.HealthFill.Thickness = 1
+    ESP.HealthFill.Filled = true
+    ESP.HeadDot.Radius = 4
+    ESP.HeadDot.Filled = true
     ESP.Snapline.Thickness = 1
     ESPCache[Player] = ESP
 end
 
 local function UpdateESP()
     if not Settings.ESPEnabled then
-        for _, esp in pairs(ESPCache) do for _, d in pairs(esp) do d.Visible = false end end
+        for _, esp in pairs(ESPCache) do
+            for _, d in pairs(esp) do
+                d.Visible = false
+            end
+        end
         return
     end
     local now = tick()
@@ -254,7 +281,9 @@ local function UpdateESP()
         local Character = GetCharacter(Player)
         if not Character then
             if ESPCache[Player] then
-                for _, d in pairs(ESPCache[Player]) do pcall(function() d:Remove() end) end
+                for _, d in pairs(ESPCache[Player]) do
+                    pcall(function() d:Remove() end)
+                end
                 ESPCache[Player] = nil
             end
             continue
@@ -301,7 +330,9 @@ local function UpdateESP()
                 ESP.Name.Position = Vector2.new(BoxPos.X + Width/2, BoxPos.Y - 20)
                 ESP.Name.Color = Color
                 ESP.Name.Visible = true
-            else ESP.Name.Visible = false end
+            else
+                ESP.Name.Visible = false
+            end
 
             if Settings.ESPDistance then
                 local Dist = math.floor((Camera.CFrame.Position - Root.Position).Magnitude)
@@ -309,7 +340,9 @@ local function UpdateESP()
                 ESP.Distance.Position = Vector2.new(BoxPos.X + Width/2, BoxPos.Y + Height + 4)
                 ESP.Distance.Color = Color
                 ESP.Distance.Visible = true
-            else ESP.Distance.Visible = false end
+            else
+                ESP.Distance.Visible = false
+            end
 
             if Settings.ESPHealth then
                 local hp = Humanoid.Health / Humanoid.MaxHealth
@@ -330,7 +363,9 @@ local function UpdateESP()
                 ESP.HeadDot.Position = Vector2.new(HeadPos.X, HeadPos.Y)
                 ESP.HeadDot.Color = Color
                 ESP.HeadDot.Visible = true
-            else ESP.HeadDot.Visible = false end
+            else
+                ESP.HeadDot.Visible = false
+            end
 
             if Settings.ESPSnaplines then
                 local vs = Camera.ViewportSize
@@ -338,7 +373,9 @@ local function UpdateESP()
                 ESP.Snapline.To = Vector2.new(Bottom.X, Bottom.Y)
                 ESP.Snapline.Color = Color
                 ESP.Snapline.Visible = true
-            else ESP.Snapline.Visible = false end
+            else
+                ESP.Snapline.Visible = false
+            end
         end
     end
 end
@@ -412,7 +449,6 @@ local function UpdateCrosshair()
     end
 end
 
--- Main loops
 RunService.Heartbeat:Connect(function()
     ForceInfiniteAmmo()
     ApplyWeaponMods()
@@ -458,13 +494,13 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ==================== UI CREATION (Fixed Order) ====================
-task.wait(0.5)  -- Important delay for Rayfield to fully initialize
+task.wait(0.5)
 
 Tab:CreateToggle({ Name = "Aimbot Enabled", CurrentValue = false, Callback = function(v) Settings.Enabled = v end })
 Tab:CreateToggle({ Name = "Silent Aim", CurrentValue = false, Callback = function(v) Settings.SilentAim = v end })
 Tab:CreateToggle({ Name = "Aim Assist", CurrentValue = false, Callback = function(v) Settings.AimAssist = v end })
-Tab:CreateToggle({ Name = "Trigger Bot + Auto Shoot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v Settings.AutoShoot = v end })
+Tab:CreateToggle({ Name = "Trigger Bot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v end })
+Tab:CreateToggle({ Name = "Auto Shoot", CurrentValue = false, Callback = function(v) Settings.AutoShoot = v end })
 Tab:CreateToggle({ Name = "Team Check", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end })
 Tab:CreateToggle({ Name = "Visibility Check", CurrentValue = true, Callback = function(v) Settings.VisibilityCheck = v end })
 Tab:CreateToggle({ Name = "Show FOV Circle", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end })
@@ -475,8 +511,9 @@ Tab:CreateSlider({ Name = "Prediction", Range = {0, 0.3}, Increment = 0.01, Curr
 Tab:CreateSlider({ Name = "Smoothing", Range = {0.05, 1}, Increment = 0.05, CurrentValue = 0.25, Callback = function(v) Settings.Smoothing = v end })
 Tab:CreateSlider({ Name = "Aim Assist Strength", Range = {0.05, 0.5}, Increment = 0.05, CurrentValue = 0.35, Callback = function(v) Settings.AimAssistStrength = v end })
 Tab:CreateSlider({ Name = "Trigger Delay", Range = {0.001, 0.15}, Increment = 0.001, CurrentValue = 0.01, Callback = function(v) Settings.TriggerDelay = v end })
+
 Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "UpperTorso", "HumanoidRootPart", "LowerTorso"}, CurrentOption = {"Head"}, Callback = function(o) Settings.AimPart = o[1] end })
-Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c FOVCircle.Color = c end })
+Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; FOVCircle.Color = c end })
 
 TabESP:CreateToggle({ Name = "ESP Enabled", CurrentValue = true, Callback = function(v) Settings.ESPEnabled = v end })
 TabESP:CreateToggle({ Name = "Boxes", CurrentValue = true, Callback = function(v) Settings.ESPBoxes = v end })
@@ -530,7 +567,6 @@ Tab:CreateButton({ Name = "Unload Script", Callback = function()
     Rayfield:Destroy()
 end})
 
--- Initial ESP
 for _, p in ipairs(Players:GetPlayers()) do
     if p ~= LocalPlayer then CreateESP(p) end
 end
