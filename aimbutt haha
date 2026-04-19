@@ -179,56 +179,65 @@ local function ApplyWeaponMods()
 end
 
 local function SetupHooks()
-    OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
-        local Method = getnamecallmethod()
-        local Args = {...}
+    pcall(function()
+        local mt = getrawmetatable(game)
+        local old = mt.__namecall
+        setreadonly(mt, false)
+        
+        mt.__namecall = newcclosure(function(Self, ...)
+            local Method = getnamecallmethod()
+            local Args = {...}
 
-        if Method == "FireServer" and Settings.Enabled and Settings.SilentAim and ShouldHit() then
-            if Self:IsA("RemoteEvent") then
-                local Name = Self.Name:lower()
-                if Name:find("shoot") or Name:find("fire") or Name:find("bullet") or (Self.Parent and Self.Parent:IsA("Tool")) then
-                    local Target = LockedTarget
-                    if Target and IsVisible(Target) then
-                        local TargetPos = Target.Position
-                        if Settings.Prediction > 0 then
-                            local Vel = Target.Velocity or Target.AssemblyLinearVelocity or Vector3.zero
-                            TargetPos = TargetPos + Vel * Settings.Prediction
-                        end
-                        if math.random() < 0.15 then
-                            TargetPos = TargetPos + Vector3.new(math.random(-1,1), math.random(-1,1), math.random(-1,1))
-                        end
+            if Method == "FireServer" and Settings.Enabled and Settings.SilentAim and ShouldHit() then
+                if Self:IsA("RemoteEvent") then
+                    local Name = Self.Name:lower()
+                    if Name:find("shoot") or Name:find("fire") or Name:find("bullet") or (Self.Parent and Self.Parent:IsA("Tool")) then
+                        local Target = LockedTarget
+                        if Target and IsVisible(Target) then
+                            local TargetPos = Target.Position
+                            if Settings.Prediction > 0 then
+                                local Vel = Target.Velocity or Target.AssemblyLinearVelocity or Vector3.zero
+                                TargetPos = TargetPos + Vel * Settings.Prediction
+                            end
+                            if math.random() < 0.15 then
+                                TargetPos = TargetPos + Vector3.new(math.random(-1,1), math.random(-1,1), math.random(-1,1))
+                            end
 
-                        for i = 1, #Args do
-                            local Arg = Args[i]
-                            if typeof(Arg) == "Vector3" then
-                                Args[i] = TargetPos
-                                break
-                            elseif typeof(Arg) == "CFrame" then
-                                Args[i] = CFrame.new(TargetPos)
-                                break
-                            elseif typeof(Arg) == "table" then
-                                if Arg.Position then
-                                    Arg.Position = TargetPos
-                                elseif Arg.hit and Arg.hit.Position then
-                                    Arg.hit.Position = TargetPos
+                            for i = 1, #Args do
+                                local Arg = Args[i]
+                                if typeof(Arg) == "Vector3" then
+                                    Args[i] = TargetPos
+                                    break
+                                elseif typeof(Arg) == "CFrame" then
+                                    Args[i] = CFrame.new(TargetPos)
+                                    break
+                                elseif typeof(Arg) == "table" then
+                                    if Arg.Position then
+                                        Arg.Position = TargetPos
+                                    elseif Arg.hit and Arg.hit.Position then
+                                        Arg.hit.Position = TargetPos
+                                    end
+                                    break
                                 end
-                                break
                             end
                         end
                     end
                 end
             end
-        end
 
-        if Settings.NoReload and Method == "FireServer" then
-            local Name = Self.Name:lower()
-            if Name:find("reload") or Name:find("ammo") then
-                return
+            if Settings.NoReload and Method == "FireServer" then
+                local Name = Self.Name:lower()
+                if Name:find("reload") or Name:find("ammo") then
+                    return
+                end
             end
-        end
 
-        return OldNamecall(Self, unpack(Args))
-    end))
+            return old(Self, unpack(Args))
+        end)
+        
+        setreadonly(mt, true)
+        OldNamecall = old
+    end)
 end
 SetupHooks()
 
@@ -494,7 +503,8 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-task.wait(0.5)
+-- UI Creation with delay
+task.wait(1)
 
 Tab:CreateToggle({ Name = "Aimbot Enabled", CurrentValue = false, Callback = function(v) Settings.Enabled = v end })
 Tab:CreateToggle({ Name = "Silent Aim", CurrentValue = false, Callback = function(v) Settings.SilentAim = v end })
@@ -512,7 +522,19 @@ Tab:CreateSlider({ Name = "Smoothing", Range = {0.05, 1}, Increment = 0.05, Curr
 Tab:CreateSlider({ Name = "Aim Assist Strength", Range = {0.05, 0.5}, Increment = 0.05, CurrentValue = 0.35, Callback = function(v) Settings.AimAssistStrength = v end })
 Tab:CreateSlider({ Name = "Trigger Delay", Range = {0.001, 0.15}, Increment = 0.001, CurrentValue = 0.01, Callback = function(v) Settings.TriggerDelay = v end })
 
-Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "UpperTorso", "HumanoidRootPart", "LowerTorso"}, CurrentOption = {"Head"}, Callback = function(o) Settings.AimPart = o[1] end })
+Tab:CreateDropdown({ 
+    Name = "Aim Part", 
+    Options = {"Head", "UpperTorso", "HumanoidRootPart", "LowerTorso"}, 
+    CurrentOption = {"Head"}, 
+    Callback = function(o) 
+        if typeof(o) == "table" then
+            Settings.AimPart = o[1]
+        else
+            Settings.AimPart = o
+        end
+    end 
+})
+
 Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; FOVCircle.Color = c end })
 
 TabESP:CreateToggle({ Name = "ESP Enabled", CurrentValue = true, Callback = function(v) Settings.ESPEnabled = v end })
@@ -552,7 +574,15 @@ Tab:CreateButton({ Name = "Unload Script", Callback = function()
     Settings.ThirdPerson = false
     Settings.FOVChanger = false
 
-    if OldNamecall then hookmetamethod(game, "__namecall", OldNamecall) end
+    if OldNamecall then
+        pcall(function()
+            local mt = getrawmetatable(game)
+            setreadonly(mt, false)
+            mt.__namecall = OldNamecall
+            setreadonly(mt, true)
+        end)
+    end
+    
     Camera.FieldOfView = OriginalFOV
     if LocalPlayer.Character then
         local Hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
@@ -564,7 +594,7 @@ Tab:CreateButton({ Name = "Unload Script", Callback = function()
     end
     for _, line in pairs(CrosshairLines) do pcall(function() line:Remove() end) end
     FOVCircle:Remove()
-    Rayfield:Destroy()
+    Window:Destroy()
 end})
 
 for _, p in ipairs(Players:GetPlayers()) do
