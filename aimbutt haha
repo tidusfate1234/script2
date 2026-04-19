@@ -1,15 +1,16 @@
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Arsenal Aimbot V7",
+    Name = "Arsenal Aimbot V9.5",
     LoadingTitle = "Arsenal Aimbot",
-    LoadingSubtitle = "by West",
+    LoadingSubtitle = "by West • GDAN • DeepSeek Merged & Fixed",
     ConfigurationSaving = { Enabled = false }
 })
 
 local Tab = Window:CreateTab("Main", 4483362458)
 local TabESP = Window:CreateTab("ESP", 4483362458)
 local TabWeapon = Window:CreateTab("Weapon", 4483362458)
+local TabVisuals = Window:CreateTab("Visuals", 4483362458)
 local TabSettings = Window:CreateTab("Settings", 4483362458)
 
 local Players = game:GetService("Players")
@@ -18,13 +19,13 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualInputManager = game:GetService("VirtualInputManager")
-
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local Settings = {
     Enabled = false,
     SilentAim = false,
+    AimAssist = false,
     TeamCheck = true,
     AimPart = "Head",
     FOV = 200,
@@ -34,32 +35,53 @@ local Settings = {
     AutoShoot = false,
     TriggerDelay = 0.01,
     VisibilityCheck = true,
+    Wallbang = false,
+    Prediction = 0.12,
+    Smoothing = 0.25,
+    AimAssistStrength = 0.35,
     ESPEnabled = true,
     ESPBoxes = true,
     ESPNames = true,
     ESPDistance = true,
     ESPHealth = true,
+    ESPHeadDot = false,
+    ESPSnaplines = false,
     ESPColor = Color3.fromRGB(255, 0, 0),
     ESPTeamColor = Color3.fromRGB(0, 255, 0),
-    ESPRefreshRate = 0.1,
-    HitChance = 100,
+    ESPRefreshRate = 0.07,
+    HitChance = 98,
     ScanInterval = 0.001,
     InfiniteAmmo = false,
     NoReload = false,
     RapidFire = false,
-    FireRateMultiplier = 2
+    FireRateMultiplier = 2.0,
+    NoSpread = false,
+    NoRecoil = false,
+    InstantEquip = false,
+    Crosshair = false,
+    CrosshairSize = 18,
+    CrosshairColor = Color3.fromRGB(0, 255, 0),
+    CrosshairGap = 8,
+    ThirdPerson = false,
+    ThirdPersonDistance = 12,
+    FOVChanger = false,
+    CustomFOV = 90
 }
 
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 2
 FOVCircle.NumSides = 64
 FOVCircle.Filled = false
-FOVCircle.Color = Settings.FOVColor
 FOVCircle.Transparency = 0.85
-FOVCircle.Visible = false
+
+local CrosshairLines = { Top = Drawing.new("Line"), Bottom = Drawing.new("Line"), Left = Drawing.new("Line"), Right = Drawing.new("Line") }
+for _, line in pairs(CrosshairLines) do
+    line.Thickness = 2
+    line.Transparency = 1
+    line.Visible = false
+end
 
 local ESPCache = {}
-
 local RaycastParams = RaycastParams.new()
 RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 RaycastParams.IgnoreWater = true
@@ -69,13 +91,8 @@ local LockedPlayer = nil
 local LastScanTime = 0
 local LastTriggerTime = 0
 local LastESPUpdate = 0
-local LastAmmoCheck = 0
-local FrameSkip = 0
-
-local RenderConnection
-local HeartbeatConnection
 local OldNamecall = nil
-local AmmoConnections = {}
+local OriginalFOV = Camera.FieldOfView
 
 local function GetCharacter(Player)
     local Char = Player.Character
@@ -95,498 +112,427 @@ end
 
 local function IsTeammate(Player)
     if not Settings.TeamCheck then return false end
-    if not Player.Team or not LocalPlayer.Team then return false end
     return Player.Team == LocalPlayer.Team
 end
 
 local function IsVisible(Part)
     if not Settings.VisibilityCheck then return true end
     if not Part then return false end
-    
     local Origin = Camera.CFrame.Position
-    local Direction = (Part.Position - Origin)
+    local Direction = Part.Position - Origin
     local Distance = Direction.Magnitude
-    
-    if Distance > 500 then return false end
-    
-    local Char = LocalPlayer.Character
-    if Char then
-        RaycastParams.FilterDescendantsInstances = {Char}
-    end
-    
+    if Distance > 650 then return false end
+
+    RaycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
     local Result = Workspace:Raycast(Origin, Direction.Unit * Distance, RaycastParams)
-    
     if not Result then return true end
-    local HitInstance = Result.Instance
-    local HitModel = HitInstance:FindFirstAncestorWhichIsA("Model")
-    return HitModel == Part.Parent or HitInstance:IsDescendantOf(Part.Parent)
+    local HitModel = Result.Instance:FindFirstAncestorWhichIsA("Model")
+    return HitModel == Part.Parent
 end
 
 local function GetCurrentWeapon()
     local Char = LocalPlayer.Character
-    if not Char then return nil end
-    return Char:FindFirstChildWhichIsA("Tool")
+    return Char and Char:FindFirstChildWhichIsA("Tool")
 end
 
-local function UpdateAmmo()
+local function ForceInfiniteAmmo()
     if not Settings.InfiniteAmmo then return end
-    
-    local CurrentTime = tick()
-    if CurrentTime - LastAmmoCheck < 0.05 then return end
-    LastAmmoCheck = CurrentTime
-    
     local Weapon = GetCurrentWeapon()
     if not Weapon then return end
-    
-    local Ammo = Weapon:FindFirstChild("Ammo")
-    local StoredAmmo = Weapon:FindFirstChild("StoredAmmo")
-    local Bullets = Weapon:FindFirstChild("Bullets")
-    
-    if Ammo and Ammo:IsA("IntValue") then
-        Ammo.Value = 999
-    end
-    
-    if StoredAmmo and StoredAmmo:IsA("IntValue") then
-        StoredAmmo.Value = 999
-    end
-    
-    if Bullets and Bullets:IsA("IntValue") then
-        Bullets.Value = 999
-    end
-    
-    local Primary = Weapon:FindFirstChild("Primary")
-    if Primary then
-        local PrimaryAmmo = Primary:FindFirstChild("Ammo")
-        local PrimaryStored = Primary:FindFirstChild("StoredAmmo")
-        local PrimaryBullets = Primary:FindFirstChild("Bullets")
-        
-        if PrimaryAmmo and PrimaryAmmo:IsA("IntValue") then
-            PrimaryAmmo.Value = 999
-        end
-        if PrimaryStored and PrimaryStored:IsA("IntValue") then
-            PrimaryStored.Value = 999
-        end
-        if PrimaryBullets and PrimaryBullets:IsA("IntValue") then
-            PrimaryBullets.Value = 999
+    for _, v in ipairs(Weapon:GetDescendants()) do
+        if (v:IsA("IntValue") or v:IsA("NumberValue")) and v.Name:lower():match("ammo|bullet|clip|mag") then
+            v.Value = 9999
         end
     end
 end
 
-local function SetupInfiniteAmmo()
-    for _, conn in pairs(AmmoConnections) do
-        pcall(function() conn:Disconnect() end)
-    end
-    AmmoConnections = {}
-    
-    table.insert(AmmoConnections, LocalPlayer.CharacterAdded:Connect(function(Char)
-        Char.ChildAdded:Connect(function(Child)
-            if Child:IsA("Tool") and Settings.InfiniteAmmo then
-                task.wait(0.1)
-                UpdateAmmo()
+local function ApplyWeaponMods()
+    local Weapon = GetCurrentWeapon()
+    if not Weapon then return end
+
+    if Settings.NoSpread then
+        for _, v in ipairs(Weapon:GetDescendants()) do
+            if v:IsA("NumberValue") and v.Name:lower():match("spread|accuracy") then
+                v.Value = 0
             end
-        end)
+        end
+    end
+    if Settings.NoRecoil then
+        for _, v in ipairs(Weapon:GetDescendants()) do
+            if v:IsA("NumberValue") and v.Name:lower():match("recoil|kick") then
+                v.Value = 0
+            end
+        end
+    end
+    if Settings.RapidFire then
+        for _, v in ipairs(Weapon:GetDescendants()) do
+            if v:IsA("NumberValue") and v.Name:lower():match("firerate|fire_rate") then
+                v.Value = v.Value / Settings.FireRateMultiplier
+            end
+        end
+    end
+    if Settings.InstantEquip then
+        for _, v in ipairs(Weapon:GetDescendants()) do
+            if v:IsA("NumberValue") and v.Name:lower():match("equip|draw") then
+                v.Value = 0.01
+            end
+        end
+    end
+end
+
+local function SetupHooks()
+    OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
+        local Method = getnamecallmethod()
+        local Args = {...}
+
+        if Method == "FireServer" and Settings.Enabled and Settings.SilentAim and ShouldHit() then
+            if Self:IsA("RemoteEvent") then
+                local Name = Self.Name:lower()
+                if Name:find("shoot") or Name:find("fire") or Name:find("bullet") or (Self.Parent and Self.Parent:IsA("Tool")) then
+                    local Target = LockedTarget
+                    if Target and IsVisible(Target) then
+                        local TargetPos = Target.Position
+
+                        if Settings.Prediction > 0 then
+                            local Vel = Target.Velocity or Target.AssemblyLinearVelocity or Vector3.zero
+                            TargetPos = TargetPos + Vel * Settings.Prediction
+                        end
+
+                        -- Light randomization for anti-detection
+                        if math.random(1, 100) <= 15 then
+                            TargetPos = TargetPos + Vector3.new(math.random(-1,1), math.random(-0.5,0.5), math.random(-1,1))
+                        end
+
+                        for i = 1, #Args do
+                            local Arg = Args[i]
+                            if typeof(Arg) == "Vector3" then
+                                Args[i] = TargetPos
+                                break
+                            elseif typeof(Arg) == "CFrame" then
+                                Args[i] = CFrame.new(TargetPos)
+                                break
+                            elseif typeof(Arg) == "table" then
+                                if Arg.Position then Arg.Position = TargetPos
+                                elseif Arg.hit and Arg.hit.Position then Arg.hit.Position = TargetPos end
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        if Settings.NoReload and Method == "FireServer" then
+            local Name = Self.Name:lower()
+            if Name:find("reload") or Name:find("ammo") then return end
+        end
+
+        return OldNamecall(Self, unpack(Args))
     end))
 end
 
+SetupHooks()
+
+-- ESP (clean & efficient)
 local function CreateESP(Player)
     if ESPCache[Player] then return end
-    
     local ESP = {
-        BoxOutline = Drawing.new("Square"),
-        Box = Drawing.new("Square"),
-        Name = Drawing.new("Text"),
-        Distance = Drawing.new("Text"),
-        HealthBar = Drawing.new("Square"),
-        HealthFill = Drawing.new("Square")
+        BoxOutline = Drawing.new("Square"), Box = Drawing.new("Square"),
+        Name = Drawing.new("Text"), Distance = Drawing.new("Text"),
+        HealthBar = Drawing.new("Square"), HealthFill = Drawing.new("Square"),
+        HeadDot = Drawing.new("Circle"), Snapline = Drawing.new("Line")
     }
-    
-    ESP.BoxOutline.Thickness = 3
-    ESP.BoxOutline.Filled = false
-    ESP.BoxOutline.Visible = false
-    
-    ESP.Box.Thickness = 1
-    ESP.Box.Filled = false
-    ESP.Box.Visible = false
-    
-    ESP.Name.Size = 13
-    ESP.Name.Center = true
-    ESP.Name.Outline = true
-    ESP.Name.Visible = false
-    
-    ESP.Distance.Size = 12
-    ESP.Distance.Center = true
-    ESP.Distance.Outline = true
-    ESP.Distance.Visible = false
-    
-    ESP.HealthBar.Thickness = 1
-    ESP.HealthBar.Filled = false
-    ESP.HealthBar.Visible = false
-    
-    ESP.HealthFill.Thickness = 1
-    ESP.HealthFill.Filled = true
-    ESP.HealthFill.Visible = false
-    
+    -- setup properties (same as before, shortened for space)
+    ESP.BoxOutline.Thickness = 3; ESP.BoxOutline.Filled = false; ESP.BoxOutline.Color = Color3.new(0,0,0)
+    ESP.Box.Thickness = 1; ESP.Box.Filled = false
+    ESP.Name.Size = 13; ESP.Name.Center = true; ESP.Name.Outline = true; ESP.Name.Font = 2
+    ESP.Distance.Size = 12; ESP.Distance.Center = true; ESP.Distance.Outline = true
+    ESP.HealthBar.Thickness = 1; ESP.HealthBar.Filled = false; ESP.HealthBar.Color = Color3.new(0,0,0)
+    ESP.HealthFill.Thickness = 1; ESP.HealthFill.Filled = true
+    ESP.HeadDot.Radius = 4; ESP.HeadDot.Filled = true
+    ESP.Snapline.Thickness = 1
     ESPCache[Player] = ESP
 end
 
 local function UpdateESP()
     if not Settings.ESPEnabled then
-        for _, ESP in pairs(ESPCache) do
-            ESP.BoxOutline.Visible = false
-            ESP.Box.Visible = false
-            ESP.Name.Visible = false
-            ESP.Distance.Visible = false
-            ESP.HealthBar.Visible = false
-            ESP.HealthFill.Visible = false
-        end
+        for _, esp in pairs(ESPCache) do for _, d in pairs(esp) do d.Visible = false end end
         return
     end
-    
-    FrameSkip = FrameSkip + 1
-    if FrameSkip < 2 then return end
-    FrameSkip = 0
-    
-    local CurrentTime = tick()
-    if CurrentTime - LastESPUpdate < Settings.ESPRefreshRate then return end
-    LastESPUpdate = CurrentTime
-    
+
+    local now = tick()
+    if now - LastESPUpdate < Settings.ESPRefreshRate then return end
+    LastESPUpdate = now
+
     for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= LocalPlayer then
-            local Character = GetCharacter(Player)
-            if Character then
-                CreateESP(Player)
-                local ESP = ESPCache[Player]
-                if not ESP then continue end
-                
-                local IsTeam = IsTeammate(Player)
-                local Color = IsTeam and Settings.ESPTeamColor or Settings.ESPColor
-                local Head = Character:FindFirstChild("Head")
-                local Root = Character:FindFirstChild("HumanoidRootPart")
-                local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-                
-                if Head and Root and Humanoid then
-                    local HeadPos, HeadOnScreen = Camera:WorldToViewportPoint(Head.Position)
-                    local RootPos, RootOnScreen = Camera:WorldToViewportPoint(Root.Position)
-                    
-                    if HeadOnScreen or RootOnScreen then
-                        local BoxHeight = (Head.Position - Root.Position).Magnitude * 1.8
-                        local BoxTop = Head.Position + Vector3.new(0, BoxHeight * 0.15, 0)
-                        local BoxBottom = Root.Position - Vector3.new(0, BoxHeight * 0.25, 0)
-                        
-                        local TopPos = Camera:WorldToViewportPoint(BoxTop)
-                        local BottomPos = Camera:WorldToViewportPoint(BoxBottom)
-                        
-                        if TopPos and BottomPos then
-                            local height = math.abs(TopPos.Y - BottomPos.Y)
-                            local width = height * 0.6
-                            local BoxSize = Vector2.new(width, height)
-                            local BoxPosition = Vector2.new(TopPos.X - BoxSize.X * 0.5, TopPos.Y)
-                            
-                            if Settings.ESPBoxes then
-                                ESP.BoxOutline.Size = BoxSize
-                                ESP.BoxOutline.Position = BoxPosition
-                                ESP.BoxOutline.Color = Color3.new(0, 0, 0)
-                                ESP.BoxOutline.Visible = true
-                                
-                                ESP.Box.Size = BoxSize
-                                ESP.Box.Position = BoxPosition
-                                ESP.Box.Color = Color
-                                ESP.Box.Visible = true
-                            else
-                                ESP.BoxOutline.Visible = false
-                                ESP.Box.Visible = false
-                            end
-                            
-                            if Settings.ESPNames then
-                                ESP.Name.Text = Player.Name
-                                ESP.Name.Position = Vector2.new(BoxPosition.X + BoxSize.X * 0.5, BoxPosition.Y - 18)
-                                ESP.Name.Color = Color
-                                ESP.Name.Visible = true
-                            else
-                                ESP.Name.Visible = false
-                            end
-                            
-                            if Settings.ESPDistance then
-                                local Distance = math.floor((Camera.CFrame.Position - Root.Position).Magnitude)
-                                ESP.Distance.Text = Distance .. "m"
-                                ESP.Distance.Position = Vector2.new(BoxPosition.X + BoxSize.X * 0.5, BoxPosition.Y + BoxSize.Y + 4)
-                                ESP.Distance.Color = Color
-                                ESP.Distance.Visible = true
-                            else
-                                ESP.Distance.Visible = false
-                            end
-                            
-                            if Settings.ESPHealth and Humanoid then
-                                local HealthPercent = Humanoid.Health / Humanoid.MaxHealth
-                                local BarHeight = BoxSize.Y
-                                local BarWidth = 2
-                                local BarPos = Vector2.new(BoxPosition.X - BarWidth - 3, BoxPosition.Y)
-                                
-                                ESP.HealthBar.Size = Vector2.new(BarWidth, BarHeight)
-                                ESP.HealthBar.Position = BarPos
-                                ESP.HealthBar.Color = Color3.new(0, 0, 0)
-                                ESP.HealthBar.Visible = true
-                                
-                                ESP.HealthFill.Size = Vector2.new(BarWidth, BarHeight * HealthPercent)
-                                ESP.HealthFill.Position = Vector2.new(BarPos.X, BarPos.Y + BarHeight * (1 - HealthPercent))
-                                ESP.HealthFill.Color = Color3.new(1 - HealthPercent, HealthPercent, 0)
-                                ESP.HealthFill.Visible = true
-                            else
-                                ESP.HealthBar.Visible = false
-                                ESP.HealthFill.Visible = false
-                            end
-                        end
-                    else
-                        ESP.BoxOutline.Visible = false
-                        ESP.Box.Visible = false
-                        ESP.Name.Visible = false
-                        ESP.Distance.Visible = false
-                        ESP.HealthBar.Visible = false
-                        ESP.HealthFill.Visible = false
-                    end
-                end
-            else
-                if ESPCache[Player] then
-                    for _, drawing in pairs(ESPCache[Player]) do
-                        pcall(function() drawing:Remove() end)
-                    end
-                    ESPCache[Player] = nil
-                end
+        if Player == LocalPlayer then continue end
+        local Character = GetCharacter(Player)
+        if not Character then
+            if ESPCache[Player] then
+                for _, d in pairs(ESPCache[Player]) do pcall(function() d:Remove() end) end
+                ESPCache[Player] = nil
             end
+            continue
+        end
+
+        CreateESP(Player)
+        local ESP = ESPCache[Player]
+        local IsTeam = IsTeammate(Player)
+        local Color = IsTeam and Settings.ESPTeamColor or Settings.ESPColor
+
+        local Head = Character:FindFirstChild("Head")
+        local Root = Character:FindFirstChild("HumanoidRootPart")
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+
+        if Head and Root and Humanoid then
+            local HeadPos, OnScreen = Camera:WorldToViewportPoint(Head.Position)
+            if not OnScreen then
+                for _, d in pairs(ESP) do d.Visible = false end
+                continue
+            end
+
+            local BoxHeight = (Head.Position.Y - Root.Position.Y) * 2.2
+            local Top = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, BoxHeight*0.15, 0))
+            local Bottom = Camera:WorldToViewportPoint(Root.Position - Vector3.new(0, BoxHeight*0.3, 0))
+            local Height = math.abs(Top.Y - Bottom.Y)
+            local Width = Height * 0.55
+            local BoxPos = Vector2.new(Top.X - Width/2, Top.Y)
+
+            if Settings.ESPBoxes then
+                ESP.BoxOutline.Size = Vector2.new(Width, Height); ESP.BoxOutline.Position = BoxPos; ESP.BoxOutline.Visible = true
+                ESP.Box.Size = Vector2.new(Width, Height); ESP.Box.Position = BoxPos; ESP.Box.Color = Color; ESP.Box.Visible = true
+            else
+                ESP.BoxOutline.Visible = false; ESP.Box.Visible = false
+            end
+
+            if Settings.ESPNames then ESP.Name.Text = Player.Name; ESP.Name.Position = Vector2.new(BoxPos.X + Width/2, BoxPos.Y - 20); ESP.Name.Color = Color; ESP.Name.Visible = true else ESP.Name.Visible = false end
+            if Settings.ESPDistance then 
+                local Dist = math.floor((Camera.CFrame.Position - Root.Position).Magnitude)
+                ESP.Distance.Text = Dist .. "m"; ESP.Distance.Position = Vector2.new(BoxPos.X + Width/2, BoxPos.Y + Height + 4); ESP.Distance.Color = Color; ESP.Distance.Visible = true 
+            else ESP.Distance.Visible = false end
+
+            if Settings.ESPHealth then
+                local hp = Humanoid.Health / Humanoid.MaxHealth
+                local BarPos = Vector2.new(BoxPos.X - 6, BoxPos.Y)
+                ESP.HealthBar.Size = Vector2.new(3, Height); ESP.HealthBar.Position = BarPos; ESP.HealthBar.Visible = true
+                ESP.HealthFill.Size = Vector2.new(3, Height * hp); ESP.HealthFill.Position = Vector2.new(BarPos.X, BarPos.Y + Height*(1-hp)); ESP.HealthFill.Color = Color3.fromRGB(255*(1-hp), 255*hp, 0); ESP.HealthFill.Visible = true
+            else ESP.HealthBar.Visible = false; ESP.HealthFill.Visible = false end
+
+            if Settings.ESPHeadDot then
+                ESP.HeadDot.Position = Vector2.new(HeadPos.X, HeadPos.Y); ESP.HeadDot.Color = Color; ESP.HeadDot.Visible = true
+            else ESP.HeadDot.Visible = false end
+
+            if Settings.ESPSnaplines then
+                local vs = Camera.ViewportSize
+                ESP.Snapline.From = Vector2.new(vs.X/2, vs.Y); ESP.Snapline.To = Vector2.new(Bottom.X, Bottom.Y); ESP.Snapline.Color = Color; ESP.Snapline.Visible = true
+            else ESP.Snapline.Visible = false end
         end
     end
 end
 
 local function FindTarget()
-    local CurrentTime = tick()
-    if CurrentTime - LastScanTime < Settings.ScanInterval then 
-        return LockedTarget, LockedPlayer 
-    end
-    LastScanTime = CurrentTime
-    
+    local now = tick()
+    if now - LastScanTime < Settings.ScanInterval then return LockedTarget, LockedPlayer end
+    LastScanTime = now
+
     if LockedTarget and LockedPlayer then
-        local LockChar = GetCharacter(LockedPlayer)
-        if LockChar and not IsTeammate(LockedPlayer) then
-            local LockPart = LockChar:FindFirstChild(Settings.AimPart) or LockChar:FindFirstChild("Head")
-            if LockPart and IsVisible(LockPart) then
-                local ScreenPos, OnScreen = Camera:WorldToViewportPoint(LockPart.Position)
-                if OnScreen then
-                    local ScreenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-                    local Distance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - ScreenCenter).Magnitude
-                    if Distance < Settings.FOV then
-                        LockedTarget = LockPart
-                        return LockedTarget, LockedPlayer
-                    end
+        local Char = GetCharacter(LockedPlayer)
+        if Char and not IsTeammate(LockedPlayer) then
+            local Part = Char:FindFirstChild(Settings.AimPart) or Char:FindFirstChild("Head")
+            if Part and IsVisible(Part) then
+                local sp, on = Camera:WorldToViewportPoint(Part.Position)
+                if on and (Vector2.new(sp.X, sp.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude < Settings.FOV then
+                    return LockedTarget, LockedPlayer
                 end
             end
         end
         LockedTarget = nil
         LockedPlayer = nil
     end
-    
-    local BestTarget = nil
-    local BestPlayer = nil
-    local ShortestDistance = Settings.FOV
-    local ScreenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    
+
+    local bestDist = Settings.FOV
+    local bestTarget, bestPlayer = nil, nil
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+
     for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= LocalPlayer then
-            local Character = GetCharacter(Player)
-            if Character and not IsTeammate(Player) then
-                local TargetPart = Character:FindFirstChild(Settings.AimPart) or Character:FindFirstChild("Head")
-                if TargetPart and IsVisible(TargetPart) then
-                    local ScreenPos, OnScreen = Camera:WorldToViewportPoint(TargetPart.Position)
-                    if OnScreen then
-                        local Distance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - ScreenCenter).Magnitude
-                        if Distance < ShortestDistance then
-                            ShortestDistance = Distance
-                            BestTarget = TargetPart
-                            BestPlayer = Player
-                        end
-                    end
+        if Player == LocalPlayer then continue end
+        local Char = GetCharacter(Player)
+        if not Char or IsTeammate(Player) then continue end
+        local Part = Char:FindFirstChild(Settings.AimPart) or Char:FindFirstChild("Head")
+        if Part and IsVisible(Part) then
+            local sp, onScreen = Camera:WorldToViewportPoint(Part.Position)
+            if onScreen then
+                local dist = (Vector2.new(sp.X, sp.Y) - center).Magnitude
+                if dist < bestDist then
+                    bestDist = dist
+                    bestTarget = Part
+                    bestPlayer = Player
                 end
             end
         end
     end
-    
-    LockedTarget = BestTarget
-    LockedPlayer = BestPlayer
-    return LockedTarget, LockedPlayer
+
+    LockedTarget = bestTarget
+    LockedPlayer = bestPlayer
+    return bestTarget, bestPlayer
 end
 
-local function SetupSilentAim()
-    local Success, Err = pcall(function()
-        OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
-            local Method = getnamecallmethod()
-            local Args = {...}
-            
-            if Method == "FireServer" and Settings.Enabled and Settings.SilentAim and ShouldHit() then
-                if Self:IsA("RemoteEvent") then
-                    local Parent = Self.Parent
-                    if Parent == ReplicatedStorage or (Parent and Parent:FindFirstAncestorWhichIsA("Tool")) then
-                        local Target = LockedTarget
-                        if Target and IsVisible(Target) then
-                            local TargetPos = Target.Position
-                            
-                            for i = 1, #Args do
-                                local Arg = Args[i]
-                                if typeof(Arg) == "Vector3" then
-                                    Args[i] = TargetPos
-                                    break
-                                elseif typeof(Arg) == "CFrame" then
-                                    Args[i] = CFrame.new(TargetPos)
-                                    break
-                                elseif typeof(Arg) == "table" then
-                                    if Arg.Position and typeof(Arg.Position) == "Vector3" then
-                                        Arg.Position = TargetPos
-                                        break
-                                    elseif Arg.hit and Arg.hit.Position and typeof(Arg.hit.Position) == "Vector3" then
-                                        Arg.hit.Position = TargetPos
-                                        break
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            
-            return OldNamecall(Self, unpack(Args))
-        end))
-    end)
+local function UpdateCrosshair()
+    if not Settings.Crosshair then
+        for _, line in pairs(CrosshairLines) do line.Visible = false end
+        return
+    end
+    local vs = Camera.ViewportSize
+    local c = Vector2.new(vs.X/2, vs.Y/2)
+    local s, g = Settings.CrosshairSize, Settings.CrosshairGap
+    CrosshairLines.Top.From = Vector2.new(c.X, c.Y - g); CrosshairLines.Top.To = Vector2.new(c.X, c.Y - g - s)
+    CrosshairLines.Bottom.From = Vector2.new(c.X, c.Y + g); CrosshairLines.Bottom.To = Vector2.new(c.X, c.Y + g + s)
+    CrosshairLines.Left.From = Vector2.new(c.X - g, c.Y); CrosshairLines.Left.To = Vector2.new(c.X - g - s, c.Y)
+    CrosshairLines.Right.From = Vector2.new(c.X + g, c.Y); CrosshairLines.Right.To = Vector2.new(c.X + g + s, c.Y)
+    for _, line in pairs(CrosshairLines) do
+        line.Color = Settings.CrosshairColor
+        line.Visible = true
+    end
 end
 
-SetupSilentAim()
-SetupInfiniteAmmo()
+-- Main Loops
+RunService.Heartbeat:Connect(function()
+    ForceInfiniteAmmo()
+    ApplyWeaponMods()
 
-HeartbeatConnection = RunService.Heartbeat:Connect(function()
-    UpdateAmmo()
-    
-    if Settings.RapidFire and Settings.Enabled then
-        local Weapon = GetCurrentWeapon()
-        if Weapon then
-            local FireRate = Weapon:FindFirstChild("FireRate")
-            if FireRate and FireRate:IsA("NumberValue") then
-                FireRate.Value = FireRate.Value / Settings.FireRateMultiplier
-            end
-        end
+    if Settings.FOVChanger then
+        Camera.FieldOfView = Settings.CustomFOV
+    end
+
+    if Settings.ThirdPerson and LocalPlayer.Character then
+        local Hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if Hum then Hum.CameraOffset = Vector3.new(0, 0, -Settings.ThirdPersonDistance) end  -- negative for proper third person
     end
 end)
 
-RenderConnection = RunService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function()
     UpdateESP()
-    
-    local ViewportSize = Camera.ViewportSize
-    FOVCircle.Position = Vector2.new(ViewportSize.X / 2, ViewportSize.Y / 2)
+    UpdateCrosshair()
+
+    local vs = Camera.ViewportSize
+    FOVCircle.Position = Vector2.new(vs.X/2, vs.Y/2)
     FOVCircle.Radius = Settings.FOV
     FOVCircle.Visible = Settings.Enabled and Settings.ShowFOV
     FOVCircle.Color = Settings.FOVColor
 
     if not Settings.Enabled then return end
-    
-    local Target, Player = FindTarget()
 
-    if not Settings.SilentAim and Target and IsVisible(Target) then
-        if ShouldHit() then
-            Camera.CFrame = CFrame.new(Camera.CFrame.Position, Target.Position)
-        end
+    local Target, _ = FindTarget()
+    if not Target then return end
+
+    if not Settings.SilentAim and ShouldHit() then
+        local targetCF = CFrame.new(Camera.CFrame.Position, Target.Position)
+        Camera.CFrame = Camera.CFrame:Lerp(targetCF, Settings.Smoothing)
+    elseif Settings.AimAssist and not Settings.SilentAim and ShouldHit() then
+        local targetCF = CFrame.new(Camera.CFrame.Position, Target.Position)
+        Camera.CFrame = Camera.CFrame:Lerp(targetCF, Settings.AimAssistStrength)
     end
 
-    if Settings.TriggerBot and Settings.Enabled and Settings.AutoShoot then
-        local CurrentTime = tick()
-        if CurrentTime - LastTriggerTime >= Settings.TriggerDelay then
-            if Target and ShouldHit() and IsVisible(Target) then
-                LastTriggerTime = CurrentTime
-                local MousePos = UserInputService:GetMouseLocation()
-                VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, true, game, 1)
-                task.wait(0.01)
-                VirtualInputManager:SendMouseButtonEvent(MousePos.X, MousePos.Y, 0, false, game, 1)
-            end
+    if Settings.TriggerBot and Settings.AutoShoot and ShouldHit() and IsVisible(Target) then
+        local now = tick()
+        if now - LastTriggerTime >= Settings.TriggerDelay then
+            LastTriggerTime = now
+            local mp = UserInputService:GetMouseLocation()
+            VirtualInputManager:SendMouseButtonEvent(mp.X, mp.Y, 0, true, game, 1)
+            task.wait(0.008)
+            VirtualInputManager:SendMouseButtonEvent(mp.X, mp.Y, 0, false, game, 1)
         end
     end
 end)
 
+-- UI Creation (kept all your new options, fixed some names)
 Tab:CreateToggle({ Name = "Aimbot Enabled", CurrentValue = false, Callback = function(v) Settings.Enabled = v end })
 Tab:CreateToggle({ Name = "Silent Aim", CurrentValue = false, Callback = function(v) Settings.SilentAim = v end })
-Tab:CreateToggle({ Name = "Trigger Bot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v end })
-Tab:CreateToggle({ Name = "Auto Shoot", CurrentValue = false, Callback = function(v) Settings.AutoShoot = v end })
+Tab:CreateToggle({ Name = "Aim Assist", CurrentValue = false, Callback = function(v) Settings.AimAssist = v end })
+Tab:CreateToggle({ Name = "Trigger Bot + Auto Shoot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v; Settings.AutoShoot = v end })
 Tab:CreateToggle({ Name = "Team Check", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end })
 Tab:CreateToggle({ Name = "Visibility Check", CurrentValue = true, Callback = function(v) Settings.VisibilityCheck = v end })
 Tab:CreateToggle({ Name = "Show FOV Circle", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end })
 
-Tab:CreateSlider({ Name = "FOV Size", Range = {50, 500}, Increment = 5, CurrentValue = Settings.FOV, Callback = function(v) Settings.FOV = v end })
-Tab:CreateSlider({ Name = "Hit Chance", Range = {0, 100}, Increment = 1, CurrentValue = Settings.HitChance, Callback = function(v) Settings.HitChance = v end })
-Tab:CreateSlider({ Name = "Trigger Delay", Range = {0.001, 0.1}, Increment = 0.001, CurrentValue = Settings.TriggerDelay, Callback = function(v) Settings.TriggerDelay = v end })
-
-Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, CurrentOption = {Settings.AimPart}, Callback = function(o) Settings.AimPart = o[1] end })
+Tab:CreateSlider({ Name = "FOV Size", Range = {50, 600}, Increment = 5, CurrentValue = 200, Callback = function(v) Settings.FOV = v end })
+Tab:CreateSlider({ Name = "Hit Chance (%)", Range = {0, 100}, Increment = 1, CurrentValue = 98, Callback = function(v) Settings.HitChance = v end })
+Tab:CreateSlider({ Name = "Prediction", Range = {0, 0.3}, Increment = 0.01, CurrentValue = 0.12, Callback = function(v) Settings.Prediction = v end })
+Tab:CreateSlider({ Name = "Smoothing", Range = {0.05, 1}, Increment = 0.05, CurrentValue = 0.25, Callback = function(v) Settings.Smoothing = v end })
+Tab:CreateSlider({ Name = "Aim Assist Strength", Range = {0.05, 0.5}, Increment = 0.05, CurrentValue = 0.35, Callback = function(v) Settings.AimAssistStrength = v end })
+Tab:CreateSlider({ Name = "Trigger Delay", Range = {0.001, 0.15}, Increment = 0.001, CurrentValue = 0.01, Callback = function(v) Settings.TriggerDelay = v end })
+Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "UpperTorso", "HumanoidRootPart", "LowerTorso"}, CurrentOption = {"Head"}, Callback = function(o) Settings.AimPart = o[1] end })
 Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; FOVCircle.Color = c end })
 
+-- ESP Tab
 TabESP:CreateToggle({ Name = "ESP Enabled", CurrentValue = true, Callback = function(v) Settings.ESPEnabled = v end })
 TabESP:CreateToggle({ Name = "Boxes", CurrentValue = true, Callback = function(v) Settings.ESPBoxes = v end })
 TabESP:CreateToggle({ Name = "Names", CurrentValue = true, Callback = function(v) Settings.ESPNames = v end })
 TabESP:CreateToggle({ Name = "Distance", CurrentValue = true, Callback = function(v) Settings.ESPDistance = v end })
 TabESP:CreateToggle({ Name = "Health Bar", CurrentValue = true, Callback = function(v) Settings.ESPHealth = v end })
-TabESP:CreateSlider({ Name = "ESP Refresh Rate", Range = {0.05, 0.5}, Increment = 0.01, CurrentValue = Settings.ESPRefreshRate, Callback = function(v) Settings.ESPRefreshRate = v end })
+TabESP:CreateToggle({ Name = "Head Dot", CurrentValue = false, Callback = function(v) Settings.ESPHeadDot = v end })
+TabESP:CreateToggle({ Name = "Snaplines", CurrentValue = false, Callback = function(v) Settings.ESPSnaplines = v end })
+TabESP:CreateSlider({ Name = "ESP Refresh Rate", Range = {0.01, 0.2}, Increment = 0.01, CurrentValue = 0.07, Callback = function(v) Settings.ESPRefreshRate = v end })
 TabESP:CreateColorPicker({ Name = "Enemy Color", Color = Settings.ESPColor, Callback = function(c) Settings.ESPColor = c end })
 TabESP:CreateColorPicker({ Name = "Team Color", Color = Settings.ESPTeamColor, Callback = function(c) Settings.ESPTeamColor = c end })
 
-TabWeapon:CreateToggle({ Name = "Infinite Ammo", CurrentValue = false, Callback = function(v) Settings.InfiniteAmmo = v; SetupInfiniteAmmo() end })
+-- Weapon Tab
+TabWeapon:CreateToggle({ Name = "Infinite Ammo", CurrentValue = false, Callback = function(v) Settings.InfiniteAmmo = v end })
 TabWeapon:CreateToggle({ Name = "No Reload", CurrentValue = false, Callback = function(v) Settings.NoReload = v end })
 TabWeapon:CreateToggle({ Name = "Rapid Fire", CurrentValue = false, Callback = function(v) Settings.RapidFire = v end })
-TabWeapon:CreateSlider({ Name = "Fire Rate Multiplier", Range = {1, 10}, Increment = 0.5, CurrentValue = Settings.FireRateMultiplier, Callback = function(v) Settings.FireRateMultiplier = v end })
+TabWeapon:CreateToggle({ Name = "No Spread", CurrentValue = false, Callback = function(v) Settings.NoSpread = v end })
+TabWeapon:CreateToggle({ Name = "No Recoil", CurrentValue = false, Callback = function(v) Settings.NoRecoil = v end })
+TabWeapon:CreateToggle({ Name = "Instant Equip", CurrentValue = false, Callback = function(v) Settings.InstantEquip = v end })
+TabWeapon:CreateSlider({ Name = "Fire Rate Multiplier", Range = {1, 10}, Increment = 0.25, CurrentValue = 2.0, Callback = function(v) Settings.FireRateMultiplier = v end })
 
-TabSettings:CreateSlider({ Name = "Scan Interval", Range = {0.0001, 0.01}, Increment = 0.0001, CurrentValue = Settings.ScanInterval, Callback = function(v) Settings.ScanInterval = v end })
+-- Visuals Tab
+TabVisuals:CreateToggle({ Name = "Custom Crosshair", CurrentValue = false, Callback = function(v) Settings.Crosshair = v end })
+TabVisuals:CreateSlider({ Name = "Crosshair Size", Range = {5, 50}, Increment = 1, CurrentValue = 18, Callback = function(v) Settings.CrosshairSize = v end })
+TabVisuals:CreateSlider({ Name = "Crosshair Gap", Range = {0, 30}, Increment = 1, CurrentValue = 8, Callback = function(v) Settings.CrosshairGap = v end })
+TabVisuals:CreateColorPicker({ Name = "Crosshair Color", Color = Settings.CrosshairColor, Callback = function(c) Settings.CrosshairColor = c end })
+TabVisuals:CreateToggle({ Name = "Third Person", CurrentValue = false, Callback = function(v) Settings.ThirdPerson = v end })
+TabVisuals:CreateSlider({ Name = "Third Person Distance", Range = {5, 25}, Increment = 1, CurrentValue = 12, Callback = function(v) Settings.ThirdPersonDistance = v end })
+TabVisuals:CreateToggle({ Name = "FOV Changer", CurrentValue = false, Callback = function(v) Settings.FOVChanger = v end })
+TabVisuals:CreateSlider({ Name = "Custom FOV", Range = {50, 120}, Increment = 1, CurrentValue = 90, Callback = function(v) Settings.CustomFOV = v end })
+
+TabSettings:CreateSlider({ Name = "Scan Interval", Range = {0.0001, 0.01}, Increment = 0.0001, CurrentValue = 0.001, Callback = function(v) Settings.ScanInterval = v end })
 
 Tab:CreateButton({ Name = "Unload Script", Callback = function()
     Settings.Enabled = false
-    Settings.SilentAim = false
     Settings.ESPEnabled = false
-    Settings.InfiniteAmmo = false
-    
-    if RenderConnection then RenderConnection:Disconnect() end
-    if HeartbeatConnection then HeartbeatConnection:Disconnect() end
-    
-    for _, conn in pairs(AmmoConnections) do
-        pcall(function() conn:Disconnect() end)
+    Settings.Crosshair = false
+    Settings.ThirdPerson = false
+    Settings.FOVChanger = false
+
+    if OldNamecall then hookmetamethod(game, "__namecall", OldNamecall) end
+    Camera.FieldOfView = OriginalFOV
+
+    if LocalPlayer.Character then
+        local Hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if Hum then Hum.CameraOffset = Vector3.zero end
     end
-    
-    for _, ESP in pairs(ESPCache) do
-        for _, drawing in pairs(ESP) do
-            pcall(function() drawing:Remove() end)
-        end
+
+    for _, esp in pairs(ESPCache) do
+        for _, d in pairs(esp) do pcall(function() d:Remove() end) end
     end
-    
+    for _, line in pairs(CrosshairLines) do pcall(function() line:Remove() end) end
     FOVCircle:Remove()
     Rayfield:Destroy()
 end})
 
+-- Setup
 LocalPlayer.CharacterAdded:Connect(function()
-    task.wait(1)
+    task.wait(0.5)
     LockedTarget = nil
     LockedPlayer = nil
 end)
 
-Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
-    Camera = Workspace.CurrentCamera
-end)
-
-for _, Player in ipairs(Players:GetPlayers()) do
-    if Player ~= LocalPlayer then
-        CreateESP(Player)
-    end
+for _, p in ipairs(Players:GetPlayers()) do
+    if p ~= LocalPlayer then CreateESP(p) end
 end
-
-Players.PlayerAdded:Connect(function(Player)
-    CreateESP(Player)
-end)
-
-Players.PlayerRemoving:Connect(function(Player)
-    if ESPCache[Player] then
-        for _, drawing in pairs(ESPCache[Player]) do
-            pcall(function() drawing:Remove() end)
-        end
-        ESPCache[Player] = nil
+Players.PlayerAdded:Connect(CreateESP)
+Players.PlayerRemoving:Connect(function(p)
+    if ESPCache[p] then
+        for _, d in pairs(ESPCache[p]) do pcall(function() d:Remove() end) end
+        ESPCache[p] = nil
     end
 end)
-
-Settings.AimPart = "Head"
