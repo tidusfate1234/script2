@@ -1,0 +1,2 @@
+https://raw.githubusercontent.com/tidusfate1234/script2/refs/heads/main/gang
+loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
