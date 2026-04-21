@@ -1,0 +1,413 @@
+--[[
+    🌙 LUNAR HUB - SEAT FLING GUI
+    Select seat and target, adjust power
+]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local Settings = {
+    Seat = nil,
+    Target = nil,
+    VelocityPower = 9e9,
+    CFramePower = 31,
+    Enabled = false
+}
+
+local Velocity = nil
+local Connection = nil
+
+-- Colors
+local Colors = {
+    Primary = Color3.fromRGB(255, 85, 127),
+    Secondary = Color3.fromRGB(139, 92, 246),
+    Success = Color3.fromRGB(16, 185, 129),
+    Danger = Color3.fromRGB(239, 68, 68),
+    Dark = Color3.fromRGB(20, 20, 40),
+    Card = Color3.fromRGB(30, 30, 50),
+    Light = Color3.fromRGB(255, 255, 255),
+    Gray = Color3.fromRGB(167, 139, 250)
+}
+
+-- GUI Creation
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SeatFling"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 400, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -190)
+MainFrame.BackgroundColor3 = Colors.Dark
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundColor3 = Colors.Primary
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = TitleBar
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -40, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "🪑 Seat Fling"
+Title.TextColor3 = Colors.Light
+Title.TextSize = 18
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TitleBar
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.BackgroundColor3 = Colors.Danger
+CloseButton.Text = "✕"
+CloseButton.TextColor3 = Colors.Light
+CloseButton.TextSize = 16
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = TitleBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseButton
+
+CloseButton.MouseButton1Click:Connect(function()
+    if Connection then Connection:Disconnect() end
+    if Velocity then Velocity:Destroy() end
+    ScreenGui:Destroy()
+end)
+
+-- Content Frame
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, -30, 1, -60)
+ContentFrame.Position = UDim2.new(0, 15, 0, 50)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = MainFrame
+
+-- Seat Selection
+local SeatLabel = Instance.new("TextLabel")
+SeatLabel.Size = UDim2.new(1, 0, 0, 20)
+SeatLabel.BackgroundTransparency = 1
+SeatLabel.Text = "🪑 Seat: None (Click to select)"
+SeatLabel.TextColor3 = Colors.Gray
+SeatLabel.TextSize = 13
+SeatLabel.Font = Enum.Font.Gotham
+SeatLabel.TextXAlignment = Enum.TextXAlignment.Left
+SeatLabel.Parent = ContentFrame
+
+local SelectSeatButton = Instance.new("TextButton")
+SelectSeatButton.Size = UDim2.new(1, 0, 0, 35)
+SelectSeatButton.Position = UDim2.new(0, 0, 0, 25)
+SelectSeatButton.BackgroundColor3 = Colors.Secondary
+SelectSeatButton.Text = "Click to Select Seat"
+SelectSeatButton.TextColor3 = Colors.Light
+SelectSeatButton.TextSize = 14
+SelectSeatButton.Font = Enum.Font.Gotham
+SelectSeatButton.Parent = ContentFrame
+
+local SeatCorner = Instance.new("UICorner")
+SeatCorner.CornerRadius = UDim.new(0, 8)
+SeatCorner.Parent = SelectSeatButton
+
+-- Target Selection
+local TargetLabel = Instance.new("TextLabel")
+TargetLabel.Size = UDim2.new(1, 0, 0, 20)
+TargetLabel.Position = UDim2.new(0, 0, 0, 70)
+TargetLabel.BackgroundTransparency = 1
+TargetLabel.Text = "🎯 Target: None (Click to select)"
+TargetLabel.TextColor3 = Colors.Gray
+TargetLabel.TextSize = 13
+TargetLabel.Font = Enum.Font.Gotham
+TargetLabel.TextXAlignment = Enum.TextXAlignment.Left
+TargetLabel.Parent = ContentFrame
+
+local SelectTargetButton = Instance.new("TextButton")
+SelectTargetButton.Size = UDim2.new(1, 0, 0, 35)
+SelectTargetButton.Position = UDim2.new(0, 0, 0, 95)
+SelectTargetButton.BackgroundColor3 = Colors.Secondary
+SelectTargetButton.Text = "Click to Select Target"
+SelectTargetButton.TextColor3 = Colors.Light
+SelectTargetButton.TextSize = 14
+SelectTargetButton.Font = Enum.Font.Gotham
+SelectTargetButton.Parent = ContentFrame
+
+local TargetCorner = Instance.new("UICorner")
+TargetCorner.CornerRadius = UDim.new(0, 8)
+TargetCorner.Parent = SelectTargetButton
+
+-- Player List for Target
+local PlayerLabel = Instance.new("TextLabel")
+PlayerLabel.Size = UDim2.new(1, 0, 0, 20)
+PlayerLabel.Position = UDim2.new(0, 0, 0, 140)
+PlayerLabel.BackgroundTransparency = 1
+PlayerLabel.Text = "Or select player:"
+PlayerLabel.TextColor3 = Colors.Gray
+PlayerLabel.TextSize = 12
+PlayerLabel.Font = Enum.Font.Gotham
+PlayerLabel.TextXAlignment = Enum.TextXAlignment.Left
+PlayerLabel.Parent = ContentFrame
+
+local PlayerList = Instance.new("ScrollingFrame")
+PlayerList.Size = UDim2.new(1, 0, 0, 80)
+PlayerList.Position = UDim2.new(0, 0, 0, 165)
+PlayerList.BackgroundColor3 = Colors.Card
+PlayerList.BorderSizePixel = 0
+PlayerList.CanvasSize = UDim2.new(0, 0, 0, 0)
+PlayerList.ScrollBarThickness = 4
+PlayerList.Parent = ContentFrame
+
+local ListCorner = Instance.new("UICorner")
+ListCorner.CornerRadius = UDim.new(0, 8)
+ListCorner.Parent = PlayerList
+
+local PlayerButtons = {}
+
+local function refreshPlayerList()
+    for _, btn in ipairs(PlayerButtons) do
+        btn:Destroy()
+    end
+    PlayerButtons = {}
+    
+    local yPos = 0
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, -10, 0, 28)
+            btn.Position = UDim2.new(0, 5, 0, yPos)
+            btn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+            btn.Text = player.Name
+            btn.TextColor3 = Colors.Light
+            btn.TextSize = 13
+            btn.Font = Enum.Font.Gotham
+            btn.Parent = PlayerList
+            
+            local btnCorner = Instance.new("UICorner")
+            btnCorner.CornerRadius = UDim.new(0, 6)
+            btnCorner.Parent = btn
+            
+            btn.MouseButton1Click:Connect(function()
+                if player.Character then
+                    Settings.Target = player.Character:FindFirstChild("HumanoidRootPart")
+                    if Settings.Target then
+                        TargetLabel.Text = "🎯 Target: " .. player.Name .. " (HRP)"
+                        TargetLabel.TextColor3 = Colors.Success
+                    end
+                end
+            end)
+            
+            table.insert(PlayerButtons, btn)
+            yPos = yPos + 32
+        end
+    end
+    PlayerList.CanvasSize = UDim2.new(0, 0, 0, yPos + 5)
+end
+
+refreshPlayerList()
+
+-- Velocity Power
+local PowerLabel = Instance.new("TextLabel")
+PowerLabel.Size = UDim2.new(1, 0, 0, 20)
+PowerLabel.Position = UDim2.new(0, 0, 0, 255)
+PowerLabel.BackgroundTransparency = 1
+PowerLabel.Text = "⚡ Velocity Power: 9e9"
+PowerLabel.TextColor3 = Colors.Gray
+PowerLabel.TextSize = 12
+PowerLabel.Font = Enum.Font.Gotham
+PowerLabel.TextXAlignment = Enum.TextXAlignment.Left
+PowerLabel.Parent = ContentFrame
+
+local PowerSlider = Instance.new("Frame")
+PowerSlider.Size = UDim2.new(1, 0, 0, 6)
+PowerSlider.Position = UDim2.new(0, 0, 0, 278)
+PowerSlider.BackgroundColor3 = Colors.Card
+PowerSlider.BorderSizePixel = 0
+PowerSlider.Parent = ContentFrame
+
+local SliderCorner = Instance.new("UICorner")
+SliderCorner.CornerRadius = UDim.new(0, 3)
+SliderCorner.Parent = PowerSlider
+
+local PowerFill = Instance.new("Frame")
+PowerFill.Size = UDim2.new(1, 0, 1, 0)
+PowerFill.BackgroundColor3 = Colors.Primary
+PowerFill.BorderSizePixel = 0
+PowerFill.Parent = PowerSlider
+
+local FillCorner = Instance.new("UICorner")
+FillCorner.CornerRadius = UDim.new(0, 3)
+FillCorner.Parent = PowerFill
+
+-- Toggle Button
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(1, 0, 0, 40)
+ToggleButton.Position = UDim2.new(0, 0, 0, 295)
+ToggleButton.BackgroundColor3 = Colors.Success
+ToggleButton.Text = "▶ START FLING"
+ToggleButton.TextColor3 = Colors.Light
+ToggleButton.TextSize = 15
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Parent = ContentFrame
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 10)
+ToggleCorner.Parent = ToggleButton
+
+-- Selection Mode
+local selectionMode = nil
+
+SelectSeatButton.MouseButton1Click:Connect(function()
+    selectionMode = "seat"
+    SelectSeatButton.Text = "Click any seat/part..."
+    SelectSeatButton.BackgroundColor3 = Colors.Warning
+end)
+
+SelectTargetButton.MouseButton1Click:Connect(function()
+    selectionMode = "target"
+    SelectTargetButton.Text = "Click any part/player..."
+    SelectTargetButton.BackgroundColor3 = Colors.Warning
+end)
+
+-- Click detection
+local Mouse = LocalPlayer:GetMouse()
+Mouse.Button1Down:Connect(function()
+    if selectionMode == "seat" then
+        if Mouse.Target then
+            Settings.Seat = Mouse.Target
+            SeatLabel.Text = "🪑 Seat: " .. Mouse.Target.Name
+            SeatLabel.TextColor3 = Colors.Success
+            selectionMode = nil
+            SelectSeatButton.Text = "Click to Select Seat"
+            SelectSeatButton.BackgroundColor3 = Colors.Secondary
+        end
+    elseif selectionMode == "target" then
+        if Mouse.Target then
+            Settings.Target = Mouse.Target
+            TargetLabel.Text = "🎯 Target: " .. Mouse.Target.Name
+            TargetLabel.TextColor3 = Colors.Success
+            selectionMode = nil
+            SelectTargetButton.Text = "Click to Select Target"
+            SelectTargetButton.BackgroundColor3 = Colors.Secondary
+        end
+    end
+end)
+
+-- Slider dragging
+local dragging = false
+PowerSlider.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+    end
+end)
+
+PowerSlider.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mousePos = UserInputService:GetMouseLocation()
+        local sliderPos = PowerSlider.AbsolutePosition
+        local sliderSize = PowerSlider.AbsoluteSize
+        
+        local percent = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
+        local value = math.floor(percent * 20e9)
+        Settings.VelocityPower = value
+        PowerFill.Size = UDim2.new(percent, 0, 1, 0)
+        PowerLabel.Text = "⚡ Velocity Power: " .. value
+    end
+end)
+
+-- Toggle Fling
+ToggleButton.MouseButton1Click:Connect(function()
+    if not Settings.Seat then
+        ToggleButton.Text = "❌ SELECT A SEAT!"
+        task.wait(1)
+        ToggleButton.Text = Settings.Enabled and "⏹ STOP FLING" or "▶ START FLING"
+        return
+    end
+    
+    if not Settings.Target then
+        ToggleButton.Text = "❌ SELECT A TARGET!"
+        task.wait(1)
+        ToggleButton.Text = Settings.Enabled and "⏹ STOP FLING" or "▶ START FLING"
+        return
+    end
+    
+    Settings.Enabled = not Settings.Enabled
+    
+    if Settings.Enabled then
+        ToggleButton.Text = "⏹ STOP FLING"
+        ToggleButton.BackgroundColor3 = Colors.Danger
+        
+        if Velocity then Velocity:Destroy() end
+        
+        Velocity = Instance.new("BodyVelocity")
+        Velocity.P = 1e6
+        Velocity.MaxForce = Vector3.one * 1e6
+        Velocity.Velocity = Vector3.one * Settings.VelocityPower
+        Velocity.Parent = Settings.Seat
+        
+        if Connection then Connection:Disconnect() end
+        Connection = RunService.Heartbeat:Connect(function()
+            if Settings.Seat and Settings.Target and Settings.Seat.Parent and Settings.Target.Parent then
+                Settings.Seat.Velocity = Vector3.one * Settings.CFramePower
+                Settings.Seat.CFrame = Settings.Target.CFrame
+            else
+                Settings.Enabled = false
+                ToggleButton.Text = "▶ START FLING"
+                ToggleButton.BackgroundColor3 = Colors.Success
+                if Velocity then Velocity:Destroy() end
+                if Connection then Connection:Disconnect() end
+            end
+        end)
+    else
+        ToggleButton.Text = "▶ START FLING"
+        ToggleButton.BackgroundColor3 = Colors.Success
+        if Velocity then Velocity:Destroy() end
+        if Connection then Connection:Disconnect() end
+    end
+end)
+
+-- GUI Dragging
+local guiDragging = false
+local dragStart = nil
+local startPos = nil
+
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        guiDragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+    if guiDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+TitleBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        guiDragging = false
+    end
+end)
+
+-- Refresh players periodically
+Players.PlayerAdded:Connect(refreshPlayerList)
+Players.PlayerRemoving:Connect(refreshPlayerList)
