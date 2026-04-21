@@ -1,1 +1,382 @@
-local _0x0,_0x1,_0x2,_0x3,_0x4,_0x5,_0x6,_0x7,_0x8,_0x9,_0xa,_0xb,_0xc,_0xd,_0x84,_0xe,_0xf,_0x10,_0x11,_0x85,_0x12,_0x13,_0x14,_0x19,_0x1a,_0x1b,_0x22,_0x86,_0x24,_0x36,_0x88,_0x8b,_0x8c,_0x8d;local _0x95=3;while true do if _0x95 == 306 then _0x2:CreateToggle({Name=__0x96d(1),CurrentValue=false,Callback=function(_0x4c) _0xc.Enabled=_0x4c end});_0x95=313 elseif _0x95 == 134 then _0xd.NumSides=34 + 34 - 4;_0x95=141 elseif _0x95 == 338 then _0x2:CreateToggle({Name=__0x96d(2),CurrentValue=true,Callback=function(_0x4c) _0xc.TeamCheck=_0x4c end});_0x95=347 elseif _0x95 == 26 then _0x2=_0x1:CreateTab(__0x96d(3));_0x95=32 elseif _0x95 == 67 then _0x7=game:GetService(__0x96d(4));_0x95=73 elseif _0x95 == 325 then _0x2:CreateToggle({Name=__0x96d(5),CurrentValue=false,Callback=function(_0x4c) _0xc.AimAssist=_0x4c end});_0x95=332 elseif _0x95 == 89 then do local _0x83=91 end;_0x95=93 elseif _0x95 == 44 then if false then local _0x82=nil end;_0x95=54 elseif _0x95 == 239 then _0x1a=function(_0x15) local _0x90=4;while true do if _0x90 == 10 then if not _0xc.TeamCheck then return false end;_0x90=15 elseif _0x90 == 15 then if not _0x15.Team or not _0xb.Team then return false end;_0x90=25 elseif _0x90 == 4 then if false then local _0x52=nil end;_0x90=10 elseif _0x90 == 25 then return _0x15.Team == _0xb.Team else break end end end;_0x95=247 elseif _0x95 == 382 then _0x2:CreateSlider({Name=__0x96d(6),Range={1 - 1,86 + 47 - 33},Increment=2 - 1,CurrentValue=24 * 4 + 1,Callback=function(_0x4c) _0xc.HitChance=_0x4c end});_0x95=387 elseif _0x95 == 93 then _0xa=_0x7.CurrentCamera;_0x95=103 elseif _0x95 == 456 then _0x8c=math.random() * 0;_0x95=466 elseif _0x95 == 437 then _0x3:CreateToggle({Name=__0x96d(7),CurrentValue=true,Callback=function(_0x4c) _0xc.ESPEnabled=_0x4c end});_0x95=446 elseif _0x95 == 498 then _0x2:CreateButton({Name=__0x96d(8),Callback=function() _0xc.Enabled=false;_0xc.ESPEnabled=false;if _0x13 then hookmetamethod(game,__0x96d(9),_0x13) end;for _0x25,_0x23 in pairs(_0xf) do for _0x25,_0x26 in pairs(_0x23) do pcall(function() _0x26:Remove() end) end end;_0xd:Remove();_0x0:Destroy() end});_0x95=509 elseif _0x95 == 452 then _0x3:CreateToggle({Name=__0x96d(10),CurrentValue=true,Callback=function(_0x4c) _0xc.ESPNames=_0x4c end});_0x95=456 elseif _0x95 == 141 then _0xd.Filled=false;_0x95=149 elseif _0x95 == 414 then _0x2:CreateDropdown({Name=__0x96d(11),Options={__0x96d(12),__0x96d(13),__0x96d(14),__0x96d(15)},CurrentOption={__0x96d(16)},Callback=function(_0x4d) _0xc.AimPart=_0x4d[2 - 1] end});_0x95=421 elseif _0x95 == 446 then _0x3:CreateToggle({Name=__0x96d(17),CurrentValue=true,Callback=function(_0x4c) _0xc.ESPBoxes=_0x4c end});_0x95=452 elseif _0x95 == 281 then _0x13=hookmetamethod(game,__0x96d(18),newcclosure(function(_0x3f,...) local _0x40=getnamecallmethod();local _0x41={...};if _0x40 == __0x96d(19) and _0xc.Enabled and _0xc.SilentAim and _0x19() then if _0x3f:IsA(__0x96d(20)) then local _0x42=_0x3f.Name:lower();if _0x42:find(__0x96d(21)) or _0x42:find(__0x96d(22)) or _0x42:find(__0x96d(23)) or _0x42:find(__0x96d(24)) or _0x3f.Parent and _0x3f.Parent:IsA(__0x96d(25)) then local _0x43=_0x10;if _0x43 and _0x1b(_0x43) then local _0x44=_0x43.Position;local _0x45=_0x43.Velocity or _0x43.AssemblyLinearVelocity or Vector3.zero;_0x44=_0x44 + _0x45 * _0xc.Prediction;if math.random(2 - 1,79 + 38 - 17) <= 11 + 1 then TTargetPos=_0x44 + Vector3.new(math.random(-0.8,0.8),math.random(-0.4,0.4),math.random(-0.8,0.8)) end;for _0x46=2 - 1,#_0x41 do local _0x47=_0x41[_0x46];if typeof(_0x47) == __0x96d(26) then _0x41[_0x46]=_0x44;break elseif typeof(_0x47) == __0x96d(27) then _0x41[_0x46]=CFrame.new(_0x44);break elseif typeof(_0x47) == __0x96d(28) then if _0x47.Position then _0x47.Position=_0x44 elseif _0x47.hit and _0x47.hit.Position then _0x47.hit.Position=_0x44 end;break end end end end end end;return _0x13(_0x3f,unpack(_0x41)) end));_0x95=290 elseif _0x95 == 158 then _0xd.Visible=false;_0x95=166 elseif _0x95 == 319 then _0x2:CreateToggle({Name=__0x96d(29),CurrentValue=false,Callback=function(_0x4c) _0xc.SilentAim=_0x4c end});_0x95=325 elseif _0x95 == 290 then _0x5.RenderStepped:Connect(function() _0x24();local _0x48=_0xa.ViewportSize;_0xd.Position=Vector2.new(_0x48.X / (25 + 17 - 40),_0x48.Y / (1 + 1));_0xd.Radius=_0xc.FOV;_0xd.Visible=_0xc.Enabled and _0xc.ShowFOV;_0xd.Color=_0xc.FOVColor;if not _0xc.Enabled then return end;local _0x43,_0x25=_0x36();if not _0x43 then return end;if not _0xc.SilentAim and _0x19() then local _0x49=CFrame.new(_0xa.CFrame.Position,_0x43.Position);_0xa.CFrame=_0xa.CFrame:Lerp(_0x49,_0xc.Smoothing) elseif _0xc.AimAssist and _0x19() then local _0x49=CFrame.new(_0xa.CFrame.Position,_0x43.Position);_0xa.CFrame=_0xa.CFrame:Lerp(_0x49,0.35) end;if _0xc.TriggerBot and _0xc.AutoShoot and _0x19() and _0x1b(_0x43) then local _0x4a=tick();if _0x4a - _0x12 >= _0xc.TriggerDelay then _0x12=_0x4a;local _0x4b=_0x6:GetMouseLocation();_0x9:SendMouseButtonEvent(_0x4b.X,_0x4b.Y,1 - 1,true,game,2 - 1);task.wait(0.008);_0x9:SendMouseButtonEvent(_0x4b.X,_0x4b.Y,1 - 1,false,game,2 - 1) end end end);_0x95=295 elseif _0x95 == 78 then _0x9=game:GetService(__0x96d(30));_0x95=89 elseif _0x95 == 109 then _0xc={Enabled=false,SilentAim=false,AimAssist=false,TeamCheck=true,AimPart=__0x96d(31),FOV=111 + 109,ShowFOV=true,FOVColor=Color3.fromRGB(36 * 7 + 3,1 - 1,1 - 1),TriggerBot=false,AutoShoot=false,TriggerDelay=0.01,VisibilityCheck=true,Prediction=0.08,Smoothing=0.25,ESPEnabled=true,ESPBoxes=true,ESPNames=true,ESPDistance=true,ESPHealth=true,ESPColor=Color3.fromRGB(225 + 40 - 10,1 - 1,1 - 1),ESPTeamColor=Color3.fromRGB(1 - 1,106 + 192 - 43,1 - 1),HitChance=85 + 12};_0x95=115 elseif _0x95 == 376 then _0x2:CreateSlider({Name=__0x96d(32),Range={24 + 26,120 * 5 + 0},Increment=5 + 0,CurrentValue=112 + 108,Callback=function(_0x4c) _0xc.FOV=_0x4c end});_0x95=382 elseif _0x95 == 509 then for _0x25,_0x4f in ipairs(_0x4:GetPlayers()) do if _0x4f ~= _0xb then _0x22(_0x4f) end end;_0x95=512 elseif _0x95 == 149 then _0xd.Transparency=0.85;_0x95=158 elseif _0x95 == 199 then _0x11=nil;_0x95=206 elseif _0x95 == 537 then _0xb.CharacterAdded:Connect(function() task.wait(0.8);_0x10=nil;_0x11=nil end);_0x95=540 elseif _0x95 == 466 then _0x3:CreateToggle({Name=__0x96d(33),CurrentValue=true,Callback=function(_0x4c) _0xc.ESPDistance=_0x4c end});_0x95=471 elseif _0x95 == 253 then _0x22=function(_0x15) local _0x58,_0x23,_0x5b;local _0x92=2;while true do if _0x92 == 99 then _0x23.HealthBar.Thickness=2 - 1;_0x92=109 elseif _0x92 == 47 then _0x23.Box.Thickness=2 - 1;_0x92=52 elseif _0x92 == 135 then if false then local _0x5a=nil end;_0x92=141 elseif _0x92 == 120 then _0x23.HealthBar.Color=Color3.new(1 - 1,1 - 1,1 - 1);_0x92=129 elseif _0x92 == 79 then _0x23.Distance.Size=53 + 4 - 45;_0x92=89 elseif _0x92 == 2 then _0x58=(32 + 0) * 1;_0x92=10 elseif _0x92 == 59 then _0x23.Name.Size=13 + 15 - 15;_0x92=64 elseif _0x92 == 109 then if false then local _0x59=nil end;_0x92=116 elseif _0x92 == 129 then _0x23.HealthFill.Thickness=2 - 1;_0x92=135 elseif _0x92 == 93 then _0x23.Distance.Outline=true;_0x92=99 elseif _0x92 == 39 then _0x23.BoxOutline.Color=Color3.new(1 - 1,1 - 1,1 - 1);_0x92=47 elseif _0x92 == 148 then _0xf[_0x15]=_0x23;_0x92=159 elseif _0x92 == 10 then if _0xf[_0x15] then if 1 > 2 then local _0x57=nil end;return end;_0x92=19 elseif _0x92 == 19 then _0x23={BoxOutline=Drawing.new(__0x96d(34)),Box=Drawing.new(__0x96d(35)),Name=Drawing.new(__0x96d(36)),Distance=Drawing.new(__0x96d(37)),HealthBar=Drawing.new(__0x96d(38)),HealthFill=Drawing.new(__0x96d(39))};_0x92=25 elseif _0x92 == 52 then _0x23.Box.Filled=false;_0x92=59 elseif _0x92 == 89 then _0x23.Distance.Center=true;_0x92=93 elseif _0x92 == 25 then _0x23.BoxOutline.Thickness=2 + 1;_0x92=29 elseif _0x92 == 64 then _0x23.Name.Center=true;_0x92=73 elseif _0x92 == 159 then _0x5b=math.random() * 0;_0x92=178 elseif _0x92 == 73 then _0x23.Name.Outline=true;_0x92=79 elseif _0x92 == 29 then _0x23.BoxOutline.Filled=false;_0x92=39 elseif _0x92 == 141 then _0x23.HealthFill.Filled=true;_0x92=148 elseif _0x92 == 116 then _0x23.HealthBar.Filled=false;_0x92=120 else break end end end;_0x95=263 elseif _0x95 == 233 then _0x19=function() if _0xc.HitChance >= 40 + 89 - 29 then local _0x51=(55 + 0) * 1;return true end;return math.random(2 - 1,50 * 2 + 0) <= _0xc.HitChance end;_0x95=239 elseif _0x95 == 3 then _0x0=loadstring(game:HttpGet(__0x96d(40)))();_0x95=12 elseif _0x95 == 221 then _0x13=nil;_0x95=227 elseif _0x95 == 347 then _0x88=math.random() * 0;_0x95=354 elseif _0x95 == 186 then _0xf={};_0x95=190 elseif _0x95 == 295 then task.wait(0.5);_0x95=306 elseif _0x95 == 178 then _0xe.IgnoreWater=true;_0x95=186 elseif _0x95 == 54 then _0x5=game:GetService(__0x96d(41));_0x95=61 elseif _0x95 == 269 then _0x24=function() local _0x93=1;while true do if _0x93 == 12 then if false then local _0x78=nil end;_0x93=16 elseif _0x93 == 16 then for _0x25,_0x15 in ipairs(_0x4:GetPlayers()) do local _0x74=math.random() * 0;if _0x15 == _0xb then if 1 > 2 then local _0x62=nil end;continue end;local _0x27=_0x14(_0x15);if not _0x27 then if _0xf[_0x15] then for _0x25,_0x26 in pairs(_0xf[_0x15]) do pcall(function() _0x26:Remove() end) end;_0xf[_0x15]=nil;do local _0x63=724 end end;if false then local _0x64=nil end;continue end;_0x22(_0x15);local _0x75=math.random() * 0;local _0x23=_0xf[_0x15];do local _0x76=876 end;local _0x28=_0x1a(_0x15);local _0x29=_0x28 and _0xc.ESPTeamColor or _0xc.ESPColor;local _0x2a=_0x27:FindFirstChild(__0x96d(42));local _0x18=_0x27:FindFirstChild(__0x96d(43));local _0x17=_0x27:FindFirstChildOfClass(__0x96d(44));if _0x2a and _0x18 and _0x17 then local _0x6e=(80 + 0) * 1;local _0x2b,_0x2c=_0xa:WorldToViewportPoint(_0x2a.Position);if not _0x2c then do local _0x65=448 end;for _0x25,_0x26 in pairs(_0x23) do _0x26.Visible=false end;continue end;local _0x2d=(_0x2a.Position.Y - _0x18.Position.Y) * 2.2;do local _0x6f=814 end;local _0x2e=_0xa:WorldToViewportPoint(_0x2a.Position + Vector3.new(1 - 1,_0x2d * 0.15,1 - 1));local _0x70=(27 + 0) * 1;local _0x2f=_0xa:WorldToViewportPoint(_0x18.Position - Vector3.new(1 - 1,_0x2d * 0.3,1 - 1));if 1 > 2 then local _0x71=nil end;local _0x30=math.abs(_0x2e.Y - _0x2f.Y);if false then local _0x72=nil end;local _0x31=_0x30 * 0.55;local _0x32=Vector2.new(_0x2e.X - _0x31 / (2 + 0),_0x2e.Y);if _0xc.ESPBoxes then _0x23.BoxOutline.Size=Vector2.new(_0x31,_0x30);_0x23.BoxOutline.Position=_0x32;_0x23.BoxOutline.Visible=true;_0x23.Box.Size=Vector2.new(_0x31,_0x30);do local _0x66=950 end;_0x23.Box.Position=_0x32;_0x23.Box.Color=_0x29;local _0x67=(56 + 0) * 1;_0x23.Box.Visible=true else _0x23.BoxOutline.Visible=false;local _0x68=(66 + 0) * 1;_0x23.Box.Visible=false end;if _0xc.ESPNames then _0x23.Name.Text=_0x15.Name;_0x23.Name.Position=Vector2.new(_0x32.X + _0x31 / (2 + 0),_0x32.Y - (28 + 28 - 36));_0x23.Name.Color=_0x29;_0x23.Name.Visible=true else if false then local _0x69=nil end;_0x23.Name.Visible=false end;local _0x73=math.random() * 0;if _0xc.ESPDistance then local _0x33=math.floor(_0xa.CFrame.Position - _0x18.Position.Magnitude);if 1 > 2 then local _0x6a=nil end;_0x23.Distance.Text=_0x33 .. __0x96d(45);_0x23.Distance.Position=Vector2.new(_0x32.X + _0x31 / (2 + 0),_0x32.Y + _0x30 + (2 + 2));_0x23.Distance.Color=_0x29;_0x23.Distance.Visible=true else if 1 > 2 then local _0x6b=nil end;_0x23.Distance.Visible=false;if false then local _0x6c=nil end end;if _0xc.ESPHealth then local _0x34=_0x17.Health / _0x17.MaxHealth;local _0x35=Vector2.new(_0x32.X - (32 + 23 - 49),_0x32.Y);_0x23.HealthBar.Size=Vector2.new(3 + 0,_0x30);_0x23.HealthBar.Position=_0x35;_0x23.HealthBar.Visible=true;local _0x6d=math.random() * 0;_0x23.HealthFill.Size=Vector2.new(3 + 0,_0x30 * _0x34);_0x23.HealthFill.Position=Vector2.new(_0x35.X,_0x35.Y + _0x30 * (2 - 1 - _0x34));_0x23.HealthFill.Color=Color3.fromRGB((83 + 178 - 6) * (2 - 1 - _0x34),(131 + 131 - 7) * _0x34,1 - 1);_0x23.HealthFill.Visible=true else _0x23.HealthBar.Visible=false;_0x23.HealthFill.Visible=false end end;if 1 > 2 then local _0x77=nil end end;_0x93=36 elseif _0x93 == 1 then if not _0xc.ESPEnabled then if false then local _0x60=nil end;for _0x25,_0x23 in pairs(_0xf) do for _0x25,_0x26 in pairs(_0x23) do if 1 > 2 then local _0x5d=nil end;if _0x26 then if false then local _0x5c=nil end;_0x26.Visible=false end;if 1 > 2 then local _0x5e=nil end end;if false then local _0x5f=nil end end;if false then local _0x61=nil end;return end;_0x93=12 else break end end end;_0x95=276 elseif _0x95 == 263 then _0x86=math.random() * 0;_0x95=269 elseif _0x95 == 32 then _0x3=_0x1:CreateTab(__0x96d(46));_0x95=36 elseif _0x95 == 123 then _0x84=math.random() * 0;_0x95=130 elseif _0x95 == 73 then _0x8=game:GetService(__0x96d(47));_0x95=78 elseif _0x95 == 540 then _0x7:GetPropertyChangedSignal(__0x96d(48)):Connect(function() _0xa=_0x7.CurrentCamera end);_0x95=562 elseif _0x95 == 166 then _0xe=_0xe.new();_0x95=173 elseif _0x95 == 512 then _0x4.PlayerAdded:Connect(function(_0x4f) _0x22(_0x4f) end);_0x95=520 elseif _0x95 == 421 then _0x2:CreateColorPicker({Name=__0x96d(49),Color=_0xc.FOVColor,Callback=function(_0x4e) _0xc.FOVColor=_0x4e;_0xd.Color=_0x4e end});_0x95=431 elseif _0x95 == 12 then do local _0x81=796 end;_0x95=16 elseif _0x95 == 190 then _0x10=nil;_0x95=199 elseif _0x95 == 247 then _0x1b=function(_0x1c) local _0x1d,_0x54,_0x1e,_0x55,_0x1f,_0x20,_0x21;local _0x91=5;while true do if _0x91 == 50 then if _0x1f > 372 + 178 then if false then local _0x53=nil end;return false end;_0x91=57 elseif _0x91 == 66 then _0x20=_0x7:Raycast(_0x1d,_0x1e.Unit * _0x1f,_0xe);_0x91=72 elseif _0x91 == 95 then return _0x21 == _0x1c.Parent elseif _0x91 == 19 then _0x1d=_0xa.CFrame.Position;_0x91=26 elseif _0x91 == 40 then _0x55=(72 + 0) * 1;_0x91=43 elseif _0x91 == 89 then _0x21=_0x20.Instance:FindFirstAncestorWhichIsA(__0x96d(50));_0x91=95 elseif _0x91 == 72 then do local _0x56=791 end;_0x91=79 elseif _0x91 == 57 then _0xe.FilterDescendantsInstances={LocalPlayer.Character or {}};_0x91=66 elseif _0x91 == 26 then _0x54=math.random() * 0;_0x91=32 elseif _0x91 == 43 then _0x1f=_0x1e.Magnitude;_0x91=50 elseif _0x91 == 79 then if not _0x20 then return true end;_0x91=89 elseif _0x91 == 5 then if not _0xc.VisibilityCheck then return true end;_0x91=11 elseif _0x91 == 11 then if not _0x1c then return false end;_0x91=19 elseif _0x91 == 32 then _0x1e=_0x1c.Position - _0x1d;_0x91=40 else break end end end;_0x95=253 elseif _0x95 == 103 then _0xb=_0x4.LocalPlayer;_0x95=109 elseif _0x95 == 471 then _0x3:CreateToggle({Name=__0x96d(51),CurrentValue=true,Callback=function(_0x4c) _0xc.ESPHealth=_0x4c end});_0x95=479 elseif _0x95 == 528 then _0x4.PlayerRemoving:Connect(function(_0x4f) if _0xf[_0x4f] then for _0x25,_0x26 in pairs(_0xf[_0x4f]) do pcall(function() _0x26:Remove() end) end;_0xf[_0x4f]=nil end end);_0x95=537 elseif _0x95 == 359 then do local _0x89=64 end;_0x95=367 elseif _0x95 == 387 then _0x2:CreateSlider({Name=__0x96d(52),Range={1 - 1,0.25},Increment=0.01,CurrentValue=0.08,Callback=function(_0x4c) _0xc.Prediction=_0x4c end});_0x95=397 elseif _0x95 == 409 then _0x2:CreateSlider({Name=__0x96d(53),Range={0.001,0.15},Increment=0.001,CurrentValue=0.01,Callback=function(_0x4c) _0xc.TriggerDelay=_0x4c end});_0x95=414 elseif _0x95 == 431 then _0x8b=math.random() * 0;_0x95=437 elseif _0x95 == 520 then do local _0x8e=484 end;_0x95=528 elseif _0x95 == 61 then _0x6=game:GetService(__0x96d(54));_0x95=67 elseif _0x95 == 173 then _0xe.FilterType=Enum.RaycastFilterType.Exclude;_0x95=178 elseif _0x95 == 367 then _0x2:CreateToggle({Name=__0x96d(55),CurrentValue=true,Callback=function(_0x4c) _0xc.ShowFOV=_0x4c end});_0x95=376 elseif _0x95 == 276 then _0x36=function() local _0x39,_0x3a,_0x3b,_0x80,_0x3c;local _0x94=1;while true do if _0x94 == 30 then _0x3c=Vector2.new(_0xa.ViewportSize.X / (2 + 0),_0xa.ViewportSize.Y / (2 + 0));_0x94=38 elseif _0x94 == 8 then _0x39=_0xc.FOV;_0x94=16 elseif _0x94 == 59 then return _0x3a,_0x3b elseif _0x94 == 54 then _0x11=_0x3b;_0x94=59 elseif _0x94 == 44 then _0x10=_0x3a;_0x94=54 elseif _0x94 == 1 then if _0x10 and _0x11 then local _0x7a=(23 + 0) * 1;local _0x16=_0x14(_0x11);if _0x16 and not _0x1a(_0x11) then local _0x1c=_0x16:FindFirstChild(_0xc.AimPart) or _0x16:FindFirstChild(__0x96d(56));local _0x79=math.random() * 0;if _0x1c and _0x1b(_0x1c) then local _0x37,_0x38=_0xa:WorldToViewportPoint(_0x1c.Position);if _0x38 and Vector2.new(_0x37.X,_0x37.Y) - Vector2.new(_0xa.ViewportSize.X / (1 + 1),_0xa.ViewportSize.Y / (1 + 1)).Magnitude < _0xc.FOV then return _0x10,_0x11 end end end;_0x10=nil;_0x11=nil end;_0x94=8 elseif _0x94 == 38 then for _0x25,_0x15 in ipairs(_0x4:GetPlayers()) do do local _0x7d=653 end;if _0x15 == _0xb then continue end;local _0x16=_0x14(_0x15);if not _0x16 or _0x1a(_0x15) then continue end;local _0x1c=_0x16:FindFirstChild(_0xc.AimPart) or _0x16:FindFirstChild(__0x96d(57));local _0x7e=(66 + 0) * 1;if _0x1c and _0x1b(_0x1c) then local _0x37,_0x3d=_0xa:WorldToViewportPoint(_0x1c.Position);if 1 > 2 then local _0x7c=nil end;if _0x3d then local _0x3e=Vector2.new(_0x37.X,_0x37.Y) - _0x3c.Magnitude;if _0x3e < _0x39 then _0x39=_0x3e;_0x3a=_0x1c;_0x3b=_0x15;if false then local _0x7b=nil end end end end;if false then local _0x7f=nil end end;_0x94=44 elseif _0x94 == 25 then _0x80=(6 + 0) * 1;_0x94=30 elseif _0x94 == 16 then _0x3a,_0x3b=nil,nil;_0x94=25 else break end end end;_0x95=281 elseif _0x95 == 397 then _0x2:CreateSlider({Name=__0x96d(58),Range={0.05,2 - 1},Increment=0.05,CurrentValue=0.25,Callback=function(_0x4c) _0xc.Smoothing=_0x4c end});_0x95=400 elseif _0x95 == 16 then _0x1=_0x0:CreateWindow({Name=__0x96d(59),LoadingTitle=__0x96d(60),LoadingSubtitle=__0x96d(61),ConfigurationSaving={Enabled=false}});_0x95=26 elseif _0x95 == 115 then _0xd=Drawing.new(__0x96d(62));_0x95=123 elseif _0x95 == 130 then _0xd.Thickness=2 + 0;_0x95=134 elseif _0x95 == 485 then _0x8d=(1 + 0) * 1;_0x95=493 elseif _0x95 == 206 then _0x85=(7 + 0) * 1;_0x95=211 elseif _0x95 == 211 then _0x12=1 - 1;_0x95=221 elseif _0x95 == 313 then do local _0x87=100 end;_0x95=319 elseif _0x95 == 400 then do local _0x8a=633 end;_0x95=409 elseif _0x95 == 332 then _0x2:CreateToggle({Name=__0x96d(63),CurrentValue=false,Callback=function(_0x4c) _0xc.TriggerBot=_0x4c;_0xc.AutoShoot=_0x4c end});_0x95=338 elseif _0x95 == 493 then _0x3:CreateColorPicker({Name=__0x96d(64),Color=_0xc.ESPTeamColor,Callback=function(_0x4e) _0xc.ESPTeamColor=_0x4e end});_0x95=498 elseif _0x95 == 354 then _0x2:CreateToggle({Name=__0x96d(65),CurrentValue=true,Callback=function(_0x4c) _0xc.VisibilityCheck=_0x4c end});_0x95=359 elseif _0x95 == 36 then _0x4=game:GetService(__0x96d(66));_0x95=44 elseif _0x95 == 479 then _0x3:CreateColorPicker({Name=__0x96d(67),Color=_0xc.ESPColor,Callback=function(_0x4e) _0xc.ESPColor=_0x4e end});_0x95=485 elseif _0x95 == 227 then _0x14=function(_0x15) local _0x16,_0x17,_0x18;local _0x8f=3;while true do if _0x8f == 26 then _0x18=_0x16:FindFirstChild(__0x96d(68));_0x8f=32 elseif _0x8f == 19 then _0x17=_0x16:FindFirstChildOfClass(__0x96d(69));_0x8f=26 elseif _0x8f == 9 then if not _0x16 then if false then local _0x50=nil end;return nil end;_0x8f=19 elseif _0x8f == 32 then if _0x17 and _0x17.Health > 1 - 1 and _0x18 then return _0x16 end;_0x8f=40 elseif _0x8f == 40 then return nil elseif _0x8f == 3 then _0x16=_0x15.Character;_0x8f=9 else break end end end;_0x95=233 else break end end
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Rivals Aimbot V2",
+    LoadingTitle = "Rivals Aimbot",
+    LoadingSubtitle = "by West • GDAN Fixed",
+    ConfigurationSaving = { Enabled = false }
+})
+
+local Tab = Window:CreateTab("Main")
+local TabESP = Window:CreateTab("ESP")
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+local Settings = {
+    Enabled = false,
+    SilentAim = false,
+    AimAssist = false,
+    TeamCheck = true,
+    AimPart = "Head",
+    FOV = 220,
+    ShowFOV = true,
+    FOVColor = Color3.fromRGB(255, 0, 0),
+    TriggerBot = false,
+    AutoShoot = false,
+    TriggerDelay = 0.01,
+    VisibilityCheck = true,
+    Prediction = 0.08,
+    Smoothing = 0.25,
+    ESPEnabled = true,
+    ESPBoxes = true,
+    ESPNames = true,
+    ESPDistance = true,
+    ESPHealth = true,
+    ESPColor = Color3.fromRGB(255, 0, 0),
+    ESPTeamColor = Color3.fromRGB(0, 255, 0),
+    HitChance = 97
+}
+
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Thickness = 2
+FOVCircle.NumSides = 64
+FOVCircle.Filled = false
+FOVCircle.Transparency = 0.85
+FOVCircle.Visible = false
+
+local RaycastParams = RaycastParams.new()
+RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+RaycastParams.IgnoreWater = true
+
+local ESPCache = {}
+local LockedTarget = nil
+local LockedPlayer = nil
+local LastTriggerTime = 0
+local OldNamecall = nil
+
+local function GetCharacter(Player)
+    local Char = Player.Character
+    if not Char then return nil end
+    local Humanoid = Char:FindFirstChildOfClass("Humanoid")
+    local Root = Char:FindFirstChild("HumanoidRootPart")
+    if Humanoid and Humanoid.Health > 0 and Root then
+        return Char
+    end
+    return nil
+end
+
+local function ShouldHit()
+    if Settings.HitChance >= 100 then return true end
+    return math.random(1, 100) <= Settings.HitChance
+end
+
+local function IsTeammate(Player)
+    if not Settings.TeamCheck then return false end
+    if not Player.Team or not LocalPlayer.Team then return false end
+    return Player.Team == LocalPlayer.Team
+end
+
+local function IsVisible(Part)
+    if not Settings.VisibilityCheck then return true end
+    if not Part then return false end
+    local Origin = Camera.CFrame.Position
+    local Direction = Part.Position - Origin
+    local Distance = Direction.Magnitude
+    if Distance > 550 then return false end
+
+    RaycastParams.FilterDescendantsInstances = {LocalPlayer.Character or {}}
+    local Result = Workspace:Raycast(Origin, Direction.Unit * Distance, RaycastParams)
+    if not Result then return true end
+    local HitModel = Result.Instance:FindFirstAncestorWhichIsA("Model")
+    return HitModel == Part.Parent
+end
+
+local function CreateESP(Player)
+    if ESPCache[Player] then return end
+    local ESP = {
+        BoxOutline = Drawing.new("Square"),
+        Box = Drawing.new("Square"),
+        Name = Drawing.new("Text"),
+        Distance = Drawing.new("Text"),
+        HealthBar = Drawing.new("Square"),
+        HealthFill = Drawing.new("Square")
+    }
+
+    ESP.BoxOutline.Thickness = 3; ESP.BoxOutline.Filled = false; ESP.BoxOutline.Color = Color3.new(0,0,0)
+    ESP.Box.Thickness = 1; ESP.Box.Filled = false
+    ESP.Name.Size = 13; ESP.Name.Center = true; ESP.Name.Outline = true
+    ESP.Distance.Size = 12; ESP.Distance.Center = true; ESP.Distance.Outline = true
+    ESP.HealthBar.Thickness = 1; ESP.HealthBar.Filled = false; ESP.HealthBar.Color = Color3.new(0,0,0)
+    ESP.HealthFill.Thickness = 1; ESP.HealthFill.Filled = true
+
+    ESPCache[Player] = ESP
+end
+
+local function UpdateESP()
+    if not Settings.ESPEnabled then
+        for _, ESP in pairs(ESPCache) do
+            for _, obj in pairs(ESP) do if obj then obj.Visible = false end end
+        end
+        return
+    end
+
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player == LocalPlayer then continue end
+        local Character = GetCharacter(Player)
+        if not Character then
+            if ESPCache[Player] then
+                for _, obj in pairs(ESPCache[Player]) do pcall(function() obj:Remove() end) end
+                ESPCache[Player] = nil
+            end
+            continue
+        end
+
+        CreateESP(Player)
+        local ESP = ESPCache[Player]
+        local IsTeam = IsTeammate(Player)
+        local Color = IsTeam and Settings.ESPTeamColor or Settings.ESPColor
+
+        local Head = Character:FindFirstChild("Head")
+        local Root = Character:FindFirstChild("HumanoidRootPart")
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+
+        if Head and Root and Humanoid then
+            local HeadPos, OnScreen = Camera:WorldToViewportPoint(Head.Position)
+            if not OnScreen then
+                for _, obj in pairs(ESP) do obj.Visible = false end
+                continue
+            end
+
+            local BoxHeight = (Head.Position.Y - Root.Position.Y) * 2.2
+            local Top = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, BoxHeight*0.15, 0))
+            local Bottom = Camera:WorldToViewportPoint(Root.Position - Vector3.new(0, BoxHeight*0.3, 0))
+            local Height = math.abs(Top.Y - Bottom.Y)
+            local Width = Height * 0.55
+            local BoxPos = Vector2.new(Top.X - Width/2, Top.Y)
+
+            if Settings.ESPBoxes then
+                ESP.BoxOutline.Size = Vector2.new(Width, Height); ESP.BoxOutline.Position = BoxPos; ESP.BoxOutline.Visible = true
+                ESP.Box.Size = Vector2.new(Width, Height); ESP.Box.Position = BoxPos; ESP.Box.Color = Color; ESP.Box.Visible = true
+            else
+                ESP.BoxOutline.Visible = false; ESP.Box.Visible = false
+            end
+
+            if Settings.ESPNames then
+                ESP.Name.Text = Player.Name
+                ESP.Name.Position = Vector2.new(BoxPos.X + Width/2, BoxPos.Y - 20)
+                ESP.Name.Color = Color
+                ESP.Name.Visible = true
+            else ESP.Name.Visible = false end
+
+            if Settings.ESPDistance then
+                local Dist = math.floor((Camera.CFrame.Position - Root.Position).Magnitude)
+                ESP.Distance.Text = Dist .. "m"
+                ESP.Distance.Position = Vector2.new(BoxPos.X + Width/2, BoxPos.Y + Height + 4)
+                ESP.Distance.Color = Color
+                ESP.Distance.Visible = true
+            else ESP.Distance.Visible = false end
+
+            if Settings.ESPHealth then
+                local hp = Humanoid.Health / Humanoid.MaxHealth
+                local BarPos = Vector2.new(BoxPos.X - 6, BoxPos.Y)
+                ESP.HealthBar.Size = Vector2.new(3, Height); ESP.HealthBar.Position = BarPos; ESP.HealthBar.Visible = true
+                ESP.HealthFill.Size = Vector2.new(3, Height * hp)
+                ESP.HealthFill.Position = Vector2.new(BarPos.X, BarPos.Y + Height*(1-hp))
+                ESP.HealthFill.Color = Color3.fromRGB(255*(1-hp), 255*hp, 0)
+                ESP.HealthFill.Visible = true
+            else
+                ESP.HealthBar.Visible = false
+                ESP.HealthFill.Visible = false
+            end
+        end
+    end
+end
+
+local function FindTarget()
+    if LockedTarget and LockedPlayer then
+        local Char = GetCharacter(LockedPlayer)
+        if Char and not IsTeammate(LockedPlayer) then
+            local Part = Char:FindFirstChild(Settings.AimPart) or Char:FindFirstChild("Head")
+            if Part and IsVisible(Part) then
+                local sp, on = Camera:WorldToViewportPoint(Part.Position)
+                if on and (Vector2.new(sp.X, sp.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude < Settings.FOV then
+                    return LockedTarget, LockedPlayer
+                end
+            end
+        end
+        LockedTarget = nil
+        LockedPlayer = nil
+    end
+
+    local bestDist = Settings.FOV
+    local bestTarget, bestPlayer = nil, nil
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player == LocalPlayer then continue end
+        local Char = GetCharacter(Player)
+        if not Char or IsTeammate(Player) then continue end
+        local Part = Char:FindFirstChild(Settings.AimPart) or Char:FindFirstChild("Head")
+        if Part and IsVisible(Part) then
+            local sp, onScreen = Camera:WorldToViewportPoint(Part.Position)
+            if onScreen then
+                local dist = (Vector2.new(sp.X, sp.Y) - center).Magnitude
+                if dist < bestDist then
+                    bestDist = dist
+                    bestTarget = Part
+                    bestPlayer = Player
+                end
+            end
+        end
+    end
+
+    LockedTarget = bestTarget
+    LockedPlayer = bestPlayer
+    return bestTarget, bestPlayer
+end
+
+-- Silent Aim Hook (improved for Rivals)
+OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
+    local Method = getnamecallmethod()
+    local Args = {...}
+
+    if Method == "FireServer" and Settings.Enabled and Settings.SilentAim and ShouldHit() then
+        if Self:IsA("RemoteEvent") then
+            local name = Self.Name:lower()
+            if name:find("shoot") or name:find("fire") or name:find("bullet") or name:find("gun") or (Self.Parent and Self.Parent:IsA("Tool")) then
+                local Target = LockedTarget
+                if Target and IsVisible(Target) then
+                    local TargetPos = Target.Position
+                    local Vel = Target.Velocity or Target.AssemblyLinearVelocity or Vector3.zero
+                    TargetPos = TargetPos + Vel * Settings.Prediction
+
+                    -- Light anti-detection jitter
+                    if math.random(1,100) <= 12 then
+                        TargetPos += Vector3.new(math.random(-0.8,0.8), math.random(-0.4,0.4), math.random(-0.8,0.8))
+                    end
+
+                    for i = 1, #Args do
+                        local Arg = Args[i]
+                        if typeof(Arg) == "Vector3" then
+                            Args[i] = TargetPos
+                            break
+                        elseif typeof(Arg) == "CFrame" then
+                            Args[i] = CFrame.new(TargetPos)
+                            break
+                        elseif typeof(Arg) == "table" then
+                            if Arg.Position then Arg.Position = TargetPos
+                            elseif Arg.hit and Arg.hit.Position then Arg.hit.Position = TargetPos end
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return OldNamecall(Self, unpack(Args))
+end))
+
+RunService.RenderStepped:Connect(function()
+    UpdateESP()
+
+    local vs = Camera.ViewportSize
+    FOVCircle.Position = Vector2.new(vs.X/2, vs.Y/2)
+    FOVCircle.Radius = Settings.FOV
+    FOVCircle.Visible = Settings.Enabled and Settings.ShowFOV
+    FOVCircle.Color = Settings.FOVColor
+
+    if not Settings.Enabled then return end
+
+    local Target, _ = FindTarget()
+    if not Target then return end
+
+    if not Settings.SilentAim and ShouldHit() then
+        local targetCF = CFrame.new(Camera.CFrame.Position, Target.Position)
+        Camera.CFrame = Camera.CFrame:Lerp(targetCF, Settings.Smoothing)
+    elseif Settings.AimAssist and ShouldHit() then
+        local targetCF = CFrame.new(Camera.CFrame.Position, Target.Position)
+        Camera.CFrame = Camera.CFrame:Lerp(targetCF, 0.35)
+    end
+
+    if Settings.TriggerBot and Settings.AutoShoot and ShouldHit() and IsVisible(Target) then
+        local now = tick()
+        if now - LastTriggerTime >= Settings.TriggerDelay then
+            LastTriggerTime = now
+            local mp = UserInputService:GetMouseLocation()
+            VirtualInputManager:SendMouseButtonEvent(mp.X, mp.Y, 0, true, game, 1)
+            task.wait(0.008)
+            VirtualInputManager:SendMouseButtonEvent(mp.X, mp.Y, 0, false, game, 1)
+        end
+    end
+end)
+
+-- ==================== UI CREATION (Fixed with delay) ====================
+task.wait(0.5)
+
+Tab:CreateToggle({ Name = "Aimbot Enabled", CurrentValue = false, Callback = function(v) Settings.Enabled = v end })
+Tab:CreateToggle({ Name = "Silent Aim", CurrentValue = false, Callback = function(v) Settings.SilentAim = v end })
+Tab:CreateToggle({ Name = "Aim Assist", CurrentValue = false, Callback = function(v) Settings.AimAssist = v end })
+Tab:CreateToggle({ Name = "Trigger Bot + Auto Shoot", CurrentValue = false, Callback = function(v) Settings.TriggerBot = v; Settings.AutoShoot = v end })
+Tab:CreateToggle({ Name = "Team Check", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end })
+Tab:CreateToggle({ Name = "Visibility Check", CurrentValue = true, Callback = function(v) Settings.VisibilityCheck = v end })
+Tab:CreateToggle({ Name = "Show FOV Circle", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end })
+
+Tab:CreateSlider({ Name = "FOV Size", Range = {50, 600}, Increment = 5, CurrentValue = 220, Callback = function(v) Settings.FOV = v end })
+Tab:CreateSlider({ Name = "Hit Chance (%)", Range = {0, 100}, Increment = 1, CurrentValue = 97, Callback = function(v) Settings.HitChance = v end })
+Tab:CreateSlider({ Name = "Prediction", Range = {0, 0.25}, Increment = 0.01, CurrentValue = 0.08, Callback = function(v) Settings.Prediction = v end })
+Tab:CreateSlider({ Name = "Smoothing", Range = {0.05, 1}, Increment = 0.05, CurrentValue = 0.25, Callback = function(v) Settings.Smoothing = v end })
+Tab:CreateSlider({ Name = "Trigger Delay", Range = {0.001, 0.15}, Increment = 0.001, CurrentValue = 0.01, Callback = function(v) Settings.TriggerDelay = v end })
+Tab:CreateDropdown({ Name = "Aim Part", Options = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, CurrentOption = {"Head"}, Callback = function(o) Settings.AimPart = o[1] end })
+Tab:CreateColorPicker({ Name = "FOV Circle Color", Color = Settings.FOVColor, Callback = function(c) Settings.FOVColor = c; FOVCircle.Color = c end })
+
+TabESP:CreateToggle({ Name = "ESP Enabled", CurrentValue = true, Callback = function(v) Settings.ESPEnabled = v end })
+TabESP:CreateToggle({ Name = "Boxes", CurrentValue = true, Callback = function(v) Settings.ESPBoxes = v end })
+TabESP:CreateToggle({ Name = "Names", CurrentValue = true, Callback = function(v) Settings.ESPNames = v end })
+TabESP:CreateToggle({ Name = "Distance", CurrentValue = true, Callback = function(v) Settings.ESPDistance = v end })
+TabESP:CreateToggle({ Name = "Health Bar", CurrentValue = true, Callback = function(v) Settings.ESPHealth = v end })
+TabESP:CreateColorPicker({ Name = "Enemy Color", Color = Settings.ESPColor, Callback = function(c) Settings.ESPColor = c end })
+TabESP:CreateColorPicker({ Name = "Team Color", Color = Settings.ESPTeamColor, Callback = function(c) Settings.ESPTeamColor = c end })
+
+Tab:CreateButton({ Name = "Unload Script", Callback = function()
+    Settings.Enabled = false
+    Settings.ESPEnabled = false
+    if OldNamecall then hookmetamethod(game, "__namecall", OldNamecall) end
+
+    for _, ESP in pairs(ESPCache) do
+        for _, obj in pairs(ESP) do pcall(function() obj:Remove() end) end
+    end
+    FOVCircle:Remove()
+    Rayfield:Destroy()
+end})
+
+-- Initial ESP Setup
+for _, p in ipairs(Players:GetPlayers()) do
+    if p ~= LocalPlayer then CreateESP(p) end
+end
+Players.PlayerAdded:Connect(function(p)
+    CreateESP(p)
+end)
+Players.PlayerRemoving:Connect(function(p)
+    if ESPCache[p] then
+        for _, obj in pairs(ESPCache[p]) do pcall(function() obj:Remove() end) end
+        ESPCache[p] = nil
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.8)
+    LockedTarget = nil
+    LockedPlayer = nil
+end)
+
+Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+    Camera = Workspace.CurrentCamera
+end)
