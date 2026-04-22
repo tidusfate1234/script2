@@ -1,0 +1,218 @@
+const { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes, EmbedBuilder } = require("discord.js");
+const fs = require("fs");
+const crypto = require("crypto");
+
+// ── Config ──────────────────────────────────────────────────────────────────
+const CONFIG = {
+    TOKEN: "MTQ5NjQ0ODYyMDU0MTY0MDcwNA.GJ-PvV.-M5Yjy2zxttAvArIiK-cudwb9h3yzcMP02cW0I
+
+Copy
+
+Reset Token",
+    CLIENT_ID: "1496448620541640704",
+    GUILD_ID: "1481440048145629207",   // remove this line to make commands global
+    KEY_COOLDOWN_HOURS: 24,            // how long before a user can get a new key
+    DB_FILE: "./keys.json"
+};
+// ────────────────────────────────────────────────────────────────────────────
+
+// Simple JSON "database"
+function loadDB() {
+    if (!fs.existsSync(CONFIG.DB_FILE)) {
+        fs.writeFileSync(CONFIG.DB_FILE, JSON.stringify({ keys: {}, users: {} }));
+    }
+    return JSON.parse(fs.readFileSync(CONFIG.DB_FILE));
+}
+
+function saveDB(db) {
+    fs.writeFileSync(CONFIG.DB_FILE, JSON.stringify(db, null, 2));
+}
+
+// Generate a key like LUNAR-XXXX-XXXX-XXXX
+function generateKey() {
+    const seg = () => crypto.randomBytes(2).toString("hex").toUpperCase();
+    return `LUNAR-${seg()}-${seg()}-${seg()}`;
+}
+
+// Register slash commands
+async function registerCommands() {
+    const commands = [
+        new SlashCommandBuilder()
+            .setName("getkey")
+            .setDescription("Get your Lunar Hub key"),
+        new SlashCommandBuilder()
+            .setName("checkkey")
+            .setDescription("Check if a key is valid")
+            .addStringOption(opt =>
+                opt.setName("key").setDescription("The key to check").setRequired(true)),
+        new SlashCommandBuilder()
+            .setName("resetkey")
+            .setDescription("Reset a user's key (Admin only)")
+            .addUserOption(opt =>
+                opt.setName("user").setDescription("The user to reset").setRequired(true))
+    ].map(cmd => cmd.toJSON());
+
+    const rest = new REST({ version: "10" }).setToken(CONFIG.TOKEN);
+
+    try {
+        await rest.put(
+            Routes.applicationGuildCommands(CONFIG.CLIENT_ID, CONFIG.GUILD_ID),
+            { body: commands }
+        );
+        console.log("✅ Slash commands registered");
+    } catch (err) {
+        console.error("Failed to register commands:", err);
+    }
+}
+
+// Bot client
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+client.once("ready", () => {
+    console.log(`✅ Logged in as ${client.user.tag}`);
+    registerCommands();
+});
+
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const db = loadDB();
+
+    // ── /getkey ──────────────────────────────────────────────────────────────
+    if (interaction.commandName === "getkey") {
+        await interaction.deferReply({ ephemeral: true });
+
+        const userId = interaction.user.id;
+        const userRecord = db.users[userId];
+
+        // Cooldown check
+        if (userRecord) {
+            const hoursSince = (Date.now() - userRecord.lastGenerated) / 1000 / 60 / 60;
+            if (hoursSince < CONFIG.KEY_COOLDOWN_HOURS) {
+                const hoursLeft = (CONFIG.KEY_COOLDOWN_HOURS - hoursSince).toFixed(1);
+                return interaction.editReply({
+                    embeds: [new EmbedBuilder()
+                        .setColor(0x8020c0)
+                        .setTitle("⏳ Cooldown Active")
+                        .setDescription(`You already have a key. You can generate a new one in **${hoursLeft} hours**.`)
+                        .addFields({ name: "Your Current Key", value: `\`${userRecord.key}\`` })
+                    ]
+                });
+            }
+        }
+
+        // Generate and store key
+        const newKey = generateKey();
+        db.users[userId] = {
+            key: newKey,
+            lastGenerated: Date.now(),
+            discordTag: interaction.user.tag,
+            hwid: null  // gets bound on first script use
+        };
+        db.keys[newKey] = {
+            userId,
+            tier: "BASIC",
+            createdAt: Date.now(),
+            hwid: null
+        };
+        saveDB(db);
+
+        // DM the key
+        try {
+            await interaction.user.send({
+                embeds: [new EmbedBuilder()
+                    .setColor(0x6030e0)
+                    .setTitle("🌙 Your Lunar Hub Key")
+                    .setDescription(`Here is your key. Keep it private!`)
+                    .addFields(
+                        { name: "Key", value: `\`\`\`${newKey}\`\`\`` },
+                        { name: "Tier", value: "BASIC" }
+                    )
+                    .setFooter({ text: "Lunar Hub • Do not share your key" })
+                ]
+            });
+
+            await interaction.editReply({
+                embeds: [new EmbedBuilder()
+                    .setColor(0x00cc66)
+                    .setTitle("✅ Key Sent!")
+                    .setDescription("Your key has been sent to your DMs.")
+                ]
+            });
+        } catch {
+            // DMs closed — show key in ephemeral reply instead
+            await interaction.editReply({
+                embeds: [new EmbedBuilder()
+                    .setColor(0x6030e0)
+                    .setTitle("🌙 Your Lunar Hub Key")
+                    .addFields(
+                        { name: "Key", value: `\`\`\`${newKey}\`\`\`` },
+                        { name: "Tier", value: "BASIC" },
+                        { name: "⚠️ Note", value: "Open your DMs so I can send it privately next time." }
+                    )
+                ]
+            });
+        }
+    }
+
+    // ── /checkkey ────────────────────────────────────────────────────────────
+    if (interaction.commandName === "checkkey") {
+        await interaction.deferReply({ ephemeral: true });
+
+        const key = interaction.options.getString("key");
+        const record = db.keys[key];
+
+        if (!record) {
+            return interaction.editReply({
+                embeds: [new EmbedBuilder()
+                    .setColor(0xcc2244)
+                    .setTitle("❌ Invalid Key")
+                    .setDescription("That key doesn't exist.")
+                ]
+            });
+        }
+
+        interaction.editReply({
+            embeds: [new EmbedBuilder()
+                .setColor(0x00cc66)
+                .setTitle("✅ Valid Key")
+                .addFields(
+                    { name: "Tier", value: record.tier },
+                    { name: "HWID Bound", value: record.hwid ? "Yes" : "No" },
+                    { name: "Created", value: new Date(record.createdAt).toDateString() }
+                )
+            ]
+        });
+    }
+
+    // ── /resetkey (admin only) ────────────────────────────────────────────────
+    if (interaction.commandName === "resetkey") {
+        if (!interaction.member.permissions.has("Administrator")) {
+            return interaction.reply({ content: "❌ Admins only.", ephemeral: true });
+        }
+
+        await interaction.deferReply({ ephemeral: true });
+
+        const targetUser = interaction.options.getUser("user");
+        const userRecord = db.users[targetUser.id];
+
+        if (!userRecord) {
+            return interaction.editReply({ content: "That user has no key on record." });
+        }
+
+        // Remove old key
+        delete db.keys[userRecord.key];
+        delete db.users[targetUser.id];
+        saveDB(db);
+
+        interaction.editReply({
+            embeds: [new EmbedBuilder()
+                .setColor(0x00cc66)
+                .setTitle("✅ Key Reset")
+                .setDescription(`Cleared key for **${targetUser.tag}**. They can now run \`/getkey\` again.`)
+            ]
+        });
+    }
+});
+
+client.login(CONFIG.TOKEN);
