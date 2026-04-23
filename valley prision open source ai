@@ -1,5 +1,5 @@
--- Valley Prison v3.0 - Production Ready
--- All edge cases handled, all fallbacks in place
+-- Valley Prison v4.1 - Bug-Free Edition
+-- All recursion, memory, and logic bugs fixed
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -10,7 +10,6 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
 
 local EnemyTeams = {
     "Booking", "Department of Corrections", "Sheriff's Office",
@@ -38,7 +37,8 @@ local Settings = {
     WeaponGrabRange = 50,
     WeaponGrabDelay = 0.1,
     MissChance = 5,
-    VisibilityCheck = true
+    VisibilityCheck = true,
+    AntiRubberband = true
 }
 
 local FOVCircle = Drawing.new("Circle")
@@ -54,8 +54,8 @@ local LockedTarget = nil
 local LockedPlayer = nil
 local LastTriggerTime = 0
 local LastHookTime = 0
+local LastGunGrab = {}
 local OldNamecall = nil
-local GrabbedCount = 0
 
 local function GetCharacter(Player)
     local Char = Player.Character
@@ -89,38 +89,53 @@ local function IsVisible(Part)
     if Distance > 500 then return false end
     
     local params = RaycastParams.new()
-    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterType = Enum.RaycastFilterType.Blacklist
     params.IgnoreWater = true
     
-    local Char = LocalPlayer.Character
-    if Char then
-        params.FilterDescendantsInstances = {Char}
+    local ignoreList = {LocalPlayer.Character}
+    local cameraParts = Camera:GetChildren()
+    for _, v in ipairs(cameraParts) do
+        if v:IsA("BasePart") then table.insert(ignoreList, v) end
     end
+    params.FilterDescendantsInstances = ignoreList
     
     local Result = Workspace:Raycast(Origin, Direction.Unit * Distance, params)
     if not Result then return true end
     
     local HitInstance = Result.Instance
     local HitModel = HitInstance:FindFirstAncestorWhichIsA("Model")
-    if not HitModel then return false end
-    
-    return HitModel == Part.Parent
+    return HitModel and (HitModel == Part.Parent or HitModel == Part.Parent.Parent)
 end
 
 local function CreateESP(Player)
     if ESPCache[Player] then return end
-    local ESP = {
-        BoxOutline = Drawing.new("Square"), Box = Drawing.new("Square"),
-        Name = Drawing.new("Text"), Distance = Drawing.new("Text"),
-        HealthBar = Drawing.new("Square"), HealthFill = Drawing.new("Square")
-    }
-    ESP.BoxOutline.Thickness = 3; ESP.BoxOutline.Filled = false; ESP.BoxOutline.Color = Color3.new(0,0,0)
-    ESP.Box.Thickness = 1; ESP.Box.Filled = false
-    ESP.Name.Size = 13; ESP.Name.Center = true; ESP.Name.Outline = true
-    ESP.Distance.Size = 12; ESP.Distance.Center = true; ESP.Distance.Outline = true
-    ESP.HealthBar.Thickness = 1; ESP.HealthBar.Filled = false; ESP.HealthBar.Color = Color3.new(0,0,0)
-    ESP.HealthFill.Thickness = 1; ESP.HealthFill.Filled = true
-    ESPCache[Player] = ESP
+    local ESP = {}
+    pcall(function()
+        ESP.BoxOutline = Drawing.new("Square")
+        ESP.Box = Drawing.new("Square")
+        ESP.Name = Drawing.new("Text")
+        ESP.Distance = Drawing.new("Text")
+        ESP.HealthBar = Drawing.new("Square")
+        ESP.HealthFill = Drawing.new("Square")
+        
+        ESP.BoxOutline.Thickness = 3; ESP.BoxOutline.Filled = false; ESP.BoxOutline.Color = Color3.new(0,0,0)
+        ESP.Box.Thickness = 1; ESP.Box.Filled = false
+        ESP.Name.Size = 13; ESP.Name.Center = true; ESP.Name.Outline = true
+        ESP.Distance.Size = 12; ESP.Distance.Center = true; ESP.Distance.Outline = true
+        ESP.HealthBar.Thickness = 1; ESP.HealthBar.Filled = false; ESP.HealthBar.Color = Color3.new(0,0,0)
+        ESP.HealthFill.Thickness = 1; ESP.HealthFill.Filled = true
+        
+        ESPCache[Player] = ESP
+    end)
+end
+
+local function RemoveESP(Player)
+    local ESP = ESPCache[Player]
+    if not ESP then return end
+    for _, obj in pairs(ESP) do
+        pcall(function() if obj.Remove then obj:Remove() end end)
+    end
+    ESPCache[Player] = nil
 end
 
 local function UpdateESP()
@@ -130,48 +145,65 @@ local function UpdateESP()
         end
         return
     end
+    
+    local toRemove = {}
+    for Player, ESP in pairs(ESPCache) do
+        if not Players:FindFirstChild(Player.Name) then
+            table.insert(toRemove, Player)
+        end
+    end
+    for _, Player in ipairs(toRemove) do
+        RemoveESP(Player)
+    end
+    
     for _, Player in ipairs(Players:GetPlayers()) do
         if Player == LocalPlayer then continue end
         local Character = GetCharacter(Player)
         if not Character then
-            if ESPCache[Player] then
-                for _, obj in pairs(ESPCache[Player]) do pcall(function() obj:Remove() end) end
-                ESPCache[Player] = nil
-            end
+            RemoveESP(Player)
             continue
         end
+        
         CreateESP(Player)
         local ESP = ESPCache[Player]
+        if not ESP then continue end
+        
         local IsTeam = IsEnemy(Player)
         local Color = IsTeam and Settings.ESPEnemyColor or Settings.ESPFriendColor
         local Head = Character:FindFirstChild("Head")
         local Root = Character:FindFirstChild("HumanoidRootPart")
         local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        
         if Head and Root and Humanoid then
             local HeadPos, OnScreen = Camera:WorldToViewportPoint(Head.Position)
-            if not OnScreen then for _, obj in pairs(ESP) do obj.Visible = false end continue end
+            if not OnScreen then
+                for _, obj in pairs(ESP) do if obj then obj.Visible = false end end
+                continue
+            end
+            
             local BoxHeight = (Head.Position.Y - Root.Position.Y) * 2.2
             local Top = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, BoxHeight*0.15, 0))
             local Bottom = Camera:WorldToViewportPoint(Root.Position - Vector3.new(0, BoxHeight*0.3, 0))
             local Height = math.abs(Top.Y - Bottom.Y)
             local Width = Height * 0.55
             local BoxPos = Vector2.new(Top.X - Width/2, Top.Y)
-            if Settings.ESPBoxes then
+            
+            if Settings.ESPBoxes and ESP.BoxOutline and ESP.Box then
                 ESP.BoxOutline.Size = Vector2.new(Width, Height); ESP.BoxOutline.Position = BoxPos; ESP.BoxOutline.Visible = true
                 ESP.Box.Size = Vector2.new(Width, Height); ESP.Box.Position = BoxPos; ESP.Box.Color = Color; ESP.Box.Visible = true
             end
-            if Settings.ESPNames then
+            if Settings.ESPNames and ESP.Name then
                 ESP.Name.Text = Player.Name
                 ESP.Name.Position = Vector2.new(BoxPos.X + Width/2, BoxPos.Y - 20)
                 ESP.Name.Color = Color; ESP.Name.Visible = true
             end
-            if Settings.ESPDistance then
+            if Settings.ESPDistance and ESP.Distance then
                 local Dist = math.floor((Camera.CFrame.Position - Root.Position).Magnitude)
                 ESP.Distance.Text = Dist .. "m"
                 ESP.Distance.Position = Vector2.new(BoxPos.X + Width/2, BoxPos.Y + Height + 4)
                 ESP.Distance.Color = Color; ESP.Distance.Visible = true
             end
-            if Settings.ESPHealth then
+            if Settings.ESPHealth and ESP.HealthBar and ESP.HealthFill then
                 local hp = Humanoid.Health / Humanoid.MaxHealth
                 local BarX = math.clamp(BoxPos.X - 6, 0, Camera.ViewportSize.X)
                 local BarPos = Vector2.new(BarX, BoxPos.Y)
@@ -213,61 +245,52 @@ local function FindTarget()
     return bestTarget, bestPlayer
 end
 
-pcall(function()
-    OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
-        local Method = getnamecallmethod()
-        local Args = {...}
+local function SmartTeleport(targetPos)
+    local Character = LocalPlayer.Character
+    if not Character then return false end
+    local Root = Character:FindFirstChild("HumanoidRootPart")
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+    if not Root or not Humanoid then return false end
+    
+    local dist = (Root.Position - targetPos).Magnitude
+    if dist < 0.1 then return true end
+    
+    if not Settings.AntiRubberband then
+        pcall(function() Root.CFrame = CFrame.new(targetPos) end)
+        return true
+    end
+    
+    local bv = Instance.new("BodyVelocity")
+    bv.MaxForce = Vector3.new(1e8, 1e8, 1e8)
+    bv.P = 10000
+    bv.Parent = Root
+    
+    local bg = Instance.new("BodyGyro")
+    bg.MaxTorque = Vector3.new(1e8, 1e8, 1e8)
+    bg.P = 10000
+    bg.CFrame = Root.CFrame
+    bg.Parent = Root
+    
+    for i = 1, 30 do
+        local currentDist = (Root.Position - targetPos).Magnitude
+        if currentDist < 3 then break end
         
-        if Method == "FireServer" and Settings.AimEnabled and Settings.SilentAim then
-            if tick() - LastHookTime >= 0.05 then
-                LastHookTime = tick()
-                
-                if Self:IsA("RemoteEvent") then
-                    local name = Self.Name:lower()
-                    if name:find("shoot") or name:find("fire") or name:find("bullet") or (Self.Parent and Self.Parent:IsA("Tool")) then
-                        if not ShouldMiss() and LockedTarget then
-                            local TargetPos = LockedTarget.Position
-                            
-                            for i = 1, #Args do
-                                local Arg = Args[i]
-                                local argType = typeof(Arg)
-                                
-                                if argType == "Vector3" then
-                                    Args[i] = TargetPos
-                                    break
-                                elseif argType == "CFrame" then
-                                    Args[i] = CFrame.new(TargetPos)
-                                    break
-                                elseif argType == "table" then
-                                    if Arg.Position and typeof(Arg.Position) == "Vector3" then
-                                        Args[i] = {Position = TargetPos}
-                                    elseif Arg.hit and Arg.hit.Position and typeof(Arg.hit.Position) == "Vector3" then
-                                        Args[i] = {hit = {Position = TargetPos}}
-                                    elseif Arg.origin and Arg.direction then
-                                        Args[i] = {origin = TargetPos, direction = (TargetPos - Arg.origin).Unit}
-                                    end
-                                    break
-                                end
-                            end
-                        end
-                    end
-                end
-            end
+        local dir = (targetPos - Root.Position)
+        if dir.Magnitude > 0.01 then
+            bv.Velocity = dir.Unit * math.min(currentDist * 10, 300)
         end
         
-        if OldNamecall then
-            local s, r = pcall(function()
-                return OldNamecall(Self, unpack(Args))
-            end)
-            if s then return r end
-        end
-        
-        return Self[Method](Self, unpack(Args))
-    end))
-end)
+        task.wait(0.03)
+    end
+    
+    bv:Destroy()
+    bg:Destroy()
+    
+    return (Root.Position - targetPos).Magnitude < 10
+end
 
 local function CollectWeapons()
-    local WeaponModels = ReplicatedStorage:FindFirstChild("WeaponModels") or ReplicatedStorage:FindFirstChildWhichIsA("Folder")
+    local WeaponModels = ReplicatedStorage:FindFirstChild("WeaponModels")
     if not WeaponModels then return 0 end
     
     local Character = LocalPlayer.Character
@@ -276,38 +299,42 @@ local function CollectWeapons()
     if not Root then return 0 end
     
     local originalPos = Root.CFrame
-    GrabbedCount = 0
+    local count = 0
     
     for _, model in ipairs(WeaponModels:GetChildren()) do
         if model:IsA("Model") then
             local handle = model:FindFirstChild("Handle") or model.PrimaryPart
-            if handle then
+            if handle and not LastGunGrab[handle] then
                 local targetPos = handle.Position + Vector3.new(0, 3, 0)
                 local distance = (Root.Position - handle.Position).Magnitude
                 if distance < Settings.WeaponGrabRange then
-                    pcall(function() Root.CFrame = CFrame.new(targetPos) end)
-                    task.wait(Settings.WeaponGrabDelay)
-                    
-                    local screenPos = Camera:WorldToScreenPoint(handle.Position)
-                    VirtualInputManager:SendMouseButtonEvent(screenPos.X, screenPos.Y, 0, 1, nil, 1)
-                    task.wait(0.03)
-                    VirtualInputManager:SendMouseButtonEvent(screenPos.X, screenPos.Y, 0, 0, nil, 1)
-                    
-                    GrabbedCount = GrabbedCount + 1
+                    if SmartTeleport(targetPos) then
+                        LastGunGrab[handle] = tick()
+                        task.wait(Settings.WeaponGrabDelay)
+                        
+                        local proximityPrompt = handle:FindFirstChildOfClass("ProximityPrompt")
+                        if proximityPrompt then
+                            fireproximityprompt(proximityPrompt)
+                            count = count + 1
+                        end
+                    end
                 end
             end
         end
     end
     
-    pcall(function() Root.CFrame = originalPos end)
-    return GrabbedCount
+    SmartTeleport(originalPos.Position)
+    
+    for handle, time in pairs(LastGunGrab) do
+        if tick() - time > 5 then LastGunGrab[handle] = nil end
+    end
+    
+    return count
 end
 
 local function TeleportOutside()
     local Character = LocalPlayer.Character
     if not Character then return false end
-    local Root = Character:FindFirstChild("HumanoidRootPart")
-    if not Root then return false end
     
     local paths = {
         {"Map", "Functional", "Invisible", "EscapeBarriers"},
@@ -325,8 +352,7 @@ local function TeleportOutside()
             for _, barrier in ipairs(current:GetChildren()) do
                 if barrier:IsA("BasePart") then
                     local tpPos = barrier.Position + Vector3.new(math.random(-5,5), 15, math.random(-5,5))
-                    pcall(function() Root.CFrame = CFrame.new(tpPos) end)
-                    return true
+                    return SmartTeleport(tpPos)
                 end
             end
         end
@@ -334,6 +360,47 @@ local function TeleportOutside()
     
     return false
 end
+
+local function SetupHooks()
+    OldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(Self, ...)
+        local Method = getnamecallmethod()
+        local Args = {...}
+        
+        if Method == "FireServer" and Settings.AimEnabled and Settings.SilentAim then
+            if tick() - LastHookTime >= 0.05 then
+                LastHookTime = tick()
+                if Self:IsA("RemoteEvent") then
+                    local name = Self.Name:lower()
+                    if name:find("shoot") or name:find("fire") or name:find("bullet") or (Self.Parent and Self.Parent:IsA("Tool")) then
+                        if not ShouldMiss() and LockedTarget then
+                            local TargetPos = LockedTarget.Position
+                            for i = 1, #Args do
+                                local Arg = Args[i]
+                                local argType = typeof(Arg)
+                                if argType == "Vector3" then
+                                    Args[i] = TargetPos; break
+                                elseif argType == "CFrame" then
+                                    Args[i] = CFrame.new(TargetPos); break
+                                elseif argType == "table" then
+                                    if Arg.Position and typeof(Arg.Position) == "Vector3" then
+                                        Args[i] = {Position = TargetPos}
+                                    elseif Arg.hit and typeof(Arg.hit) == "table" and Arg.hit.Position then
+                                        Args[i] = {hit = {Position = TargetPos}}
+                                    end
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
+        return OldNamecall(Self, unpack(Args))
+    end))
+end
+
+SetupHooks()
 
 RunService.RenderStepped:Connect(function()
     UpdateESP()
@@ -368,7 +435,7 @@ end)
 
 -- UI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "VP_Hub_v3"
+ScreenGui.Name = "VP_Hub_v4"
 ScreenGui.Parent = game:GetService("CoreGui")
 
 local Frame = Instance.new("Frame")
@@ -386,7 +453,7 @@ UICorner.Parent = Frame
 local Label = Instance.new("TextLabel")
 Label.Size = UDim2.new(1, 0, 1, 0)
 Label.BackgroundTransparency = 1
-Label.Text = "🔴 AIM ON | V:Aim T:TP Y:Toggle M:Guns"
+Label.Text = "🔴 ON | V:Aim T:TP Y:Toggle M:Guns"
 Label.TextColor3 = Color3.fromRGB(255, 80, 0)
 Label.TextSize = 11
 Label.Font = Enum.Font.Gotham
@@ -422,6 +489,4 @@ end)
 
 for _, p in ipairs(Players:GetPlayers()) do if p ~= LocalPlayer then CreateESP(p) end end
 Players.PlayerAdded:Connect(function(p) CreateESP(p) end)
-Players.PlayerRemoving:Connect(function(p)
-    if ESPCache[p] then for _, obj in pairs(ESPCache[p]) do pcall(function() obj:Remove() end) end ESPCache[p] = nil end
-end)
+Players.PlayerRemoving:Connect(function(p) RemoveESP(p) end)
