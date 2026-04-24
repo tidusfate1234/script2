@@ -1,0 +1,440 @@
+-- Prison Life Hub v3.7 - Working Features Only
+-- Removed broken: Team Switch, Auto Arrest | Added: Kill All
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local GunRemotes = ReplicatedStorage:WaitForChild("GunRemotes")
+
+local Settings = {
+    ESP = false, ESPBoxes = true, ESPNames = true, ESPHealth = true,
+    Aimbot = false, AimbotFOV = 200, AimbotSmoothing = 0.3,
+    KillAura = false, KillAuraRange = 15, KillAuraDelay = 0.3,
+    GodWeapons = false,
+    FlyEnabled = false, FlySpeed = 80,
+    VisibilityCheck = true
+}
+
+local ESPCache = {}
+local LastKillAura = 0
+local LastWeaponCheck = 0
+local weaponConnections = {}
+local flyConnections = {}
+local flyConnection = nil
+local flyObjects = {}
+local silentAimHooked = false
+local oldNamecall = nil
+
+local RaycastParamsObj = RaycastParams.new()
+RaycastParamsObj.FilterType = Enum.RaycastFilterType.Blacklist
+RaycastParamsObj.IgnoreWater = true
+
+local godWeaponStats = {
+    Damage = 999, MaxAmmo = 999, StoredAmmo = 999, MaxStoredAmmo = 999,
+    FireRate = 0.01, Range = 9999, AccurateRange = 9999,
+    SpreadRadius = 0, ProjectileCount = 10, AutoFire = true,
+    ChargeTime = 0, ReloadTime = 0.01
+}
+
+local function FullCleanup()
+    for _, conn in ipairs(weaponConnections) do pcall(function() conn:Disconnect() end) end
+    weaponConnections = {}
+    for _, conn in ipairs(flyConnections) do pcall(function() conn:Disconnect() end) end
+    flyConnections = {}
+    if flyConnection then pcall(function() flyConnection:Disconnect() end) flyConnection = nil end
+    for _, obj in ipairs(flyObjects) do pcall(function() obj:Destroy() end) end
+    flyObjects = {}
+    local char = LocalPlayer.Character
+    if char then
+        local hm = char:FindFirstChildOfClass("Humanoid")
+        if hm then hm.PlatformStand = false end
+        for _, v in ipairs(char:GetDescendants()) do
+            if v:IsA("BodyVelocity") or v:IsA("BodyGyro") then pcall(function() v:Destroy() end) end
+        end
+    end
+    for _, esp in pairs(ESPCache) do
+        for _, obj in pairs(esp) do
+            pcall(function() if obj.Destroy then obj:Destroy() elseif obj.Remove then obj:Remove() end end)
+        end
+    end
+    ESPCache = {}
+    if silentAimHooked and oldNamecall then
+        pcall(function()
+            local mt = getrawmetatable(game)
+            setreadonly(mt, false)
+            mt.__namecall = oldNamecall
+            setreadonly(mt, true)
+        end)
+        silentAimHooked = false
+    end
+end
+
+local function GetCharacter(Player)
+    local Char = Player.Character
+    if not Char then return nil end
+    local hm = Char:FindFirstChildOfClass("Humanoid")
+    local root = Char:FindFirstChild("HumanoidRootPart")
+    return (hm and hm.Health > 0 and root) and Char or nil
+end
+
+local function IsVisible(Part)
+    if not Settings.VisibilityCheck then return true end
+    if not Part then return false end
+    local Origin = Camera.CFrame.Position
+    local Direction = (Part.Position - Origin)
+    local Distance = Direction.Magnitude
+    if Distance > 500 then return false end
+    local ignoreList = {LocalPlayer.Character}
+    local targetModel = Part.Parent
+    if targetModel and targetModel:IsA("Model") then table.insert(ignoreList, targetModel) end
+    RaycastParamsObj.FilterDescendantsInstances = ignoreList
+    local Result = Workspace:Raycast(Origin, Direction.Unit * Distance, RaycastParamsObj)
+    if not Result then return true end
+    local HitModel = Result.Instance:FindFirstAncestorWhichIsA("Model")
+    return HitModel and HitModel == Part.Parent
+end
+
+-- ESP
+local function CreateESP(Player)
+    if ESPCache[Player] then return end
+    if not Settings.ESP then return end
+    local esp = {}
+    pcall(function()
+        esp.BoxOutline = Drawing.new("Square"); esp.Box = Drawing.new("Square")
+        esp.Name = Drawing.new("Text"); esp.HealthBar = Drawing.new("Square")
+        esp.HealthFill = Drawing.new("Square")
+        esp.BoxOutline.Thickness = 3; esp.BoxOutline.Filled = false
+        esp.Box.Thickness = 1; esp.Box.Filled = false
+        esp.Name.Size = 13; esp.Name.Center = true; esp.Name.Outline = true
+        esp.HealthBar.Thickness = 1; esp.HealthBar.Filled = false
+        esp.HealthFill.Thickness = 1; esp.HealthFill.Filled = true
+        ESPCache[Player] = esp
+    end)
+end
+
+local function RemoveESP(Player)
+    local esp = ESPCache[Player]
+    if not esp then return end
+    for _, obj in pairs(esp) do pcall(function() if obj.Destroy then obj:Destroy() elseif obj.Remove then obj:Remove() end end) end
+    ESPCache[Player] = nil
+end
+
+local function ClearAllESP()
+    for _, esp in pairs(ESPCache) do
+        for _, obj in pairs(esp) do pcall(function() if obj.Destroy then obj:Destroy() elseif obj.Remove then obj:Remove() end end) end
+    end
+    ESPCache = {}
+end
+
+local function UpdateESP()
+    if not Settings.ESP then ClearAllESP(); return end
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player == LocalPlayer then continue end
+        local Character = GetCharacter(Player)
+        if not Character then RemoveESP(Player); continue end
+        CreateESP(Player)
+        local esp = ESPCache[Player]
+        if not esp then continue end
+        local IsEnemy = (Player.Team or nil) ~= (LocalPlayer.Team or nil)
+        local Color = IsEnemy and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
+        local Head = Character:FindFirstChild("Head")
+        local Root = Character:FindFirstChild("HumanoidRootPart")
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        if Head and Root and Humanoid then
+            local HeadPos, OnScreen = Camera:WorldToViewportPoint(Head.Position)
+            local RootPos = Camera:WorldToViewportPoint(Root.Position)
+            if not OnScreen then for _, obj in pairs(esp) do if obj then obj.Visible = false end end continue end
+            local Height = math.abs(HeadPos.Y - RootPos.Y) * 2.2
+            local Width = Height * 0.55
+            local BoxPos = Vector2.new(HeadPos.X - Width/2, HeadPos.Y - Height*0.05)
+            if Settings.ESPBoxes and esp.BoxOutline and esp.Box then
+                esp.BoxOutline.Size = Vector2.new(Width, Height); esp.BoxOutline.Position = BoxPos; esp.BoxOutline.Color = Color3.new(0,0,0); esp.BoxOutline.Visible = true
+                esp.Box.Size = Vector2.new(Width, Height); esp.Box.Position = BoxPos; esp.Box.Color = Color; esp.Box.Visible = true
+            end
+            if Settings.ESPNames and esp.Name then
+                esp.Name.Text = Player.Name; esp.Name.Position = Vector2.new(HeadPos.X, BoxPos.Y - 18); esp.Name.Color = Color; esp.Name.Visible = true
+            end
+            if Settings.ESPHealth and esp.HealthBar and esp.HealthFill then
+                local hp = Humanoid.Health / Humanoid.MaxHealth
+                local BarX = math.clamp(BoxPos.X - 8, 0, Camera.ViewportSize.X)
+                esp.HealthBar.Size = Vector2.new(3, Height); esp.HealthBar.Position = Vector2.new(BarX, BoxPos.Y); esp.HealthBar.Color = Color3.new(0,0,0); esp.HealthBar.Visible = true
+                esp.HealthFill.Size = Vector2.new(3, Height * hp); esp.HealthFill.Position = Vector2.new(BarX, BoxPos.Y + Height*(1-hp)); esp.HealthFill.Color = Color3.fromRGB(255*(1-hp), 255*hp, 0); esp.HealthFill.Visible = true
+            end
+        end
+    end
+end
+
+-- Aimbot
+local function FindTarget()
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    local bestScore = Settings.AimbotFOV
+    local bestPart = nil
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player == LocalPlayer or (Player.Team or nil) == (LocalPlayer.Team or nil) then continue end
+        local Char = GetCharacter(Player)
+        if not Char then continue end
+        local Part = Char:FindFirstChild("Head")
+        if not Part or not IsVisible(Part) then continue end
+        local sp, onScreen = Camera:WorldToViewportPoint(Part.Position)
+        if onScreen then
+            local screenDist = (Vector2.new(sp.X, sp.Y) - center).Magnitude
+            if screenDist < bestScore then bestScore = screenDist; bestPart = Part end
+        end
+    end
+    return bestPart
+end
+
+-- God Weapons
+local function processWeapon(tool)
+    if not tool:IsA("Tool") or tool:GetAttribute("ToolType") ~= "Gun" then return end
+    for stat, value in pairs(godWeaponStats) do pcall(function() tool:SetAttribute(stat, value) end) end
+    pcall(function() tool:SetAttribute("CurrentAmmo", 999) end)
+    pcall(function() tool:SetAttribute("Local_CurrentAmmo", 999) end)
+    pcall(function() tool:SetAttribute("Local_ReloadSession", 0) end)
+end
+
+local function setupSilentAim()
+    if silentAimHooked then return end
+    pcall(function()
+        local mt = getrawmetatable(game)
+        oldNamecall = mt.__namecall
+        setreadonly(mt, false)
+        mt.__namecall = newcclosure(function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
+            if method == "FireServer" and self == GunRemotes.ShootEvent and Settings.GodWeapons then
+                local data = args[1]
+                if data and type(data) == "table" then
+                    local closest, closestDist = nil, 500
+                    local myHead = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head")
+                    if myHead then
+                        for _, player in ipairs(Players:GetPlayers()) do
+                            if player ~= LocalPlayer and (player.Team or nil) ~= (LocalPlayer.Team or nil) then
+                                local char = player.Character
+                                if char then
+                                    local head = char:FindFirstChild("Head")
+                                    if head then
+                                        local dist = (head.Position - myHead.Position).Magnitude
+                                        if dist < closestDist then closestDist = dist; closest = head end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    if closest then
+                        for i, shot in ipairs(data) do
+                            if type(shot) == "table" then
+                                data[i][2] = closest.Position
+                                if #shot >= 3 then data[i][3] = closest.Parent end
+                            end
+                        end
+                    end
+                end
+            end
+            return oldNamecall(self, unpack(args))
+        end)
+        setreadonly(mt, true)
+        silentAimHooked = true
+    end)
+end
+
+local function setupGodWeapons()
+    for _, conn in ipairs(weaponConnections) do pcall(function() conn:Disconnect() end) end
+    weaponConnections = {}
+    if not Settings.GodWeapons then
+        if silentAimHooked and oldNamecall then
+            pcall(function() local mt = getrawmetatable(game); setreadonly(mt, false); mt.__namecall = oldNamecall; setreadonly(mt, true) end)
+            silentAimHooked = false
+        end
+        return
+    end
+    setupSilentAim()
+    if LocalPlayer.Character then for _, tool in ipairs(LocalPlayer.Character:GetChildren()) do if tool:IsA("Tool") then processWeapon(tool) end end end
+    table.insert(weaponConnections, LocalPlayer.CharacterAdded:Connect(function(char)
+        task.wait(0.1)
+        for _, tool in ipairs(char:GetChildren()) do if tool:IsA("Tool") then processWeapon(tool) end end
+        table.insert(weaponConnections, char.ChildAdded:Connect(function(child)
+            if child:IsA("Tool") then task.wait(0.05); processWeapon(child) end
+        end))
+    end))
+end
+
+-- Kill Aura
+local function KillAura()
+    if not Settings.KillAura then return end
+    if tick() - LastKillAura < Settings.KillAuraDelay then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LocalPlayer or (player.Team or nil) == (LocalPlayer.Team or nil) then continue end
+        local targetChar = player.Character
+        if not targetChar then continue end
+        local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+        if not targetRoot then continue end
+        if (root.Position - targetRoot.Position).Magnitude < Settings.KillAuraRange then
+            pcall(function() local me = ReplicatedStorage:FindFirstChild("meleeEvent"); if me then me:FireServer(targetChar, 1, 1) end end)
+            LastKillAura = tick(); break
+        end
+    end
+end
+
+-- Kill All (shoots everyone regardless of distance)
+local function KillAll()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and (player.Team or nil) ~= (LocalPlayer.Team or nil) then
+            local char = player.Character
+            if char then
+                local head = char:FindFirstChild("Head")
+                if head then
+                    local shootData = {{LocalPlayer.Character.Head.Position, head.Position, char}}
+                    pcall(function() GunRemotes.ShootEvent:FireServer(shootData) end)
+                end
+            end
+        end
+    end
+end
+
+-- Teleport
+local function TeleportToTree()
+    local TreeFolder = workspace:FindFirstChild("TreeFolder")
+    if not TreeFolder then return end
+    local trees = {}
+    for _, tree in ipairs(TreeFolder:GetChildren()) do if tree.Name:find("tree") then table.insert(trees, tree) end end
+    if #trees == 0 then return end
+    local char = LocalPlayer.Character
+    if char then
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if root then root.CFrame = CFrame.new(trees[math.random(1, #trees)]:GetPivot().Position + Vector3.new(0, 8, 0)) end
+    end
+end
+
+-- Fly
+local function setupFly()
+    for _, conn in ipairs(flyConnections) do pcall(function() conn:Disconnect() end) end
+    flyConnections = {}
+    if flyConnection then pcall(function() flyConnection:Disconnect() end) flyConnection = nil end
+    for _, obj in ipairs(flyObjects) do pcall(function() obj:Destroy() end) end
+    flyObjects = {}
+    local char = LocalPlayer.Character
+    if char then
+        local hm = char:FindFirstChildOfClass("Humanoid"); if hm then hm.PlatformStand = false end
+        for _, v in ipairs(char:GetDescendants()) do if v:IsA("BodyVelocity") or v:IsA("BodyGyro") then pcall(function() v:Destroy() end) end end
+    end
+    if not Settings.FlyEnabled then return end
+    local function startFlight(ch)
+        local root = ch:FindFirstChild("HumanoidRootPart"); local hm = ch:FindFirstChildOfClass("Humanoid")
+        if not root or not hm then return end
+        hm.PlatformStand = true
+        local bv = Instance.new("BodyVelocity"); bv.MaxForce = Vector3.new(1e6,1e6,1e6); bv.Velocity = Vector3.zero; bv.Parent = root; table.insert(flyObjects, bv)
+        local bg = Instance.new("BodyGyro"); bg.MaxTorque = Vector3.new(1e6,1e6,1e6); bg.CFrame = root.CFrame; bg.Parent = root; table.insert(flyObjects, bg)
+        flyConnection = RunService.RenderStepped:Connect(function()
+            if not Settings.FlyEnabled or not root.Parent then for _, obj in ipairs(flyObjects) do pcall(function() obj:Destroy() end) end; flyObjects = {}; if flyConnection then flyConnection:Disconnect() end; if hm and hm.Parent then hm.PlatformStand = false end; return end
+            local md = Vector3.zero
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then md += Camera.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then md -= Camera.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then md -= Camera.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then md += Camera.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then md += Vector3.new(0,1,0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then md -= Vector3.new(0,1,0) end
+            if md.Magnitude > 0 then md = md.Unit end
+            bv.Velocity = md * Settings.FlySpeed; bg.CFrame = Camera.CFrame
+        end)
+    end
+    if LocalPlayer.Character then startFlight(LocalPlayer.Character) end
+    table.insert(flyConnections, LocalPlayer.CharacterAdded:Connect(function(ch) task.wait(0.3); if Settings.FlyEnabled then startFlight(ch) end end))
+end
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PrisonLifeHub37"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 350, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+local UICorner = Instance.new("UICorner"); UICorner.CornerRadius = UDim.new(0, 14); UICorner.Parent = MainFrame
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 42); TitleBar.BackgroundColor3 = Color3.fromRGB(210, 45, 0); TitleBar.BorderSizePixel = 0; TitleBar.Parent = MainFrame
+local TitleCorner = Instance.new("UICorner"); TitleCorner.CornerRadius = UDim.new(0, 14); TitleCorner.Parent = TitleBar
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1
+Title.Text = "🔫 Prison Life Hub v3.7"; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.TextSize = 18; Title.Font = Enum.Font.GothamBold; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.Parent = TitleBar
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 28, 0, 28); CloseButton.Position = UDim2.new(1, -38, 0, 7); CloseButton.BackgroundColor3 = Color3.fromRGB(180, 35, 0); CloseButton.Text = "X"; CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255); CloseButton.TextSize = 16; CloseButton.Font = Enum.Font.GothamBold; CloseButton.Parent = TitleBar
+local CloseCorner = Instance.new("UICorner"); CloseCorner.CornerRadius = UDim.new(0, 6); CloseCorner.Parent = CloseButton
+CloseButton.MouseButton1Click:Connect(function() Settings.FlyEnabled = false; Settings.GodWeapons = false; Settings.ESP = false; FullCleanup(); ScreenGui:Destroy() end)
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, -30, 1, -65); ContentFrame.Position = UDim2.new(0, 15, 0, 52); ContentFrame.BackgroundTransparency = 1; ContentFrame.Parent = MainFrame
+
+local function CreateToggle(name, y, callback)
+    local Frame = Instance.new("Frame"); Frame.Size = UDim2.new(1, 0, 0, 34); Frame.Position = UDim2.new(0, 0, 0, y); Frame.BackgroundTransparency = 1; Frame.Parent = ContentFrame
+    local Label = Instance.new("TextLabel"); Label.Size = UDim2.new(0.7, 0, 1, 0); Label.BackgroundTransparency = 1; Label.Text = name; Label.TextColor3 = Color3.fromRGB(220, 220, 220); Label.TextSize = 14; Label.Font = Enum.Font.Gotham; Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = Frame
+    local Button = Instance.new("TextButton"); Button.Size = UDim2.new(0, 46, 0, 24); Button.Position = UDim2.new(1, -50, 0.5, -12); Button.BackgroundColor3 = Color3.fromRGB(60, 20, 10); Button.Text = ""; Button.Parent = Frame
+    local ButtonCorner = Instance.new("UICorner"); ButtonCorner.CornerRadius = UDim.new(0, 12); ButtonCorner.Parent = Button
+    local Dot = Instance.new("Frame"); Dot.Size = UDim2.new(0, 18, 0, 18); Dot.Position = UDim2.new(0, 3, 0.5, -9); Dot.BackgroundColor3 = Color3.fromRGB(90, 40, 20); Dot.BorderSizePixel = 0; Dot.Parent = Button
+    local DotCorner = Instance.new("UICorner"); DotCorner.CornerRadius = UDim.new(0, 9); DotCorner.Parent = Dot
+    local toggled = false
+    Button.MouseButton1Click:Connect(function()
+        toggled = not toggled
+        Button.BackgroundColor3 = toggled and Color3.fromRGB(220, 70, 0) or Color3.fromRGB(60, 20, 10)
+        Dot.BackgroundColor3 = toggled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(90, 40, 20)
+        Dot.Position = toggled and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+        callback(toggled)
+    end)
+end
+
+local function CreateButton(name, y, callback)
+    local Button = Instance.new("TextButton"); Button.Size = UDim2.new(1, 0, 0, 38); Button.Position = UDim2.new(0, 0, 0, y); Button.BackgroundColor3 = Color3.fromRGB(220, 70, 0); Button.Text = name; Button.TextColor3 = Color3.fromRGB(255, 255, 255); Button.TextSize = 15; Button.Font = Enum.Font.GothamBold; Button.Parent = ContentFrame
+    local ButtonCorner = Instance.new("UICorner"); ButtonCorner.CornerRadius = UDim.new(0, 10); ButtonCorner.Parent = Button
+    Button.MouseButton1Click:Connect(callback)
+end
+
+CreateToggle("ESP", 0, function(v) Settings.ESP = v; if not v then ClearAllESP() end end)
+CreateToggle("ESP Boxes", 38, function(v) Settings.ESPBoxes = v end)
+CreateToggle("ESP Names", 76, function(v) Settings.ESPNames = v end)
+CreateToggle("ESP Health", 114, function(v) Settings.ESPHealth = v end)
+CreateToggle("Aimbot", 152, function(v) Settings.Aimbot = v end)
+CreateToggle("Kill Aura", 190, function(v) Settings.KillAura = v end)
+CreateToggle("God Weapons", 228, function(v) Settings.GodWeapons = v; setupGodWeapons() end)
+CreateToggle("Fly", 266, function(v) Settings.FlyEnabled = v; setupFly() end)
+
+CreateButton("💀 Kill All", 310, function() KillAll() end)
+CreateButton("🌲 Escape (Tree)", 352, function() TeleportToTree() end)
+
+local dragging = false; local dragStart, startPos
+TitleBar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = MainFrame.Position end end)
+TitleBar.InputChanged:Connect(function(input) if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then local delta = input.Position - dragStart; MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
+TitleBar.InputEnded:Connect(function() dragging = false end)
+
+-- Loops
+RunService.Heartbeat:Connect(function(dt)
+    LastWeaponCheck += dt
+    if LastWeaponCheck >= 0.25 and Settings.GodWeapons then
+        LastWeaponCheck = 0
+        if LocalPlayer.Character then for _, tool in ipairs(LocalPlayer.Character:GetChildren()) do if tool:IsA("Tool") then processWeapon(tool) end end end
+    end
+    if Settings.KillAura then LastKillAura += dt; if LastKillAura >= Settings.KillAuraDelay then LastKillAura = 0; KillAura() end end
+end)
+
+RunService.RenderStepped:Connect(function()
+    UpdateESP()
+    if Settings.Aimbot then local target = FindTarget(); if target then Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Position), Settings.AimbotSmoothing) end end
+end)
+
+for _, p in ipairs(Players:GetPlayers()) do if p ~= LocalPlayer then CreateESP(p) end end
+Players.PlayerAdded:Connect(function(p) if p ~= LocalPlayer then CreateESP(p) end end)
+Players.PlayerRemoving:Connect(RemoveESP)
