@@ -1,0 +1,606 @@
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Lunar"
+ScreenGui.Enabled = true
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local DropDownForStartingFrame = Instance.new("Frame")
+DropDownForStartingFrame.Name = "DropDownForStartingFrame"
+DropDownForStartingFrame.Position = UDim2.new(0.321, 0, 0.255, 0)
+DropDownForStartingFrame.Size = UDim2.new(0, 353, 0, 20)
+DropDownForStartingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+DropDownForStartingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+DropDownForStartingFrame.BorderSizePixel = 0
+DropDownForStartingFrame.Rotation = 4
+DropDownForStartingFrame.Visible = false
+DropDownForStartingFrame.Parent = ScreenGui
+
+local DropDownUICorner = Instance.new("UICorner")
+DropDownUICorner.CornerRadius = UDim.new(0, 4)
+DropDownUICorner.Parent = DropDownForStartingFrame
+
+local DropDownUIGradient = Instance.new("UIGradient")
+DropDownUIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 25))
+})
+DropDownUIGradient.Parent = DropDownForStartingFrame
+
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Position = UDim2.new(0.101, 0, 0.122, 0)
+Main.Size = UDim2.new(0, 755, 0, 435)
+Main.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Main.BorderSizePixel = 0
+Main.ClipsDescendants = true
+Main.Visible = false
+Main.Parent = ScreenGui
+
+local MainUIGradient = Instance.new("UIGradient")
+MainUIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 45, 45)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 30))
+})
+MainUIGradient.Parent = Main
+
+local MainUICorner = Instance.new("UICorner")
+MainUICorner.CornerRadius = UDim.new(0, 6)
+MainUICorner.Parent = Main
+
+local StartingFrame = Instance.new("Frame")
+StartingFrame.Name = "StartingFrame"
+StartingFrame.Position = UDim2.new(0.333, 0, 0.27, 0)
+StartingFrame.Size = UDim2.new(0, 312, 0, 241)
+StartingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+StartingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+StartingFrame.BorderSizePixel = 0
+StartingFrame.Visible = false
+StartingFrame.Parent = ScreenGui
+
+local StartingFrameUICorner = Instance.new("UICorner")
+StartingFrameUICorner.CornerRadius = UDim.new(0, 4)
+StartingFrameUICorner.Parent = StartingFrame
+
+local StartingFrameUIGradient = Instance.new("UIGradient")
+StartingFrameUIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 25))
+})
+StartingFrameUIGradient.Parent = StartingFrame
+
+local StartingFrameUIStroke = Instance.new("UIStroke")
+StartingFrameUIStroke.Color = Color3.fromRGB(80, 80, 80)
+StartingFrameUIStroke.Thickness = 1.5
+StartingFrameUIStroke.Parent = StartingFrame
+
+local TextLabel1 = Instance.new("TextLabel")
+TextLabel1.Size = UDim2.new(1, 0, 0.5, 0)
+TextLabel1.Position = UDim2.new(0, 0, 0, 0)
+TextLabel1.BackgroundTransparency = 1
+TextLabel1.Text = "Lunar Hub"
+TextLabel1.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel1.TextSize = 28
+TextLabel1.Font = Enum.Font.GothamBold
+TextLabel1.TextXAlignment = Enum.TextXAlignment.Center
+TextLabel1.TextYAlignment = Enum.TextYAlignment.Bottom
+TextLabel1.Parent = StartingFrame
+
+local TextLabel1Constraint = Instance.new("UITextSizeConstraint")
+TextLabel1Constraint.MaxTextSize = 32
+TextLabel1Constraint.MinTextSize = 12
+TextLabel1Constraint.Parent = TextLabel1
+
+local TextLabel2 = Instance.new("TextLabel")
+TextLabel2.Size = UDim2.new(1, 0, 0.5, 0)
+TextLabel2.Position = UDim2.new(0, 0, 0.5, 0)
+TextLabel2.BackgroundTransparency = 1
+TextLabel2.Text = "By Westy"
+TextLabel2.TextColor3 = Color3.fromRGB(180, 180, 180)
+TextLabel2.TextSize = 16
+TextLabel2.Font = Enum.Font.Gotham
+TextLabel2.TextXAlignment = Enum.TextXAlignment.Center
+TextLabel2.TextYAlignment = Enum.TextYAlignment.Top
+TextLabel2.Parent = StartingFrame
+
+local TextLabel2Constraint = Instance.new("UITextSizeConstraint")
+TextLabel2Constraint.MaxTextSize = 18
+TextLabel2Constraint.MinTextSize = 10
+TextLabel2Constraint.Parent = TextLabel2
+
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Position = UDim2.new(0.089, 0, 0.109, 0)
+TopBar.Size = UDim2.new(0, 779, 0, 32)
+TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = ScreenGui
+
+local TopBarUICorner = Instance.new("UICorner")
+TopBarUICorner.CornerRadius = UDim.new(0, 4)
+TopBarUICorner.Parent = TopBar
+
+local TopBarUIGradient = Instance.new("UIGradient")
+TopBarUIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 35)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 25))
+})
+TopBarUIGradient.Parent = TopBar
+
+local Minimize = Instance.new("TextButton")
+Minimize.Name = "Minimize"
+Minimize.Position = UDim2.new(0.128, 0, 0.122, 0)
+Minimize.Size = UDim2.new(0, 16, 0, 18)
+Minimize.BackgroundTransparency = 1
+Minimize.Text = "_"
+Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
+Minimize.TextSize = 14
+Minimize.Font = Enum.Font.GothamBold
+Minimize.Parent = ScreenGui
+
+local Exit = Instance.new("TextButton")
+Exit.Name = "Exit"
+Exit.Position = UDim2.new(0.101, 0, 0.128, 0)
+Exit.Size = UDim2.new(0, 10, 0, 10)
+Exit.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+Exit.BorderSizePixel = 0
+Exit.Text = ""
+Exit.Parent = ScreenGui
+
+local ExitUICorner = Instance.new("UICorner")
+ExitUICorner.CornerRadius = UDim.new(0, 2)
+ExitUICorner.Parent = Exit
+
+local GameLogo = Instance.new("ImageLabel")
+GameLogo.Name = "GameLogo"
+GameLogo.Position = UDim2.new(0.248, 0, 0.191, 0)
+GameLogo.Size = UDim2.new(0, 37, 0, 36)
+GameLogo.BackgroundTransparency = 1
+GameLogo.Image = "rbxassetid://848225982"
+GameLogo.ImageColor3 = Color3.fromRGB(255, 255, 255)
+GameLogo.ScaleType = Enum.ScaleType.Fit
+GameLogo.Parent = ScreenGui
+
+local Logo = Instance.new("ImageLabel")
+Logo.Name = "Logo"
+Logo.Position = UDim2.new(0.112, 0, 0.191, 0)
+Logo.Size = UDim2.new(0, 37, 0, 36)
+Logo.BackgroundTransparency = 1
+Logo.Image = "rbxassetid://7389063876762"
+Logo.ImageColor3 = Color3.fromRGB(255, 255, 255)
+Logo.ScaleType = Enum.ScaleType.Fit
+Logo.Parent = ScreenGui
+
+local GameName = Instance.new("TextLabel")
+GameName.Name = "GameName"
+GameName.Position = UDim2.new(0.308, 0, 0.21, 0)
+GameName.Size = UDim2.new(0, 54, 0, 14)
+GameName.BackgroundTransparency = 1
+GameName.Text = "GameName"
+GameName.TextColor3 = Color3.fromRGB(255, 255, 255)
+GameName.TextSize = 12
+GameName.Font = Enum.Font.GothamBold
+GameName.TextXAlignment = Enum.TextXAlignment.Left
+GameName.Parent = ScreenGui
+
+local Tab1 = Instance.new("TextButton")
+Tab1.Name = "Tab1"
+Tab1.Size = UDim2.new(0, 117, 0, 31)
+Tab1.Position = UDim2.new(0.163, 0, 0.204, 0)
+Tab1.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Tab1.BorderSizePixel = 0
+Tab1.Text = "Tab1"
+Tab1.TextColor3 = Color3.fromRGB(255, 255, 255)
+Tab1.TextSize = 13
+Tab1.Font = Enum.Font.GothamBold
+Tab1.Parent = ScreenGui
+
+local Tab1UICorner = Instance.new("UICorner")
+Tab1UICorner.CornerRadius = UDim.new(0, 4)
+Tab1UICorner.Parent = Tab1
+
+local Tab2 = Instance.new("TextButton")
+Tab2.Name = "Tab2"
+Tab2.Size = UDim2.new(0, 117, 0, 31)
+Tab2.Position = UDim2.new(0.275, 0, 0.204, 0)
+Tab2.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Tab2.BorderSizePixel = 0
+Tab2.Text = "Tab2"
+Tab2.TextColor3 = Color3.fromRGB(255, 255, 255)
+Tab2.TextSize = 13
+Tab2.Font = Enum.Font.GothamBold
+Tab2.Parent = ScreenGui
+
+local Tab2UICorner = Instance.new("UICorner")
+Tab2UICorner.CornerRadius = UDim.new(0, 4)
+Tab2UICorner.Parent = Tab2
+
+local Tab3 = Instance.new("TextButton")
+Tab3.Name = "Tab3"
+Tab3.Size = UDim2.new(0, 117, 0, 31)
+Tab3.Position = UDim2.new(0.387, 0, 0.204, 0)
+Tab3.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Tab3.BorderSizePixel = 0
+Tab3.Text = "Tab3"
+Tab3.TextColor3 = Color3.fromRGB(255, 255, 255)
+Tab3.TextSize = 13
+Tab3.Font = Enum.Font.GothamBold
+Tab3.Parent = ScreenGui
+
+local Tab3UICorner = Instance.new("UICorner")
+Tab3UICorner.CornerRadius = UDim.new(0, 4)
+Tab3UICorner.Parent = Tab3
+
+local Tab4 = Instance.new("TextButton")
+Tab4.Name = "Tab4"
+Tab4.Size = UDim2.new(0, 117, 0, 31)
+Tab4.Position = UDim2.new(0.499, 0, 0.204, 0)
+Tab4.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Tab4.BorderSizePixel = 0
+Tab4.Text = "Tab4"
+Tab4.TextColor3 = Color3.fromRGB(255, 255, 255)
+Tab4.TextSize = 13
+Tab4.Font = Enum.Font.GothamBold
+Tab4.Visible = false
+Tab4.Parent = ScreenGui
+
+local Tab4UICorner = Instance.new("UICorner")
+Tab4UICorner.CornerRadius = UDim.new(0, 4)
+Tab4UICorner.Parent = Tab4
+
+local Tab5 = Instance.new("TextButton")
+Tab5.Name = "Tab5"
+Tab5.Size = UDim2.new(0, 117, 0, 31)
+Tab5.Position = UDim2.new(0.611, 0, 0.204, 0)
+Tab5.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Tab5.BorderSizePixel = 0
+Tab5.Text = "Tab5"
+Tab5.TextColor3 = Color3.fromRGB(255, 255, 255)
+Tab5.TextSize = 13
+Tab5.Font = Enum.Font.GothamBold
+Tab5.Visible = false
+Tab5.Parent = ScreenGui
+
+local Tab5UICorner = Instance.new("UICorner")
+Tab5UICorner.CornerRadius = UDim.new(0, 4)
+Tab5UICorner.Parent = Tab5
+
+for i = 1, 15 do
+    local Button = Instance.new("TextButton")
+    Button.Name = "Button" .. i
+    Button.Size = UDim2.new(0, 117, 0, 31)
+    local row = math.floor((i - 1) / 5)
+    local col = (i - 1) % 5
+    Button.Position = UDim2.new(0.163 + (col * 0.112), 0, 0.302 + (row * 0.101), 0)
+    Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Button.BorderSizePixel = 0
+    Button.Text = "Button"
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.TextSize = 12
+    Button.Font = Enum.Font.Gotham
+    Button.Visible = false
+    Button.Parent = ScreenGui
+
+    local ButtonUICorner = Instance.new("UICorner")
+    ButtonUICorner.CornerRadius = UDim.new(0, 4)
+    ButtonUICorner.Parent = Button
+end
+
+local LocalScript = Instance.new("LocalScript")
+LocalScript.Name = "LunarLoader"
+LocalScript.Parent = ScreenGui
+
+local ScriptCode = [[
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local LocalPlayer = Players.LocalPlayer
+
+local PlaceId = game.PlaceId
+
+local UniversalScripts = {
+    InfiniteYield = function()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        end)
+        if not success then
+            warn("Failed to load Infinite Yield:", err)
+        end
+    end,
+    GangScript = function()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/tidusfate1234/script2/refs/heads/main/gang"))()
+        end)
+        if not success then
+            warn("Failed to load Gang script:", err)
+        end
+    end,
+    SeatFling = function()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/tidusfate1234/script2/refs/heads/main/seat%20fling"))()
+        end)
+        if not success then
+            warn("Failed to load Seat Fling script:", err)
+        end
+    end
+}
+
+local Games = {
+    [17625359962] = {
+        Name = "Rivals",
+        Tab1 = "Combat",
+        Tab2 = "ESP",
+        Tab3 = "Settings",
+        Color = Color3.fromRGB(255, 80, 80),
+        Script = function()
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/tidusfate1234/script2/refs/heads/main/RivalsSCRIPT"))()
+            end)
+            if not success then
+                warn("Failed to load Rivals script:", err)
+            end
+        end
+    },
+    [155615604] = {
+        Name = "Prison Life",
+        Tab1 = "Main",
+        Tab2 = "ESP",
+        Tab3 = "Combat",
+        Tab4 = "Teleport",
+        Color = Color3.fromRGB(255, 140, 0),
+        Script = function()
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/tidusfate1234/script2/refs/heads/main/PrisonLife2"))()
+            end)
+            if not success then
+                warn("Failed to load Prison Life script:", err)
+            end
+        end
+    },
+    [286090429] = {
+        Name = "Arsenal",
+        Tab1 = "Aimbot",
+        Tab2 = "ESP",
+        Tab3 = "Settings",
+        Color = Color3.fromRGB(255, 50, 50),
+        Script = function()
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/tidusfate1234/script2/refs/heads/main/arsenalFINISHED"))()
+            end)
+            if not success then
+                warn("Failed to load Arsenal script:", err)
+            end
+        end
+    },
+    [70845479499574] = {
+        Name = "Bite By Night",
+        Tab1 = "Combat",
+        Tab2 = "Visuals",
+        Tab3 = "Movement",
+        Tab4 = "Teleport",
+        Tab5 = "Utility",
+        Color = Color3.fromRGB(140, 80, 255),
+        Script = function()
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/tidusfate1234/script2/refs/heads/main/Bite%20By%20Night"))()
+            end)
+            if not success then
+                warn("Failed to load Bite By Night script:", err)
+            end
+        end
+    }
+}
+
+local GameConfig = Games[PlaceId]
+if not GameConfig then
+    GameConfig = {
+        Name = "Universal",
+        Tab1 = "Main",
+        Tab2 = "Scripts",
+        Tab3 = "Settings",
+        Color = Color3.fromRGB(100, 150, 255),
+        Script = function()
+            UniversalScripts.InfiniteYield()
+            task.wait(0.5)
+            UniversalScripts.GangScript()
+            task.wait(0.5)
+            UniversalScripts.SeatFling()
+        end
+    }
+end
+
+local ScreenGui = script.Parent
+local MainHub = ScreenGui:WaitForChild("Main")
+local StartingFrame = ScreenGui:WaitForChild("StartingFrame")
+local DropDownForStartingFrame = ScreenGui:WaitForChild("DropDownForStartingFrame")
+local ExitBtn = ScreenGui:WaitForChild("Exit")
+local TopBar = ScreenGui:WaitForChild("TopBar")
+local MinimizeBtn = ScreenGui:WaitForChild("Minimize")
+
+local Tab1 = ScreenGui:WaitForChild("Tab1")
+local Tab2 = ScreenGui:WaitForChild("Tab2")
+local Tab3 = ScreenGui:WaitForChild("Tab3")
+local Tab4 = ScreenGui:FindFirstChild("Tab4")
+local Tab5 = ScreenGui:FindFirstChild("Tab5")
+
+local GameLogo = ScreenGui:WaitForChild("GameLogo")
+local Logo = ScreenGui:WaitForChild("Logo")
+local GameName = ScreenGui:WaitForChild("GameName")
+
+MainHub.Visible = false
+StartingFrame.Visible = false
+DropDownForStartingFrame.Visible = false
+
+GameName.Text = GameConfig.Name
+if GameLogo then
+    GameLogo.ImageColor3 = GameConfig.Color
+end
+if Logo then
+    Logo.ImageColor3 = GameConfig.Color
+end
+
+local TabObjects = {}
+if Tab1 then Tab1.Text = GameConfig.Tab1; TabObjects[1] = Tab1 end
+if Tab2 then Tab2.Text = GameConfig.Tab2; TabObjects[2] = Tab2 end
+if Tab3 then Tab3.Text = GameConfig.Tab3; TabObjects[3] = Tab3 end
+if Tab4 and GameConfig.Tab4 then Tab4.Text = GameConfig.Tab4; Tab4.Visible = true; TabObjects[4] = Tab4 elseif Tab4 then Tab4.Visible = false end
+if Tab5 and GameConfig.Tab5 then Tab5.Text = GameConfig.Tab5; Tab5.Visible = true; TabObjects[5] = Tab5 elseif Tab5 then Tab5.Visible = false end
+
+local Buttons = {}
+for i = 1, 15 do
+    local btn = ScreenGui:FindFirstChild("Button" .. i)
+    if btn and (btn:IsA("TextButton") or btn:IsA("ImageButton")) then
+        Buttons[i] = btn
+        btn.Visible = false
+    end
+end
+
+local currentTab = 1
+
+local function HideAllButtons()
+    for _, btn in pairs(Buttons) do
+        btn.Visible = false
+    end
+end
+
+local function ShowTabButtons(tabNum)
+    HideAllButtons()
+    local startIndex = (tabNum - 1) * 15 + 1
+    local endIndex = startIndex + 14
+    for i = startIndex, endIndex do
+        if Buttons[i] then
+            Buttons[i].Visible = true
+        end
+    end
+end
+
+local function SwitchTab(tabNum)
+    if tabNum == currentTab then return end
+    currentTab = tabNum
+    for i, tab in pairs(TabObjects) do
+        if tab then
+            tab.BackgroundColor3 = (i == tabNum) and GameConfig.Color or Color3.fromRGB(45, 45, 45)
+        end
+    end
+    ShowTabButtons(tabNum)
+end
+
+for i, tab in pairs(TabObjects) do
+    if tab then
+        tab.MouseButton1Click:Connect(function()
+            SwitchTab(i)
+        end)
+    end
+end
+
+local function AutoScale()
+    local viewport = workspace.CurrentCamera.ViewportSize
+    local scale = math.min(viewport.X / 1920, viewport.Y / 1080)
+    local minScale = 0.5
+    for _, obj in ipairs(ScreenGui:GetDescendants()) do
+        if obj:IsA("UIScale") then
+            obj.Scale = math.max(scale, minScale)
+        end
+    end
+end
+
+local function PlayIntro()
+    DropDownForStartingFrame.Position = UDim2.new(0.5, 0, -0.2, 0)
+    DropDownForStartingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    DropDownForStartingFrame.Size = UDim2.new(0, 353, 0, 20)
+    DropDownForStartingFrame.BackgroundTransparency = 1
+    DropDownForStartingFrame.Visible = true
+
+    local fadeIn = TweenService:Create(DropDownForStartingFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0})
+    fadeIn:Play()
+    fadeIn.Completed:Wait()
+    task.wait(0.3)
+
+    StartingFrame.Position = UDim2.new(0.5, 0, -0.3, 0)
+    StartingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    StartingFrame.Size = UDim2.new(0, 312, 0, 241)
+    StartingFrame.Visible = true
+
+    local slideDown = TweenService:Create(StartingFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.333, 0, 0.27, 0)})
+    slideDown:Play()
+    slideDown.Completed:Wait()
+    task.wait(0.4)
+
+    local spin360 = TweenService:Create(StartingFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {Rotation = 360})
+    spin360:Play()
+    spin360.Completed:Wait()
+    StartingFrame.Rotation = 0
+
+    local shrink = TweenService:Create(StartingFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
+    shrink:Play()
+    shrink.Completed:Wait()
+    StartingFrame.Visible = false
+
+    local shrinkDrop = TweenService:Create(DropDownForStartingFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 20)})
+    shrinkDrop:Play()
+    shrinkDrop.Completed:Wait()
+    DropDownForStartingFrame.Visible = false
+
+    MainHub.Position = UDim2.new(0.5, 0, 0.5, 0)
+    MainHub.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainHub.Size = UDim2.new(0, 0, 0, 0)
+    MainHub.Visible = true
+
+    local explode = TweenService:Create(MainHub, TweenInfo.new(0.55, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 755, 0, 435)})
+    explode:Play()
+    explode.Completed:Wait()
+    MainHub.AnchorPoint = Vector2.new(0, 0)
+
+    task.wait(5)
+
+    local minimizeHub = TweenService:Create(MainHub, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 117, 0, 31)})
+    minimizeHub:Play()
+    minimizeHub.Completed:Wait()
+
+    local expandHub = TweenService:Create(MainHub, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 755, 0, 435)})
+    expandHub:Play()
+    expandHub.Completed:Wait()
+end
+
+local minimized = false
+local minimizeConnection = nil
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    minimized = true
+    MainHub.Visible = false
+    if minimizeConnection then minimizeConnection:Disconnect() end
+    minimizeConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.RightControl then
+            minimized = false
+            MainHub.Visible = true
+            if minimizeConnection then
+                minimizeConnection:Disconnect()
+                minimizeConnection = nil
+            end
+        end
+    end)
+end)
+
+ExitBtn.MouseButton1Click:Connect(function()
+    if GameConfig.Script then
+        GameConfig.Script()
+    end
+    task.wait(0.5)
+    ScreenGui:Destroy()
+end)
+
+AutoScale()
+RunService.RenderStepped:Connect(AutoScale)
+PlayIntro()
+SwitchTab(1)
+
+if GameConfig.Script then
+    GameConfig.Script()
+end
+]]
+
+LocalScript.Source = ScriptCode
+
+return ScreenGui
