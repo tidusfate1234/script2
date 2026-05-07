@@ -1,0 +1,568 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local GunRemotes = ReplicatedStorage:WaitForChild("GunRemotes")
+
+local Settings = {
+    ESP = false,
+    ESPBoxes = true,
+    ESPNames = true,
+    ESPHealth = true,
+    ESPTracers = false,
+    Aimbot = false,
+    AimbotFOV = 200,
+    AimbotSmoothing = 0.3,
+    WallCheck = true,
+    KillAura = false,
+    KillAuraRange = 25,
+    KillAuraDelay = 0.2,
+    FlyEnabled = false,
+    FlySpeed = 80,
+    AutoArrest = false,
+    AutoArrestRange = 12,
+}
+
+local function GetPlayerTeam(player)
+    local success, team = pcall(function()
+        if player.Team then
+            return player.Team.Name
+        elseif player:FindFirstChild("Team") then
+            local teamValue = player:FindFirstChild("Team")
+            if teamValue:IsA("StringValue") or teamValue:IsA("ObjectValue") then
+                return teamValue.Value
+            end
+        end
+        return nil
+    end)
+    return success and team or nil
+end
+
+local function IsEnemy(player)
+    if player == LocalPlayer then return false end
+    local myTeam = GetPlayerTeam(LocalPlayer)
+    local theirTeam = GetPlayerTeam(player)
+    if not myTeam or not theirTeam then return false end
+    if myTeam == "Guards" then
+        return theirTeam == "Inmates" or theirTeam == "Criminals"
+    end
+    if myTeam == "Inmates" or myTeam == "Criminals" then
+        return theirTeam == "Guards"
+    end
+    if myTeam == "Criminals" and theirTeam == "Inmates" then return true end
+    if myTeam == "Inmates" and theirTeam == "Criminals" then return true end
+    return false
+end
+
+local function GetCharacter(player)
+    local char = player.Character
+    if not char then return nil end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root or humanoid.Health <= 0 then return nil end
+    return char
+end
+
+local function GetDistance(part1, part2)
+    if not part1 or not part2 then return math.huge end
+    return (part1.Position - part2.Position).Magnitude
+end
+
+local ESPModule = {
+    cache = {},
+    lastUpdate = 0,
+    updateRate = 0.033,
+}
+
+function ESPModule:CreateESP(player)
+    if self.cache[player] then return end
+    local esp = {
+        BoxOutline = Drawing.new("Square"),
+        Box = Drawing.new("Square"),
+        Name = Drawing.new("Text"),
+        HealthBar = Drawing.new("Square"),
+        HealthFill = Drawing.new("Square"),
+        Tracer = Drawing.new("Line")
+    }
+    esp.BoxOutline.Thickness = 3
+    esp.BoxOutline.Filled = false
+    esp.Box.Thickness = 1
+    esp.Box.Filled = false
+    esp.Name.Size = 13
+    esp.Name.Center = true
+    esp.Name.Outline = true
+    esp.HealthBar.Thickness = 1
+    esp.HealthBar.Filled = false
+    esp.HealthFill.Thickness = 1
+    esp.HealthFill.Filled = true
+    esp.Tracer.Thickness = 1
+    self.cache[player] = esp
+end
+
+function ESPModule:RemoveESP(player)
+    local esp = self.cache[player]
+    if not esp then return end
+    for _, obj in pairs(esp) do
+        if obj then
+            pcall(function()
+                obj.Visible = false
+                obj:Remove()
+            end)
+        end
+    end
+    self.cache[player] = nil
+end
+
+function ESPModule:Clear()
+    local players = {}
+    for player in pairs(self.cache) do
+        table.insert(players, player)
+    end
+    for _, player in ipairs(players) do
+        self:RemoveESP(player)
+    end
+end
+
+function ESPModule:Update(deltaTime)
+    if not Settings.ESP then
+        if next(self.cache) ~= nil then self:Clear() end
+        return
+    end
+    self.lastUpdate = self.lastUpdate + deltaTime
+    if self.lastUpdate < self.updateRate then return end
+    self.lastUpdate = 0
+    local viewportSize = Camera.ViewportSize
+    if viewportSize.X == 0 or viewportSize.Y == 0 then return end
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LocalPlayer then continue end
+        local character = GetCharacter(player)
+        if not character then
+            self:RemoveESP(player)
+            continue
+        end
+        self:CreateESP(player)
+        local esp = self.cache[player]
+        if not esp then continue end
+        local isEnemy = IsEnemy(player)
+        local color = isEnemy and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(50, 255, 50)
+        local head = character:FindFirstChild("Head")
+        local root = character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not (head and root and humanoid) then
+            esp.BoxOutline.Visible = false
+            esp.Box.Visible = false
+            esp.Name.Visible = false
+            esp.HealthBar.Visible = false
+            esp.HealthFill.Visible = false
+            esp.Tracer.Visible = false
+            continue
+        end
+        local headPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+        local rootPos = Camera:WorldToViewportPoint(root.Position)
+        if not onScreen then
+            esp.BoxOutline.Visible = false
+            esp.Box.Visible = false
+            esp.Name.Visible = false
+            esp.HealthBar.Visible = false
+            esp.HealthFill.Visible = false
+            esp.Tracer.Visible = false
+            continue
+        end
+        local height = math.abs(headPos.Y - rootPos.Y) * 2.2
+        local width = height * 0.55
+        local boxPos = Vector2.new(headPos.X - width / 2, headPos.Y - height * 0.05)
+        local center = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
+        if Settings.ESPBoxes then
+            esp.BoxOutline.Size = Vector2.new(width, height)
+            esp.BoxOutline.Position = boxPos
+            esp.BoxOutline.Color = Color3.new(0, 0, 0)
+            esp.BoxOutline.Visible = true
+            esp.Box.Size = Vector2.new(width, height)
+            esp.Box.Position = boxPos
+            esp.Box.Color = color
+            esp.Box.Visible = true
+        else
+            esp.BoxOutline.Visible = false
+            esp.Box.Visible = false
+        end
+        if Settings.ESPNames then
+            esp.Name.Text = player.Name
+            esp.Name.Position = Vector2.new(headPos.X, boxPos.Y - 18)
+            esp.Name.Color = color
+            esp.Name.Visible = true
+        else
+            esp.Name.Visible = false
+        end
+        if Settings.ESPHealth then
+            local hp = humanoid.Health / math.max(humanoid.MaxHealth, 1)
+            local barX = math.clamp(boxPos.X - 8, 0, viewportSize.X)
+            esp.HealthBar.Size = Vector2.new(3, height)
+            esp.HealthBar.Position = Vector2.new(barX, boxPos.Y)
+            esp.HealthBar.Color = Color3.new(0, 0, 0)
+            esp.HealthBar.Visible = true
+            esp.HealthFill.Size = Vector2.new(3, height * hp)
+            esp.HealthFill.Position = Vector2.new(barX, boxPos.Y + height * (1 - hp))
+            esp.HealthFill.Color = Color3.fromRGB(255 * (1 - hp), 255 * hp, 0)
+            esp.HealthFill.Visible = true
+        else
+            esp.HealthBar.Visible = false
+            esp.HealthFill.Visible = false
+        end
+        esp.Tracer.From = center
+        esp.Tracer.To = Vector2.new(headPos.X, headPos.Y)
+        esp.Tracer.Color = color
+        esp.Tracer.Visible = Settings.ESPTracers
+    end
+end
+
+local AimbotModule = {
+    currentTarget = nil,
+    lastAimTime = 0,
+    aimRate = 0.016,
+}
+
+function AimbotModule:IsVisible(targetPart)
+    if not Settings.WallCheck then return true end
+    local myHead = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head")
+    if not myHead then return false end
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+    raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
+    local targetPlayer = Players:GetPlayerFromCharacter(targetPart.Parent)
+    if targetPlayer and targetPlayer.Character then
+        for _, part in ipairs(targetPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                table.insert(raycastParams.FilterDescendantsInstances, part)
+            end
+        end
+    end
+    local direction = (targetPart.Position - myHead.Position).Unit
+    local distance = (targetPart.Position - myHead.Position).Magnitude
+    local rayResult = workspace:Raycast(myHead.Position, direction * distance, raycastParams)
+    if not rayResult then return true end
+    local hitChar = rayResult.Instance:FindFirstAncestorOfClass("Model")
+    if hitChar then
+        local hitPlayer = Players:GetPlayerFromCharacter(hitChar)
+        if hitPlayer and targetPlayer then
+            return hitPlayer == targetPlayer
+        end
+    end
+    return false
+end
+
+function AimbotModule:FindTarget()
+    if not Settings.Aimbot then return nil end
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    local bestScore = Settings.AimbotFOV
+    local bestTarget = nil
+    for _, player in ipairs(Players:GetPlayers()) do
+        if not IsEnemy(player) then continue end
+        local character = GetCharacter(player)
+        if not character then continue end
+        local head = character:FindFirstChild("Head")
+        if not head then continue end
+        if Settings.WallCheck and not self:IsVisible(head) then continue end
+        local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+        if onScreen then
+            local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+            if dist < bestScore then
+                bestScore = dist
+                bestTarget = head
+            end
+        end
+    end
+    return bestTarget
+end
+
+function AimbotModule:Update(deltaTime)
+    if not Settings.Aimbot then
+        self.currentTarget = nil
+        return
+    end
+    self.lastAimTime = self.lastAimTime + deltaTime
+    if self.lastAimTime < self.aimRate then return end
+    self.lastAimTime = 0
+    local target = self:FindTarget()
+    if target then
+        local currentCFrame = Camera.CFrame
+        local targetCFrame = CFrame.new(currentCFrame.Position, target.Position)
+        Camera.CFrame = currentCFrame:Lerp(targetCFrame, Settings.AimbotSmoothing)
+    end
+end
+
+local KillAuraModule = {
+    active = false,
+    lastKillTime = 0,
+}
+
+function KillAuraModule:FindTargets()
+    local myChar = LocalPlayer.Character
+    if not myChar then return {} end
+    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return {} end
+    local targets = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if IsEnemy(player) then
+            local char = GetCharacter(player)
+            if char then
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local dist = GetDistance(myRoot, root)
+                    if dist <= Settings.KillAuraRange then
+                        table.insert(targets, {player = player, character = char, distance = dist})
+                    end
+                end
+            end
+        end
+    end
+    table.sort(targets, function(a, b) return a.distance < b.distance end)
+    return targets
+end
+
+function KillAuraModule:Execute(target)
+    if not target or not target.character then return false end
+    if not target.character:FindFirstChild("HumanoidRootPart") then return false end
+    local meleeEvent = ReplicatedStorage:FindFirstChild("meleeEvent")
+    if not meleeEvent then return false end
+    pcall(function()
+        meleeEvent:FireServer(target.character, 1, 1)
+    end)
+    return true
+end
+
+function KillAuraModule:Update(deltaTime)
+    if not Settings.KillAura then
+        self.active = false
+        return
+    end
+    self.active = true
+    self.lastKillTime = self.lastKillTime + deltaTime
+    if self.lastKillTime >= Settings.KillAuraDelay then
+        self.lastKillTime = 0
+        local targets = self:FindTargets()
+        for _, target in ipairs(targets) do
+            if self:Execute(target) then
+                break
+            end
+        end
+    end
+end
+
+local KillAllModule = {
+    lastUseTime = 0,
+    cooldown = 1.0
+}
+
+function KillAllModule:Execute()
+    local currentTime = tick()
+    if currentTime - self.lastUseTime < self.cooldown then
+        return false, "On cooldown"
+    end
+    self.lastUseTime = currentTime
+    local myChar = LocalPlayer.Character
+    if not myChar then return false, "No character" end
+    local myHead = myChar:FindFirstChild("Head")
+    if not myHead then return false, "No head" end
+    local shootEvent = GunRemotes and GunRemotes:FindFirstChild("ShootEvent")
+    if not shootEvent then return false, "No shoot remote" end
+    local killCount = 0
+    for _, player in ipairs(Players:GetPlayers()) do
+        if IsEnemy(player) then
+            local char = GetCharacter(player)
+            if char then
+                local head = char:FindFirstChild("Head")
+                if head then
+                    local shootData = {{myHead.Position, head.Position, char}}
+                    local success = pcall(function()
+                        shootEvent:FireServer(shootData)
+                    end)
+                    if success then
+                        killCount = killCount + 1
+                    end
+                end
+            end
+        end
+    end
+    return true, killCount
+end
+
+local FlyModule = {
+    active = false,
+    bodyVelocity = nil,
+    bodyGyro = nil,
+    connection = nil,
+}
+
+function FlyModule:Start()
+    self:Stop()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if not root or not humanoid then return false end
+    humanoid.PlatformStand = true
+    self.bodyVelocity = Instance.new("BodyVelocity")
+    self.bodyVelocity.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+    self.bodyVelocity.Velocity = Vector3.zero
+    self.bodyVelocity.Parent = root
+    self.bodyGyro = Instance.new("BodyGyro")
+    self.bodyGyro.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
+    self.bodyGyro.CFrame = root.CFrame
+    self.bodyGyro.Parent = root
+    self.active = true
+    self.connection = RunService.RenderStepped:Connect(function()
+        if not self.active then return end
+        if not LocalPlayer.Character then
+            self:Stop()
+            return
+        end
+        local currentRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not currentRoot then
+            self:Stop()
+            return
+        end
+        if not self.bodyVelocity or not self.bodyGyro then return end
+        local moveDirection = Vector3.zero
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            moveDirection = moveDirection + Camera.CFrame.LookVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+            moveDirection = moveDirection - Camera.CFrame.LookVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+            moveDirection = moveDirection - Camera.CFrame.RightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+            moveDirection = moveDirection + Camera.CFrame.RightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            moveDirection = moveDirection + Vector3.new(0, 1, 0)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+            moveDirection = moveDirection - Vector3.new(0, 1, 0)
+        end
+        if moveDirection.Magnitude > 0 then
+            moveDirection = moveDirection.Unit
+        end
+        if self.bodyVelocity and self.bodyVelocity.Parent then
+            self.bodyVelocity.Velocity = moveDirection * Settings.FlySpeed
+        end
+        if self.bodyGyro and self.bodyGyro.Parent then
+            self.bodyGyro.CFrame = Camera.CFrame
+        end
+    end)
+    return true
+end
+
+function FlyModule:Stop()
+    self.active = false
+    if self.connection then
+        self.connection:Disconnect()
+        self.connection = nil
+    end
+    if self.bodyVelocity then
+        pcall(function() self.bodyVelocity:Destroy() end)
+        self.bodyVelocity = nil
+    end
+    if self.bodyGyro then
+        pcall(function() self.bodyGyro:Destroy() end)
+        self.bodyGyro = nil
+    end
+    local char = LocalPlayer.Character
+    if char then
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = false
+        end
+    end
+end
+
+function FlyModule:Toggle()
+    if Settings.FlyEnabled then
+        self:Start()
+    else
+        self:Stop()
+    end
+end
+
+local TeleportModule = {
+    locations = {
+        ["Main Tower"] = CFrame.new(823, 130, 2587),
+        ["Graveyard"] = CFrame.new(-1350, 95, 2400),
+        ["Criminal Base"] = CFrame.new(-942, 94, 2056),
+        ["Prison Cells"] = CFrame.new(916, 99, 2465),
+        ["Yard"] = CFrame.new(767, 97, 2461),
+        ["Cafe"] = CFrame.new(960, 99, 2340),
+    }
+}
+
+function TeleportModule:TeleportToTree()
+    local treeFolder = workspace:FindFirstChild("TreeFolder")
+    if not treeFolder then return false end
+    local trees = {}
+    for _, tree in ipairs(treeFolder:GetChildren()) do
+        if tree:IsA("Model") and tree.Name:lower():find("tree") then
+            table.insert(trees, tree)
+        end
+    end
+    if #trees == 0 then return false end
+    local char = LocalPlayer.Character
+    if not char then return false end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+    local randomTree = trees[math.random(1, #trees)]
+    root.CFrame = CFrame.new(randomTree:GetPivot().Position + Vector3.new(0, 8, 0))
+    return true
+end
+
+function TeleportModule:TeleportToLocation(locationName)
+    local location = self.locations[locationName]
+    if not location then return false end
+    local char = LocalPlayer.Character
+    if not char then return false end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+    root.CFrame = location
+    return true
+end
+
+local AutoArrestModule = {
+    lastArrestTime = 0,
+    arrestDelay = 0.5,
+}
+
+function AutoArrestModule:Update(deltaTime)
+    if not Settings.AutoArrest then return end
+    self.lastArrestTime = self.lastArrestTime + deltaTime
+    if self.lastArrestTime < self.arrestDelay then return end
+    self.lastArrestTime = 0
+    local myTeam = GetPlayerTeam(LocalPlayer)
+    if myTeam ~= "Guards" then return end
+    local myChar = LocalPlayer.Character
+    if not myChar then return end
+    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+    local arrestRemote = ReplicatedStorage:FindFirstChild("arrest")
+    if not arrestRemote then return end
+    for _, player in ipairs(Players:GetPlayers()) do
+        if IsEnemy(player) then
+            local char = GetCharacter(player)
+            if char then
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local distance = GetDistance(myRoot, root)
+                    if distance <= Settings.AutoArrestRange then
+                        pcall(function()
+                            arrestRemote:FireServer(player)
+                        end)
+                        break
+                    end
+                end
+            end
+        end
+    end
+end
