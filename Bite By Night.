@@ -1,0 +1,875 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
+local SoundService = game:GetService("SoundService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+local Warp = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Warp"))
+local WarpClient = Warp.Client("Input")
+local Hitbox = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Hitbox"))
+
+local AliveFolder = workspace:WaitForChild("PLAYERS"):WaitForChild("ALIVE")
+local KillerFolder = workspace:WaitForChild("PLAYERS"):WaitForChild("KILLER")
+local GAME = workspace:WaitForChild("GAME")
+
+local attackIds = {
+    ["rbxassetid://106673226682917"] = true,
+    ["rbxassetid://112503015929213"] = true,
+    ["rbxassetid://120428956410756"] = true,
+    ["rbxassetid://133752270724243"] = true,
+}
+
+local domainIds = {
+    ["rbxassetid://132725601768618"] = true,
+    ["rbxassetid://118861398234801"] = true,
+    ["rbxassetid://73048386765082"] = true,
+    ["rbxassetid://80922461169812"] = true,
+    ["rbxassetid://121984128639453"] = true,
+    ["rbxassetid://125335594549446"] = true,
+    ["rbxassetid://83241775239139"] = true,
+}
+
+local Settings = {
+    ESPEnabled = false,
+    SurvivorESP = false,
+    KillerESP = false,
+    GeneratorESP = false,
+    FuseBoxESP = false,
+    BatteryESP = false,
+    TrapESP = false,
+    MinionESP = false,
+    ItemESP = false,
+    SpeedEnabled = false,
+    SpeedValue = 24,
+    JumpEnabled = false,
+    JumpValue = 50,
+    FlightEnabled = false,
+    FlightSpeed = 165,
+    Noclip = false,
+    ClimbWalls = false,
+    AutoParry = false,
+    AutoCombo = false,
+    ComboSpeed = 0.5,
+    KillAura = false,
+    KillAuraRange = 15,
+    AutoDodge = false,
+    DodgeRange = 12,
+    AntiDeath = false,
+    DeathThreshold = 30,
+    AntiDomain = false,
+    LockOn = false,
+    FullBright = false,
+    ShowBarriers = false,
+    ShowHitboxes = false,
+    AutoGenerator = false,
+    GenMode = "Blatant",
+    GenDelay = 3,
+    InstantInteract = false,
+    AutoBarricade = false,
+    FreezeTimer = false,
+    StopMusic = false,
+    ServerHop = false,
+}
+
+local ESPObjects = {}
+local SafePart = nil
+local SpeedConnection = nil
+local GenConnection = nil
+local FireConnection = nil
+local LastFireTime = 0
+local FlightConnection = nil
+local FlightBV = nil
+local FlightBG = nil
+local FlightAnim = nil
+local IdleAnim = nil
+local FlightSound = nil
+local NoclipConnection = nil
+local ClimbConnection = nil
+local ParryConnection = nil
+local ComboConnection = nil
+local KillAuraConnection = nil
+local DodgeConnection = nil
+local AntiDeathConnection = nil
+local AntiDomainConnection = nil
+local LockOnConnection = nil
+local LockOnTarget = nil
+local BarricadeConnection = nil
+local JumpConnection = nil
+local LastHealth = nil
+local LastSafePos = nil
+local SafePlate = nil
+local AntiDeathDebounce = false
+local Teleported = false
+
+local function CreateHighlight(obj, color)
+    if not obj or ESPObjects[obj] then return end
+    local h = Instance.new("Highlight")
+    h.FillColor = color
+    h.FillTransparency = 0.5
+    h.OutlineColor = color
+    h.OutlineTransparency = 0
+    h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    h.Adornee = obj
+    h.Parent = obj
+    ESPObjects[obj] = h
+    return h
+end
+
+local function RemoveHighlight(obj)
+    local h = ESPObjects[obj]
+    if h then
+        h:Destroy()
+        ESPObjects[obj] = nil
+    end
+end
+
+local function ClearHighlights()
+    for obj, h in pairs(ESPObjects) do
+        if h then h:Destroy() end
+    end
+    ESPObjects = {}
+end
+
+local function GetCharacter(player)
+    local char = player.Character
+    if not char then return nil end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if not root or not humanoid or humanoid.Health <= 0 then return nil end
+    return char
+end
+
+local function GetDistance(p1, p2)
+    if not p1 or not p2 then return math.huge end
+    return (p1.Position - p2.Position).Magnitude
+end
+
+local function IsKiller()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    return char.Parent == KillerFolder
+end
+
+local function IsSurvivor()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    return char.Parent == AliveFolder
+end
+
+local function GetNearestKiller()
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+    local nearest = nil
+    local shortest = math.huge
+    for _, killer in ipairs(KillerFolder:GetChildren()) do
+        local kRoot = killer:FindFirstChild("HumanoidRootPart")
+        if kRoot then
+            local dist = GetDistance(root, kRoot)
+            if dist < shortest then
+                shortest = dist
+                nearest = killer
+            end
+        end
+    end
+    return nearest
+end
+
+local function GetNearestSurvivor()
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+    local nearest = nil
+    local shortest = math.huge
+    for _, survivor in ipairs(AliveFolder:GetChildren()) do
+        if survivor ~= char then
+            local sRoot = survivor:FindFirstChild("HumanoidRootPart")
+            if sRoot then
+                local dist = GetDistance(root, sRoot)
+                if dist < shortest then
+                    shortest = dist
+                    nearest = survivor
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+local function FireAbility(slot)
+    WarpClient:Fire(true, {"Ability", slot})
+end
+
+local function UpdateESP()
+    ClearHighlights()
+    if not Settings.ESPEnabled then return end
+    if Settings.SurvivorESP then
+        for _, s in ipairs(AliveFolder:GetChildren()) do
+            if s ~= LocalPlayer.Character then CreateHighlight(s, Color3.fromRGB(80, 180, 255)) end
+        end
+    end
+    if Settings.KillerESP then
+        for _, k in ipairs(KillerFolder:GetChildren()) do
+            CreateHighlight(k, Color3.fromRGB(255, 80, 80))
+        end
+    end
+    if Settings.GeneratorESP then
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if obj:IsA("Model") and obj.Name == "Generator" then CreateHighlight(obj, Color3.fromRGB(0, 255, 100)) end
+        end
+    end
+    if Settings.BatteryESP then
+        local ignore = workspace:FindFirstChild("IGNORE")
+        if ignore then
+            for _, obj in ipairs(ignore:GetDescendants()) do
+                if obj:IsA("MeshPart") and obj.Name == "Battery" then CreateHighlight(obj, Color3.fromRGB(255, 0, 255)) end
+            end
+        end
+    end
+    if Settings.FuseBoxESP then
+        local maps = workspace:FindFirstChild("MAPS")
+        if maps then
+            local gameMap = maps:FindFirstChild("GAME MAP")
+            if gameMap then
+                local tasks = gameMap:FindFirstChild("Tasks")
+                if tasks then
+                    local fuseBoxes = tasks:FindFirstChild("FuseBoxes")
+                    if fuseBoxes then
+                        for _, fb in ipairs(fuseBoxes:GetChildren()) do
+                            if fb:IsA("Model") then CreateHighlight(fb, Color3.fromRGB(0, 255, 255)) end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if Settings.TrapESP then
+        local ignore = workspace:FindFirstChild("IGNORE")
+        if ignore then
+            for _, obj in ipairs(ignore:GetChildren()) do
+                if obj:IsA("Model") and obj.Name:lower():find("trap") then CreateHighlight(obj, Color3.fromRGB(255, 100, 0)) end
+            end
+        end
+    end
+    if Settings.MinionESP then
+        local ignore = workspace:FindFirstChild("IGNORE")
+        if ignore then
+            for _, obj in ipairs(ignore:GetDescendants()) do
+                if obj:IsA("Model") and obj.Name == "Minion" then CreateHighlight(obj, Color3.fromRGB(255, 165, 0)) end
+            end
+        end
+    end
+    if Settings.ItemESP then
+        local items = workspace:FindFirstChild("Items")
+        if items then
+            for _, obj in ipairs(items:GetDescendants()) do
+                if obj:IsA("BasePart") then CreateHighlight(obj, Color3.fromRGB(255, 0, 0)) end
+            end
+        end
+    end
+end
+
+local function UpdateSpeed()
+    if SpeedConnection then SpeedConnection:Disconnect(); SpeedConnection = nil end
+    if not Settings.SpeedEnabled then
+        local char = AliveFolder:FindFirstChild(LocalPlayer.Name) or KillerFolder:FindFirstChild(LocalPlayer.Name)
+        if char then
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.WalkSpeed = 16 end
+        end
+        return
+    end
+    local char = AliveFolder:FindFirstChild(LocalPlayer.Name) or KillerFolder:FindFirstChild(LocalPlayer.Name)
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local rootPart = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not rootPart then return end
+    humanoid.WalkSpeed = Settings.SpeedValue
+    SpeedConnection = RunService.Heartbeat:Connect(function()
+        if not Settings.SpeedEnabled or not humanoid or not rootPart or humanoid.Health <= 0 then return end
+        local moveDirection = humanoid.MoveDirection
+        if moveDirection.Magnitude > 0.1 then
+            local boostMultiplier = (Settings.SpeedValue - 16) * 0.2
+            local boostForce = moveDirection * boostMultiplier
+            rootPart.Velocity = Vector3.new(
+                boostForce.X + rootPart.Velocity.X * 0.3,
+                rootPart.Velocity.Y,
+                boostForce.Z + rootPart.Velocity.Z * 0.3
+            )
+        end
+    end)
+end
+
+local function UpdateJump()
+    if JumpConnection then JumpConnection:Disconnect(); JumpConnection = nil end
+    if not Settings.JumpEnabled then
+        local char = LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then hum.JumpPower = 50 end
+        end
+        return
+    end
+    local function applyJump()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not hum then return end
+        hum.JumpPower = Settings.JumpValue
+    end
+    applyJump()
+    JumpConnection = LocalPlayer.CharacterAdded:Connect(function(c)
+        local hum = c:WaitForChild("Humanoid")
+        hum:GetPropertyChangedSignal("JumpPower"):Connect(applyJump)
+        applyJump()
+    end)
+end
+
+local function StartFlight()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
+    StopFlight()
+    hum.PlatformStand = true
+    FlightBV = Instance.new("BodyVelocity")
+    FlightBV.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    FlightBV.Velocity = Vector3.zero
+    FlightBV.Parent = hrp
+    FlightBG = Instance.new("BodyGyro")
+    FlightBG.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
+    FlightBG.P = 1e5
+    FlightBG.CFrame = hrp.CFrame
+    FlightBG.Parent = hrp
+    local flightAnim = Instance.new("Animation")
+    flightAnim.AnimationId = "rbxassetid://15984964491"
+    FlightAnim = hum:LoadAnimation(flightAnim)
+    FlightAnim.Looped = true
+    FlightAnim:Play()
+    FlightAnim.TimePosition = 0.7
+    FlightAnim:AdjustSpeed(0)
+    local idleAnim = Instance.new("Animation")
+    idleAnim.AnimationId = "rbxassetid://91428863336534"
+    IdleAnim = hum:LoadAnimation(idleAnim)
+    IdleAnim.Looped = true
+    FlightSound = Instance.new("Sound")
+    FlightSound.SoundId = "rbxassetid://3308152153"
+    FlightSound.Looped = true
+    FlightSound.Volume = 1
+    FlightSound.Parent = hrp
+    FlightSound:Play()
+    local currentVel = Vector3.zero
+    FlightConnection = RunService.RenderStepped:Connect(function()
+        if not Settings.FlightEnabled or not LocalPlayer.Character then StopFlight(); return end
+        local currentRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not currentRoot then StopFlight(); return end
+        local direction = Vector3.zero
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then direction = direction + Camera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then direction = direction - Camera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then direction = direction - Camera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then direction = direction + Camera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then direction = direction + Vector3.new(0, 1, 0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then direction = direction - Vector3.new(0, 1, 0) end
+        local targetVel = direction.Magnitude > 0 and direction.Unit * Settings.FlightSpeed or Vector3.zero
+        currentVel = currentVel:Lerp(targetVel, 0.25)
+        if FlightBV and FlightBV.Parent then FlightBV.Velocity = currentVel end
+        if FlightBG and FlightBG.Parent then FlightBG.CFrame = CFrame.new(currentRoot.Position, currentRoot.Position + Camera.CFrame.LookVector) end
+        if currentVel.Magnitude < 1 then
+            if FlightAnim and FlightAnim.IsPlaying then FlightAnim:Stop() end
+            if IdleAnim and not IdleAnim.IsPlaying then IdleAnim:Play() end
+            if FlightSound then FlightSound.Volume = 1 end
+        else
+            if IdleAnim and IdleAnim.IsPlaying then IdleAnim:Stop() end
+            if FlightAnim and not FlightAnim.IsPlaying then FlightAnim:Play(); FlightAnim.TimePosition = 0.7; FlightAnim:AdjustSpeed(0) end
+            if FlightSound then FlightSound.Volume = 3 end
+        end
+    end)
+end
+
+local function StopFlight()
+    if FlightConnection then FlightConnection:Disconnect(); FlightConnection = nil end
+    if FlightAnim then FlightAnim:Stop(); FlightAnim = nil end
+    if IdleAnim then IdleAnim:Stop(); IdleAnim = nil end
+    if FlightSound then FlightSound:Destroy(); FlightSound = nil end
+    if FlightBV then pcall(function() FlightBV:Destroy() end); FlightBV = nil end
+    if FlightBG then pcall(function() FlightBG:Destroy() end); FlightBG = nil end
+    local char = LocalPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.PlatformStand = false end
+    end
+end
+
+local function UpdateNoclip()
+    if NoclipConnection then NoclipConnection:Disconnect(); NoclipConnection = nil end
+    if not Settings.Noclip then
+        local char = LocalPlayer.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide = true end
+            end
+        end
+        return
+    end
+    NoclipConnection = RunService.Stepped:Connect(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        for _, part in ipairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
+        end
+    end)
+end
+
+local function UpdateClimbWalls()
+    if ClimbConnection then ClimbConnection:Disconnect(); ClimbConnection = nil end
+    if not Settings.ClimbWalls then return end
+    ClimbConnection = RunService.RenderStepped:Connect(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not hrp or not hum then return end
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            local rayParams = RaycastParams.new()
+            rayParams.FilterDescendantsInstances = {char}
+            rayParams.FilterType = Enum.RaycastFilterType.Exclude
+            local result = workspace:Raycast(hrp.Position + Vector3.new(0, 2, 0), hrp.CFrame.LookVector * 2, rayParams)
+            if result and result.Normal.Y == 0 then
+                hrp.Velocity = Vector3.new(0, 25, 0)
+            end
+        end
+    end)
+end
+
+local function UpdateAutoParry()
+    if ParryConnection then ParryConnection:Disconnect(); ParryConnection = nil end
+    if not Settings.AutoParry then return end
+    ParryConnection = RunService.Heartbeat:Connect(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local myRoot = char:FindFirstChild("HumanoidRootPart")
+        if not myRoot then return end
+        for _, killer in ipairs(KillerFolder:GetChildren()) do
+            local kRoot = killer:FindFirstChild("HumanoidRootPart")
+            if not kRoot then continue end
+            if GetDistance(myRoot, kRoot) > 30 then continue end
+            local hum = killer:FindFirstChildOfClass("Humanoid")
+            if not hum then continue end
+            for _, track in ipairs(hum:GetPlayingAnimationTracks()) do
+                if track.IsPlaying and track.Animation and attackIds[track.Animation.AnimationId] then
+                    FireAbility(2)
+                    return
+                end
+            end
+        end
+    end)
+end
+
+local function UpdateAutoCombo()
+    if ComboConnection then ComboConnection:Disconnect(); ComboConnection = nil end
+    if not Settings.AutoCombo then return end
+    ComboConnection = RunService.Heartbeat:Connect(function()
+        if not IsKiller() then return end
+        local survivor = GetNearestSurvivor()
+        if not survivor then return end
+        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local sRoot = survivor:FindFirstChild("HumanoidRootPart")
+        if not myRoot or not sRoot then return end
+        if GetDistance(myRoot, sRoot) <= Settings.KillAuraRange then
+            FireAbility(1)
+            task.wait(Settings.ComboSpeed)
+            FireAbility(2)
+            task.wait(Settings.ComboSpeed)
+        end
+    end)
+end
+
+local function UpdateAutoDodge()
+    if DodgeConnection then DodgeConnection:Disconnect(); DodgeConnection = nil end
+    if not Settings.AutoDodge then return end
+    DodgeConnection = RunService.Heartbeat:Connect(function()
+        if not IsSurvivor() then return end
+        local killer = GetNearestKiller()
+        if not killer then return end
+        local char = LocalPlayer.Character
+        if not char then return end
+        local myRoot = char:FindFirstChild("HumanoidRootPart")
+        local kRoot = killer:FindFirstChild("HumanoidRootPart")
+        if not myRoot or not kRoot then return end
+        if GetDistance(myRoot, kRoot) <= Settings.DodgeRange then
+            local direction = (myRoot.Position - kRoot.Position).Unit
+            myRoot.CFrame = CFrame.new(myRoot.Position + direction * 15)
+        end
+    end)
+end
+
+local function UpdateAntiDeath()
+    if AntiDeathConnection then AntiDeathConnection:Disconnect(); AntiDeathConnection = nil end
+    if not Settings.AntiDeath then return end
+    LastHealth = nil
+    AntiDeathConnection = RunService.Heartbeat:Connect(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hum or not hrp then return end
+        if not LastHealth then LastHealth = hum.Health; return end
+        if hum.Health < LastHealth and hum.Health > 0 and not Teleported and not AntiDeathDebounce then
+            AntiDeathDebounce = true
+            Teleported = true
+            LastSafePos = hrp.CFrame
+            local pos = hrp.Position
+            SafePlate = Instance.new("Part")
+            SafePlate.Size = Vector3.new(50, 1, 50)
+            SafePlate.Anchored = true
+            SafePlate.Position = pos - Vector3.new(0, 100, 0)
+            SafePlate.Parent = workspace
+            hrp.CFrame = CFrame.new(pos - Vector3.new(0, 95, 0))
+            task.delay(1, function() AntiDeathDebounce = false end)
+        elseif hum.Health >= LastHealth and Teleported and LastSafePos and not AntiDeathDebounce then
+            AntiDeathDebounce = true
+            if SafePlate then SafePlate:Destroy(); SafePlate = nil end
+            hrp.CFrame = LastSafePos
+            LastSafePos = nil
+            Teleported = false
+            task.delay(1, function() AntiDeathDebounce = false end)
+        end
+        LastHealth = hum.Health
+    end)
+end
+
+local function UpdateAntiDomain()
+    if AntiDomainConnection then AntiDomainConnection:Disconnect(); AntiDomainConnection = nil end
+    if not Settings.AntiDomain then return end
+    AntiDomainConnection = RunService.RenderStepped:Connect(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player == LocalPlayer then continue end
+            local otherChar = player.Character
+            if not otherChar then continue end
+            local otherRoot = otherChar:FindFirstChild("HumanoidRootPart")
+            local otherHum = otherChar:FindFirstChildOfClass("Humanoid")
+            if not otherRoot or not otherHum then continue end
+            local dist = GetDistance(hrp, otherRoot)
+            if dist > 50 then continue end
+            for _, track in ipairs(otherHum:GetPlayingAnimationTracks()) do
+                if track.IsPlaying and track.Animation and domainIds[track.Animation.AnimationId] then
+                    local direction = (hrp.Position - otherRoot.Position).Unit
+                    hrp.CFrame = CFrame.new(otherRoot.Position + direction * 75)
+                    return
+                end
+            end
+        end
+    end)
+end
+
+local function UpdateLockOn()
+    if LockOnConnection then LockOnConnection:Disconnect(); LockOnConnection = nil end
+    if not Settings.LockOn then
+        LockOnTarget = nil
+        return
+    end
+    LockOnConnection = RunService.RenderStepped:Connect(function()
+        if LockOnTarget and LockOnTarget.Parent then
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, LockOnTarget.Position)
+        else
+            LockOnTarget = nil
+        end
+    end)
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if gp then return end
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then
+            if LockOnTarget then
+                LockOnTarget = nil
+                return
+            end
+            local char = LocalPlayer.Character
+            if not char then return end
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+            local closest = nil
+            local shortest = math.huge
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    local targetRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                    if targetRoot then
+                        local dist = GetDistance(hrp, targetRoot)
+                        if dist < shortest then
+                            shortest = dist
+                            closest = targetRoot
+                        end
+                    end
+                end
+            end
+            LockOnTarget = closest
+        end
+    end)
+end
+
+local function UpdateFullBright()
+    local lighting = game:GetService("Lighting")
+    if Settings.FullBright then
+        lighting.Brightness = 5
+        lighting.ClockTime = 14
+        lighting.FogEnd = 100000
+        lighting.GlobalShadows = false
+        lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    else
+        lighting.Brightness = 2
+        lighting.ClockTime = 14
+        lighting.FogEnd = 10000
+        lighting.GlobalShadows = true
+    end
+end
+
+local function UpdateShowBarriers()
+    LocalPlayer:SetAttribute("ShowBarriers", Settings.ShowBarriers)
+end
+
+local function UpdateShowHitboxes()
+    LocalPlayer:SetAttribute("ShowHitboxes", Settings.ShowHitboxes)
+end
+
+local function AutoCompleteWires()
+    local genGui = LocalPlayer.PlayerGui:FindFirstChild("Gen")
+    if not genGui then return end
+    local generatorMain = genGui:FindFirstChild("GeneratorMain")
+    if not generatorMain then return end
+    local wiresStart = generatorMain:FindFirstChild("WiresStart")
+    local wiresEnd = generatorMain:FindFirstChild("WiresEnd")
+    local wireBoxes = generatorMain:FindFirstChild("WireBoxes")
+    if not (wiresStart and wiresEnd and wireBoxes) then return end
+    for i = 1, 4 do
+        local startPoint = wiresStart:FindFirstChild(tostring(i))
+        local endPoint = wiresEnd:FindFirstChild(tostring(i))
+        local wireBox = wireBoxes:FindFirstChild(tostring(i))
+        local wire = generatorMain:FindFirstChild(tostring(i))
+        if startPoint and endPoint and wireBox and wire then
+            local connectHitbox = wireBox:FindFirstChild("ConnectHitbox")
+            if connectHitbox then
+                local absPos = generatorMain.AbsolutePosition
+                local hitboxCenter = connectHitbox.AbsolutePosition + Vector2.yAxis * connectHitbox.AbsoluteSize.Y / 2 - absPos
+                endPoint.Position = UDim2.fromOffset(hitboxCenter.X, hitboxCenter.Y)
+                local startCenter = startPoint.AbsolutePosition - absPos + startPoint.AbsoluteSize / 2
+                local controlPoints = wire:GetControlPoints()
+                if controlPoints and #controlPoints >= 2 then
+                    controlPoints[1].Position = UDim2.fromOffset(startCenter.X, startCenter.Y)
+                    controlPoints[#controlPoints].Position = UDim2.fromOffset(hitboxCenter.X, hitboxCenter.Y)
+                    wire:SetControlPoints(controlPoints)
+                    wire.Visible = true
+                end
+            end
+        end
+    end
+end
+
+local function UpdateAutoGenerator()
+    if GenConnection then GenConnection:Disconnect(); GenConnection = nil end
+    if FireConnection then FireConnection:Disconnect(); FireConnection = nil end
+    if not Settings.AutoGenerator then return end
+    LastFireTime = 0
+    GenConnection = RunService.Heartbeat:Connect(function()
+        local genGui = LocalPlayer.PlayerGui:FindFirstChild("Gen")
+        if genGui then
+            local generatorMain = genGui:FindFirstChild("GeneratorMain")
+            if generatorMain then
+                AutoCompleteWires()
+            end
+            if not FireConnection then
+                LastFireTime = tick()
+                FireConnection = RunService.Heartbeat:Connect(function()
+                    if not Settings.AutoGenerator then return end
+                    local currentTime = tick()
+                    local delay = Settings.GenMode == "Blatant" and 0 or Settings.GenMode == "Silent" and 7 or Settings.GenDelay
+                    if currentTime - LastFireTime >= delay then
+                        local args = {{ Wires = true, Switches = true, Lever = true }}
+                        pcall(function()
+                            genGui.GeneratorMain.Event:FireServer(unpack(args))
+                        end)
+                        LastFireTime = currentTime
+                    end
+                end)
+            end
+        else
+            if FireConnection then
+                FireConnection:Disconnect()
+                FireConnection = nil
+            end
+            LastFireTime = 0
+        end
+    end)
+end
+
+local function UpdateInstantInteract()
+    local function applyToPrompts(obj)
+        for _, prompt in ipairs(obj:GetDescendants()) do
+            if prompt:IsA("ProximityPrompt") then
+                if obj.Name == "FuseBox" then
+                    prompt.HoldDuration = 0.05
+                else
+                    prompt.HoldDuration = 0
+                end
+            end
+        end
+    end
+    if Settings.InstantInteract then
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if (obj.Name == "Generator" and obj:IsA("Model")) or (obj.Name == "Battery" and obj:IsA("MeshPart")) or (obj.Name == "FuseBox" and obj:IsA("Model")) then
+                applyToPrompts(obj)
+            end
+        end
+        workspace.DescendantAdded:Connect(function(desc)
+            if not Settings.InstantInteract then return end
+            if desc:IsA("ProximityPrompt") then
+                local ancestor = desc:FindFirstAncestor("Generator") or desc:FindFirstAncestor("Battery") or desc:FindFirstAncestor("FuseBox")
+                if ancestor then
+                    if ancestor.Name == "FuseBox" then desc.HoldDuration = 0.75 else desc.HoldDuration = 0 end
+                end
+            end
+        end)
+    end
+end
+
+local function UpdateAutoBarricade()
+    if BarricadeConnection then BarricadeConnection:Disconnect(); BarricadeConnection = nil end
+    if not Settings.AutoBarricade then return end
+    BarricadeConnection = RunService.RenderStepped:Connect(function()
+        local gui = LocalPlayer:WaitForChild("PlayerGui")
+        local dot = gui:FindFirstChild("Dot")
+        if dot and dot:IsA("ScreenGui") and dot.Enabled then
+            local container = dot:FindFirstChild("Container")
+            if container then
+                local frame = container:FindFirstChild("Frame")
+                if frame and frame:IsA("GuiObject") then
+                    frame.AnchorPoint = Vector2.new(0.5, 0.5)
+                    frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+                end
+            end
+        end
+    end)
+end
+
+local function UpdateFreezeTimer()
+    if GAME and GAME:FindFirstChild("FROZENTIMER") then
+        GAME.FROZENTIMER.Value = Settings.FreezeTimer
+    end
+end
+
+local function UpdateStopMusic()
+    if GAME and GAME:FindFirstChild("STOP_MUSIC_ALL") then
+        GAME.STOP_MUSIC_ALL.Value = Settings.StopMusic
+    end
+end
+
+local function UpdateServerHop()
+    if not Settings.ServerHop then return end
+    Settings.ServerHop = false
+    local servers = {}
+    local success, req = pcall(function()
+        return game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true")
+    end)
+    if success then
+        local body = HttpService:JSONDecode(req)
+        if body and body.data then
+            for _, v in ipairs(body.data) do
+                if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= game.JobId then
+                    table.insert(servers, v.id)
+                end
+            end
+        end
+    end
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+    end
+end
+
+local function CompleteAllTasks()
+    if not GAME then return end
+    local tasks = GAME:FindFirstChild("Tasks")
+    if not tasks then return end
+    local gens = tasks:FindFirstChild("Gens")
+    local fuses = tasks:FindFirstChild("Fuses")
+    local camps = tasks:FindFirstChild("Camps")
+    if gens then gens:SetAttribute("count", gens:GetAttribute("total") or 4) end
+    if fuses then fuses:SetAttribute("count", fuses:GetAttribute("total") or 4) end
+    if camps then camps:SetAttribute("count", camps:GetAttribute("total") or 4) end
+end
+
+local RenderConnection = RunService.RenderStepped:Connect(function()
+    UpdateESP()
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if Settings.FlightEnabled then task.wait(0.5); StartFlight() end
+    if Settings.SpeedEnabled then task.wait(0.5); UpdateSpeed() end
+    if Settings.Noclip then task.wait(0.3); UpdateNoclip() end
+    UpdateJump()
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    local char = player.Character
+    if char then RemoveHighlight(char) end
+end)
+
+-- Button Bindings (connect these to your UI)
+local function BindButtons()
+    local Buttons = {
+        [1] = {Type = "Toggle", Name = "ESP", Callback = function(v) Settings.ESPEnabled = v end},
+        [2] = {Type = "Toggle", Name = "Survivor ESP", Callback = function(v) Settings.SurvivorESP = v end},
+        [3] = {Type = "Toggle", Name = "Killer ESP", Callback = function(v) Settings.KillerESP = v end},
+        [4] = {Type = "Toggle", Name = "Generator ESP", Callback = function(v) Settings.GeneratorESP = v end},
+        [5] = {Type = "Toggle", Name = "Fuse Box ESP", Callback = function(v) Settings.FuseBoxESP = v end},
+        [6] = {Type = "Toggle", Name = "Battery ESP", Callback = function(v) Settings.BatteryESP = v end},
+        [7] = {Type = "Toggle", Name = "Trap ESP", Callback = function(v) Settings.TrapESP = v end},
+        [8] = {Type = "Toggle", Name = "Minion ESP", Callback = function(v) Settings.MinionESP = v end},
+        [9] = {Type = "Toggle", Name = "Item ESP", Callback = function(v) Settings.ItemESP = v end},
+        [10] = {Type = "Slider", Name = "Speed", Min = 16, Max = 200, Default = 24, Callback = function(v) Settings.SpeedValue = v; UpdateSpeed() end},
+        [11] = {Type = "Toggle", Name = "Speed", Callback = function(v) Settings.SpeedEnabled = v; UpdateSpeed() end},
+        [12] = {Type = "Slider", Name = "Jump Power", Min = 50, Max = 300, Default = 50, Callback = function(v) Settings.JumpValue = v; UpdateJump() end},
+        [13] = {Type = "Toggle", Name = "Jump", Callback = function(v) Settings.JumpEnabled = v; UpdateJump() end},
+        [14] = {Type = "Toggle", Name = "Flight", Callback = function(v) Settings.FlightEnabled = v; if v then StartFlight() else StopFlight() end end},
+        [15] = {Type = "Slider", Name = "Flight Speed", Min = 50, Max = 300, Default = 165, Callback = function(v) Settings.FlightSpeed = v end},
+        [16] = {Type = "Toggle", Name = "Noclip", Callback = function(v) Settings.Noclip = v; UpdateNoclip() end},
+        [17] = {Type = "Toggle", Name = "Climb Walls", Callback = function(v) Settings.ClimbWalls = v; UpdateClimbWalls() end},
+        [18] = {Type = "Toggle", Name = "Auto Parry", Callback = function(v) Settings.AutoParry = v; UpdateAutoParry() end},
+        [19] = {Type = "Toggle", Name = "Auto Combo", Callback = function(v) Settings.AutoCombo = v; UpdateAutoCombo() end},
+        [20] = {Type = "Slider", Name = "Combo Speed", Min = 0.1, Max = 2, Default = 0.5, Callback = function(v) Settings.ComboSpeed = v end},
+        [21] = {Type = "Toggle", Name = "Kill Aura", Callback = function(v) Settings.KillAura = v; UpdateAutoCombo() end},
+        [22] = {Type = "Slider", Name = "Kill Range", Min = 5, Max = 30, Default = 15, Callback = function(v) Settings.KillAuraRange = v end},
+        [23] = {Type = "Toggle", Name = "Auto Dodge", Callback = function(v) Settings.AutoDodge = v; UpdateAutoDodge() end},
+        [24] = {Type = "Slider", Name = "Dodge Range", Min = 5, Max = 25, Default = 12, Callback = function(v) Settings.DodgeRange = v end},
+        [25] = {Type = "Toggle", Name = "Anti Death", Callback = function(v) Settings.AntiDeath = v; UpdateAntiDeath() end},
+        [26] = {Type = "Slider", Name = "Death Threshold", Min = 25, Max = 80, Default = 30, Callback = function(v) Settings.DeathThreshold = v end},
+        [27] = {Type = "Toggle", Name = "Anti Domain", Callback = function(v) Settings.AntiDomain = v; UpdateAntiDomain() end},
+        [28] = {Type = "Toggle", Name = "Lock On", Callback = function(v) Settings.LockOn = v; UpdateLockOn() end},
+        [29] = {Type = "Toggle", Name = "Full Bright", Callback = function(v) Settings.FullBright = v; UpdateFullBright() end},
+        [30] = {Type = "Toggle", Name = "Show Barriers", Callback = function(v) Settings.ShowBarriers = v; UpdateShowBarriers() end},
+        [31] = {Type = "Toggle", Name = "Show Hitboxes", Callback = function(v) Settings.ShowHitboxes = v; UpdateShowHitboxes() end},
+        [32] = {Type = "Toggle", Name = "Auto Generator", Callback = function(v) Settings.AutoGenerator = v; UpdateAutoGenerator() end},
+        [33] = {Type = "Dropdown", Name = "Gen Mode", Options = {"Blatant", "Silent", "Custom"}, Default = "Blatant", Callback = function(v) Settings.GenMode = v end},
+        [34] = {Type = "Slider", Name = "Gen Delay", Min = 0, Max = 10, Default = 3, Callback = function(v) Settings.GenDelay = v end},
+        [35] = {Type = "Toggle", Name = "Instant Interact", Callback = function(v) Settings.InstantInteract = v; UpdateInstantInteract() end},
+        [36] = {Type = "Toggle", Name = "Auto Barricade", Callback = function(v) Settings.AutoBarricade = v; UpdateAutoBarricade() end},
+        [37] = {Type = "Button", Name = "Complete Tasks", Callback = CompleteAllTasks},
+        [38] = {Type = "Toggle", Name = "Freeze Timer", Callback = function(v) Settings.FreezeTimer = v; UpdateFreezeTimer() end},
+        [39] = {Type = "Toggle", Name = "Stop Music", Callback = function(v) Settings.StopMusic = v; UpdateStopMusic() end},
+        [40] = {Type = "Button", Name = "Server Hop", Callback = function() Settings.ServerHop = true; UpdateServerHop() end},
+    }
+    return Buttons
+end
+
+return BindButtons()
