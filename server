@@ -1,0 +1,5085 @@
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local parentTarget = nil
+local success, _ = pcall(function() return game:GetService("CoreGui") end)
+if success then
+	parentTarget = game:GetService("CoreGui")
+else
+	parentTarget = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local existingGui = parentTarget:FindFirstChild("Lunar")
+if existingGui then
+	existingGui:Destroy()
+end
+
+local root = Instance.new("ScreenGui")
+root.Name = "Lunar"
+root.ResetOnSpawn = false
+root.IgnoreGuiInset = true
+root.Enabled = true
+root.Parent = parentTarget
+
+local Main_22 = Instance.new("Frame")
+Main_22.Name = "Main"
+Main_22.Visible = true
+Main_22.ClipsDescendants = true
+Main_22.BorderMode = Enum.BorderMode.Outline
+Main_22.BorderColor3 = Color3.fromRGB(0,0,0)
+Main_22.LayoutOrder = 0
+Main_22.BackgroundColor3 = Color3.fromRGB(12,12,18)
+Main_22.Rotation = 0
+Main_22.AnchorPoint = Vector2.new(0.5,0.5)
+Main_22.BorderSizePixel = 0
+Main_22.BackgroundTransparency = 0
+Main_22.Position = UDim2.new(0.5,0,0.5,0)
+Main_22.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Main_22.ZIndex = 1
+Main_22.AutomaticSize = Enum.AutomaticSize.None
+Main_22.Size = UDim2.new(0,520,0,380)
+Main_22.Parent = root
+
+local UICorner_40 = Instance.new("UICorner")
+UICorner_40.Name = "UICorner"
+UICorner_40.CornerRadius = UDim.new(0,12)
+UICorner_40.Parent = Main_22
+
+local UIStroke_45 = Instance.new("UIStroke")
+UIStroke_45.Name = "UIStroke"
+UIStroke_45.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_45.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_45.Color = Color3.fromRGB(35,40,55)
+UIStroke_45.Enabled = true
+UIStroke_45.Transparency = 0.30000001192092896
+UIStroke_45.Thickness = 1
+UIStroke_45.Parent = Main_22
+
+local TopBar_55 = Instance.new("Frame")
+TopBar_55.Name = "TopBar"
+TopBar_55.Visible = true
+TopBar_55.ClipsDescendants = false
+TopBar_55.BorderMode = Enum.BorderMode.Outline
+TopBar_55.BorderColor3 = Color3.fromRGB(27,42,53)
+TopBar_55.LayoutOrder = 0
+TopBar_55.BackgroundColor3 = Color3.fromRGB(18,18,26)
+TopBar_55.Rotation = 0
+TopBar_55.AnchorPoint = Vector2.new(0,0)
+TopBar_55.BorderSizePixel = 0
+TopBar_55.BackgroundTransparency = 0
+TopBar_55.Position = UDim2.new(0,0,0,0)
+TopBar_55.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TopBar_55.ZIndex = 1
+TopBar_55.AutomaticSize = Enum.AutomaticSize.None
+TopBar_55.Size = UDim2.new(1,0,0,44)
+TopBar_55.Parent = Main_22
+
+local UICorner_73 = Instance.new("UICorner")
+UICorner_73.Name = "UICorner"
+UICorner_73.CornerRadius = UDim.new(0,12)
+UICorner_73.Parent = TopBar_55
+
+local Title_78 = Instance.new("TextLabel")
+Title_78.Name = "Title"
+Title_78.LayoutOrder = 0
+Title_78.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Title_78.LineHeight = 1
+Title_78.BorderMode = Enum.BorderMode.Outline
+Title_78.TextTransparency = 0
+Title_78.TextStrokeTransparency = 1
+Title_78.AnchorPoint = Vector2.new(0,0)
+Title_78.TextWrapped = false
+Title_78.MaxVisibleGraphemes = -1
+Title_78.Visible = true
+Title_78.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Title_78.ZIndex = 1
+Title_78.AutomaticSize = Enum.AutomaticSize.None
+Title_78.Size = UDim2.new(0,200,1,0)
+Title_78.TextXAlignment = Enum.TextXAlignment.Left
+Title_78.RichText = false
+Title_78.BorderSizePixel = 1
+Title_78.ClipsDescendants = false
+Title_78.BorderColor3 = Color3.fromRGB(27,42,53)
+Title_78.Text = "LUNAR"
+Title_78.TextSize = 16
+Title_78.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Title_78.Rotation = 0
+Title_78.BackgroundTransparency = 1
+Title_78.Position = UDim2.new(0,50,0,0)
+Title_78.TextColor3 = Color3.fromRGB(100,180,255)
+Title_78.TextYAlignment = Enum.TextYAlignment.Center
+Title_78.TextScaled = false
+Title_78.BackgroundColor3 = Color3.fromRGB(163,162,165)
+Title_78.Parent = TopBar_55
+
+local Version_111 = Instance.new("TextLabel")
+Version_111.Name = "Version"
+Version_111.LayoutOrder = 0
+Version_111.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Version_111.LineHeight = 1
+Version_111.BorderMode = Enum.BorderMode.Outline
+Version_111.TextTransparency = 0
+Version_111.TextStrokeTransparency = 1
+Version_111.AnchorPoint = Vector2.new(0,0)
+Version_111.TextWrapped = false
+Version_111.MaxVisibleGraphemes = -1
+Version_111.Visible = true
+Version_111.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Version_111.ZIndex = 1
+Version_111.AutomaticSize = Enum.AutomaticSize.None
+Version_111.Size = UDim2.new(0,50,0,20)
+Version_111.TextXAlignment = Enum.TextXAlignment.Center
+Version_111.RichText = false
+Version_111.BorderSizePixel = 0
+Version_111.ClipsDescendants = false
+Version_111.BorderColor3 = Color3.fromRGB(27,42,53)
+Version_111.Text = "v2.1"
+Version_111.TextSize = 9
+Version_111.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Version_111.Rotation = 0
+Version_111.BackgroundTransparency = 0
+Version_111.Position = UDim2.new(0,110,0.5,-10)
+Version_111.TextColor3 = Color3.fromRGB(100,180,255)
+Version_111.TextYAlignment = Enum.TextYAlignment.Center
+Version_111.TextScaled = false
+Version_111.BackgroundColor3 = Color3.fromRGB(30,60,100)
+Version_111.Parent = TopBar_55
+
+local UICorner_143 = Instance.new("UICorner")
+UICorner_143.Name = "UICorner"
+UICorner_143.CornerRadius = UDim.new(0,4)
+UICorner_143.Parent = Version_111
+
+local MoonIcon_149 = Instance.new("ImageLabel")
+MoonIcon_149.Name = "MoonIcon"
+MoonIcon_149.LayoutOrder = 0
+MoonIcon_149.BorderMode = Enum.BorderMode.Outline
+MoonIcon_149.AnchorPoint = Vector2.new(0,0)
+MoonIcon_149.Image = "rbxassetid://11565651939"
+MoonIcon_149.TileSize = UDim2.new(1,0,1,0)
+MoonIcon_149.ImageRectSize = Vector2.new(0,0)
+MoonIcon_149.SizeConstraint = Enum.SizeConstraint.RelativeXY
+MoonIcon_149.ZIndex = 1
+MoonIcon_149.AutomaticSize = Enum.AutomaticSize.None
+MoonIcon_149.Size = UDim2.new(0,20,0,20)
+MoonIcon_149.ScaleType = Enum.ScaleType.Fit
+MoonIcon_149.ResampleMode = Enum.ResamplerMode.Default
+MoonIcon_149.ClipsDescendants = false
+MoonIcon_149.BorderColor3 = Color3.fromRGB(27,42,53)
+MoonIcon_149.ImageColor3 = Color3.fromRGB(100,180,255)
+MoonIcon_149.SliceCenter = Rect.new(0,0,0,0)
+MoonIcon_149.ImageTransparency = 0
+MoonIcon_149.Rotation = 0
+MoonIcon_149.ImageRectOffset = Vector2.new(0,0)
+MoonIcon_149.BackgroundTransparency = 1
+MoonIcon_149.Position = UDim2.new(0,16,0.5,-10)
+MoonIcon_149.SliceScale = 1
+MoonIcon_149.Visible = true
+MoonIcon_149.BorderSizePixel = 1
+MoonIcon_149.BackgroundColor3 = Color3.fromRGB(163,162,165)
+MoonIcon_149.Parent = TopBar_55
+
+local Separator_178 = Instance.new("Frame")
+Separator_178.Name = "Separator"
+Separator_178.Visible = true
+Separator_178.ClipsDescendants = false
+Separator_178.BorderMode = Enum.BorderMode.Outline
+Separator_178.BorderColor3 = Color3.fromRGB(27,42,53)
+Separator_178.LayoutOrder = 0
+Separator_178.BackgroundColor3 = Color3.fromRGB(30,35,50)
+Separator_178.Rotation = 0
+Separator_178.AnchorPoint = Vector2.new(0,0)
+Separator_178.BorderSizePixel = 0
+Separator_178.BackgroundTransparency = 0
+Separator_178.Position = UDim2.new(0,10,1,-1)
+Separator_178.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Separator_178.ZIndex = 1
+Separator_178.AutomaticSize = Enum.AutomaticSize.None
+Separator_178.Size = UDim2.new(1,-20,0,1)
+Separator_178.Parent = TopBar_55
+
+local CenterArea_198 = Instance.new("Frame")
+CenterArea_198.Name = "CenterArea"
+CenterArea_198.Visible = true
+CenterArea_198.ClipsDescendants = false
+CenterArea_198.BorderMode = Enum.BorderMode.Outline
+CenterArea_198.BorderColor3 = Color3.fromRGB(27,42,53)
+CenterArea_198.LayoutOrder = 0
+CenterArea_198.BackgroundColor3 = Color3.fromRGB(163,162,165)
+CenterArea_198.Rotation = 0
+CenterArea_198.AnchorPoint = Vector2.new(0,0)
+CenterArea_198.BorderSizePixel = 1
+CenterArea_198.BackgroundTransparency = 1
+CenterArea_198.Position = UDim2.new(0,0,0,44)
+CenterArea_198.SizeConstraint = Enum.SizeConstraint.RelativeXY
+CenterArea_198.ZIndex = 1
+CenterArea_198.AutomaticSize = Enum.AutomaticSize.None
+CenterArea_198.Size = UDim2.new(1,0,1,-94)
+CenterArea_198.Parent = Main_22
+
+local Avatar_216 = Instance.new("ImageLabel")
+Avatar_216.Name = "Avatar"
+Avatar_216.LayoutOrder = 0
+Avatar_216.BorderMode = Enum.BorderMode.Outline
+Avatar_216.AnchorPoint = Vector2.new(0,0)
+Avatar_216.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+Avatar_216.TileSize = UDim2.new(1,0,1,0)
+Avatar_216.ImageRectSize = Vector2.new(0,0)
+Avatar_216.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Avatar_216.ZIndex = 1
+Avatar_216.AutomaticSize = Enum.AutomaticSize.None
+Avatar_216.Size = UDim2.new(0,80,0,80)
+Avatar_216.ScaleType = Enum.ScaleType.Crop
+Avatar_216.ResampleMode = Enum.ResamplerMode.Default
+Avatar_216.ClipsDescendants = false
+Avatar_216.BorderColor3 = Color3.fromRGB(27,42,53)
+Avatar_216.ImageColor3 = Color3.fromRGB(255,255,255)
+Avatar_216.SliceCenter = Rect.new(0,0,0,0)
+Avatar_216.ImageTransparency = 0
+Avatar_216.Rotation = 0
+Avatar_216.ImageRectOffset = Vector2.new(0,0)
+Avatar_216.BackgroundTransparency = 0
+Avatar_216.Position = UDim2.new(0.5,-40,0,25)
+Avatar_216.SliceScale = 1
+Avatar_216.Visible = true
+Avatar_216.BorderSizePixel = 0
+Avatar_216.BackgroundColor3 = Color3.fromRGB(20,20,30)
+Avatar_216.Parent = CenterArea_198
+
+local UICorner_244 = Instance.new("UICorner")
+UICorner_244.Name = "UICorner"
+UICorner_244.CornerRadius = UDim.new(1,0)
+UICorner_244.Parent = Avatar_216
+
+local UIStroke_249 = Instance.new("UIStroke")
+UIStroke_249.Name = "UIStroke"
+UIStroke_249.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_249.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_249.Color = Color3.fromRGB(50,90,150)
+UIStroke_249.Enabled = true
+UIStroke_249.Transparency = 0.20000000298023224
+UIStroke_249.Thickness = 2
+UIStroke_249.Parent = Avatar_216
+
+local PlayerName_266 = Instance.new("TextLabel")
+PlayerName_266.Name = "PlayerName"
+PlayerName_266.LayoutOrder = 0
+PlayerName_266.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+PlayerName_266.LineHeight = 1
+PlayerName_266.BorderMode = Enum.BorderMode.Outline
+PlayerName_266.TextTransparency = 0
+PlayerName_266.TextStrokeTransparency = 1
+PlayerName_266.AnchorPoint = Vector2.new(0,0)
+PlayerName_266.TextWrapped = false
+PlayerName_266.MaxVisibleGraphemes = -1
+PlayerName_266.Visible = true
+PlayerName_266.SizeConstraint = Enum.SizeConstraint.RelativeXY
+PlayerName_266.ZIndex = 1
+PlayerName_266.AutomaticSize = Enum.AutomaticSize.None
+PlayerName_266.Size = UDim2.new(0,300,0,24)
+PlayerName_266.TextXAlignment = Enum.TextXAlignment.Center
+PlayerName_266.RichText = false
+PlayerName_266.BorderSizePixel = 1
+PlayerName_266.ClipsDescendants = false
+PlayerName_266.BorderColor3 = Color3.fromRGB(27,42,53)
+PlayerName_266.Text = "Name"
+PlayerName_266.TextSize = 18
+PlayerName_266.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+PlayerName_266.Rotation = 0
+PlayerName_266.BackgroundTransparency = 1
+PlayerName_266.Position = UDim2.new(0.5,-150,0,115)
+PlayerName_266.TextColor3 = Color3.fromRGB(220,225,240)
+PlayerName_266.TextYAlignment = Enum.TextYAlignment.Center
+PlayerName_266.TextScaled = false
+PlayerName_266.BackgroundColor3 = Color3.fromRGB(163,162,165)
+PlayerName_266.Parent = CenterArea_198
+
+local Role_305 = Instance.new("TextLabel")
+Role_305.Name = "Role"
+Role_305.LayoutOrder = 0
+Role_305.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Role_305.LineHeight = 1
+Role_305.BorderMode = Enum.BorderMode.Outline
+Role_305.TextTransparency = 0
+Role_305.TextStrokeTransparency = 1
+Role_305.AnchorPoint = Vector2.new(0,0)
+Role_305.TextWrapped = false
+Role_305.MaxVisibleGraphemes = -1
+Role_305.Visible = true
+Role_305.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Role_305.ZIndex = 1
+Role_305.AutomaticSize = Enum.AutomaticSize.None
+Role_305.Size = UDim2.new(0,300,0,16)
+Role_305.TextXAlignment = Enum.TextXAlignment.Center
+Role_305.RichText = false
+Role_305.BorderSizePixel = 1
+Role_305.ClipsDescendants = false
+Role_305.BorderColor3 = Color3.fromRGB(27,42,53)
+Role_305.Text = "Private Server-Side Executor"
+Role_305.TextSize = 11
+Role_305.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Role_305.Rotation = 0
+Role_305.BackgroundTransparency = 1
+Role_305.Position = UDim2.new(0.5,-150,0,138)
+Role_305.TextColor3 = Color3.fromRGB(80,90,120)
+Role_305.TextYAlignment = Enum.TextYAlignment.Center
+Role_305.TextScaled = false
+Role_305.BackgroundColor3 = Color3.fromRGB(163,162,165)
+Role_305.Parent = CenterArea_198
+
+local StatusCard_338 = Instance.new("Frame")
+StatusCard_338.Name = "StatusCard"
+StatusCard_338.Visible = true
+StatusCard_338.ClipsDescendants = false
+StatusCard_338.BorderMode = Enum.BorderMode.Outline
+StatusCard_338.BorderColor3 = Color3.fromRGB(27,42,53)
+StatusCard_338.LayoutOrder = 0
+StatusCard_338.BackgroundColor3 = Color3.fromRGB(18,18,28)
+StatusCard_338.Rotation = 0
+StatusCard_338.AnchorPoint = Vector2.new(0,0)
+StatusCard_338.BorderSizePixel = 0
+StatusCard_338.BackgroundTransparency = 0
+StatusCard_338.Position = UDim2.new(0.5,-155,0,175)
+StatusCard_338.SizeConstraint = Enum.SizeConstraint.RelativeXY
+StatusCard_338.ZIndex = 1
+StatusCard_338.AutomaticSize = Enum.AutomaticSize.None
+StatusCard_338.Size = UDim2.new(0,145,0,55)
+StatusCard_338.Parent = CenterArea_198
+
+local UICorner_356 = Instance.new("UICorner")
+UICorner_356.Name = "UICorner"
+UICorner_356.CornerRadius = UDim.new(0,8)
+UICorner_356.Parent = StatusCard_338
+
+local UIStroke_361 = Instance.new("UIStroke")
+UIStroke_361.Name = "UIStroke"
+UIStroke_361.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_361.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_361.Color = Color3.fromRGB(30,35,50)
+UIStroke_361.Enabled = true
+UIStroke_361.Transparency = 0.5
+UIStroke_361.Thickness = 1
+UIStroke_361.Parent = StatusCard_338
+
+local TextLabel_371 = Instance.new("TextLabel")
+TextLabel_371.Name = "TextLabel"
+TextLabel_371.LayoutOrder = 0
+TextLabel_371.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+TextLabel_371.LineHeight = 1
+TextLabel_371.BorderMode = Enum.BorderMode.Outline
+TextLabel_371.TextTransparency = 0
+TextLabel_371.TextStrokeTransparency = 1
+TextLabel_371.AnchorPoint = Vector2.new(0,0)
+TextLabel_371.TextWrapped = false
+TextLabel_371.MaxVisibleGraphemes = -1
+TextLabel_371.Visible = true
+TextLabel_371.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TextLabel_371.ZIndex = 1
+TextLabel_371.AutomaticSize = Enum.AutomaticSize.None
+TextLabel_371.Size = UDim2.new(1,0,0,20)
+TextLabel_371.TextXAlignment = Enum.TextXAlignment.Center
+TextLabel_371.RichText = false
+TextLabel_371.BorderSizePixel = 1
+TextLabel_371.ClipsDescendants = false
+TextLabel_371.BorderColor3 = Color3.fromRGB(27,42,53)
+TextLabel_371.Text = "STATUS"
+TextLabel_371.TextSize = 9
+TextLabel_371.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+TextLabel_371.Rotation = 0
+TextLabel_371.BackgroundTransparency = 1
+TextLabel_371.Position = UDim2.new(0,0,0,8)
+TextLabel_371.TextColor3 = Color3.fromRGB(70,80,100)
+TextLabel_371.TextYAlignment = Enum.TextYAlignment.Center
+TextLabel_371.TextScaled = false
+TextLabel_371.BackgroundColor3 = Color3.fromRGB(163,162,165)
+TextLabel_371.Parent = StatusCard_338
+
+local StatusValue_404 = Instance.new("TextLabel")
+StatusValue_404.Name = "StatusValue"
+StatusValue_404.LayoutOrder = 0
+StatusValue_404.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+StatusValue_404.LineHeight = 1
+StatusValue_404.BorderMode = Enum.BorderMode.Outline
+StatusValue_404.TextTransparency = 0
+StatusValue_404.TextStrokeTransparency = 1
+StatusValue_404.AnchorPoint = Vector2.new(0,0)
+StatusValue_404.TextWrapped = false
+StatusValue_404.MaxVisibleGraphemes = -1
+StatusValue_404.Visible = true
+StatusValue_404.SizeConstraint = Enum.SizeConstraint.RelativeXY
+StatusValue_404.ZIndex = 1
+StatusValue_404.AutomaticSize = Enum.AutomaticSize.None
+StatusValue_404.Size = UDim2.new(1,0,0,18)
+StatusValue_404.TextXAlignment = Enum.TextXAlignment.Center
+StatusValue_404.RichText = false
+StatusValue_404.BorderSizePixel = 1
+StatusValue_404.ClipsDescendants = false
+StatusValue_404.BorderColor3 = Color3.fromRGB(27,42,53)
+StatusValue_404.Text = "Connected"
+StatusValue_404.TextSize = 13
+StatusValue_404.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+StatusValue_404.Rotation = 0
+StatusValue_404.BackgroundTransparency = 1
+StatusValue_404.Position = UDim2.new(0,0,0,26)
+StatusValue_404.TextColor3 = Color3.fromRGB(60,200,120)
+StatusValue_404.TextYAlignment = Enum.TextYAlignment.Center
+StatusValue_404.TextScaled = false
+StatusValue_404.BackgroundColor3 = Color3.fromRGB(163,162,165)
+StatusValue_404.Parent = StatusCard_338
+
+local StatusDot_437 = Instance.new("Frame")
+StatusDot_437.Name = "StatusDot"
+StatusDot_437.Visible = true
+StatusDot_437.ClipsDescendants = false
+StatusDot_437.BorderMode = Enum.BorderMode.Outline
+StatusDot_437.BorderColor3 = Color3.fromRGB(27,42,53)
+StatusDot_437.LayoutOrder = 0
+StatusDot_437.BackgroundColor3 = Color3.fromRGB(60,200,120)
+StatusDot_437.Rotation = 0
+StatusDot_437.AnchorPoint = Vector2.new(0,0)
+StatusDot_437.BorderSizePixel = 0
+StatusDot_437.BackgroundTransparency = 0
+StatusDot_437.Position = UDim2.new(0,12,0,31)
+StatusDot_437.SizeConstraint = Enum.SizeConstraint.RelativeXY
+StatusDot_437.ZIndex = 1
+StatusDot_437.AutomaticSize = Enum.AutomaticSize.None
+StatusDot_437.Size = UDim2.new(0,6,0,6)
+StatusDot_437.Parent = StatusCard_338
+
+local UICorner_455 = Instance.new("UICorner")
+UICorner_455.Name = "UICorner"
+UICorner_455.CornerRadius = UDim.new(1,0)
+UICorner_455.Parent = StatusDot_437
+
+local PlayersCard_462 = Instance.new("Frame")
+PlayersCard_462.Name = "PlayersCard"
+PlayersCard_462.Visible = true
+PlayersCard_462.ClipsDescendants = false
+PlayersCard_462.BorderMode = Enum.BorderMode.Outline
+PlayersCard_462.BorderColor3 = Color3.fromRGB(27,42,53)
+PlayersCard_462.LayoutOrder = 0
+PlayersCard_462.BackgroundColor3 = Color3.fromRGB(18,18,28)
+PlayersCard_462.Rotation = 0
+PlayersCard_462.AnchorPoint = Vector2.new(0,0)
+PlayersCard_462.BorderSizePixel = 0
+PlayersCard_462.BackgroundTransparency = 0
+PlayersCard_462.Position = UDim2.new(0.5,10,0,175)
+PlayersCard_462.SizeConstraint = Enum.SizeConstraint.RelativeXY
+PlayersCard_462.ZIndex = 1
+PlayersCard_462.AutomaticSize = Enum.AutomaticSize.None
+PlayersCard_462.Size = UDim2.new(0,145,0,55)
+PlayersCard_462.Parent = CenterArea_198
+
+local UICorner_480 = Instance.new("UICorner")
+UICorner_480.Name = "UICorner"
+UICorner_480.CornerRadius = UDim.new(0,8)
+UICorner_480.Parent = PlayersCard_462
+
+local UIStroke_485 = Instance.new("UIStroke")
+UIStroke_485.Name = "UIStroke"
+UIStroke_485.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_485.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_485.Color = Color3.fromRGB(30,35,50)
+UIStroke_485.Enabled = true
+UIStroke_485.Transparency = 0.5
+UIStroke_485.Thickness = 1
+UIStroke_485.Parent = PlayersCard_462
+
+local TextLabel_495 = Instance.new("TextLabel")
+TextLabel_495.Name = "TextLabel"
+TextLabel_495.LayoutOrder = 0
+TextLabel_495.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+TextLabel_495.LineHeight = 1
+TextLabel_495.BorderMode = Enum.BorderMode.Outline
+TextLabel_495.TextTransparency = 0
+TextLabel_495.TextStrokeTransparency = 1
+TextLabel_495.AnchorPoint = Vector2.new(0,0)
+TextLabel_495.TextWrapped = false
+TextLabel_495.MaxVisibleGraphemes = -1
+TextLabel_495.Visible = true
+TextLabel_495.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TextLabel_495.ZIndex = 1
+TextLabel_495.AutomaticSize = Enum.AutomaticSize.None
+TextLabel_495.Size = UDim2.new(1,0,0,20)
+TextLabel_495.TextXAlignment = Enum.TextXAlignment.Center
+TextLabel_495.RichText = false
+TextLabel_495.BorderSizePixel = 1
+TextLabel_495.ClipsDescendants = false
+TextLabel_495.BorderColor3 = Color3.fromRGB(27,42,53)
+TextLabel_495.Text = "PLAYERS"
+TextLabel_495.TextSize = 9
+TextLabel_495.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+TextLabel_495.Rotation = 0
+TextLabel_495.BackgroundTransparency = 1
+TextLabel_495.Position = UDim2.new(0,0,0,8)
+TextLabel_495.TextColor3 = Color3.fromRGB(70,80,100)
+TextLabel_495.TextYAlignment = Enum.TextYAlignment.Center
+TextLabel_495.TextScaled = false
+TextLabel_495.BackgroundColor3 = Color3.fromRGB(163,162,165)
+TextLabel_495.Parent = PlayersCard_462
+
+local PlayersValue_528 = Instance.new("TextLabel")
+PlayersValue_528.Name = "PlayersValue"
+PlayersValue_528.LayoutOrder = 0
+PlayersValue_528.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+PlayersValue_528.LineHeight = 1
+PlayersValue_528.BorderMode = Enum.BorderMode.Outline
+PlayersValue_528.TextTransparency = 0
+PlayersValue_528.TextStrokeTransparency = 1
+PlayersValue_528.AnchorPoint = Vector2.new(0,0)
+PlayersValue_528.TextWrapped = false
+PlayersValue_528.MaxVisibleGraphemes = -1
+PlayersValue_528.Visible = true
+PlayersValue_528.SizeConstraint = Enum.SizeConstraint.RelativeXY
+PlayersValue_528.ZIndex = 1
+PlayersValue_528.AutomaticSize = Enum.AutomaticSize.None
+PlayersValue_528.Size = UDim2.new(1,0,0,18)
+PlayersValue_528.TextXAlignment = Enum.TextXAlignment.Center
+PlayersValue_528.RichText = false
+PlayersValue_528.BorderSizePixel = 1
+PlayersValue_528.ClipsDescendants = false
+PlayersValue_528.BorderColor3 = Color3.fromRGB(27,42,53)
+PlayersValue_528.Text = "0"
+PlayersValue_528.TextSize = 13
+PlayersValue_528.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+PlayersValue_528.Rotation = 0
+PlayersValue_528.BackgroundTransparency = 1
+PlayersValue_528.Position = UDim2.new(0,0,0,26)
+PlayersValue_528.TextColor3 = Color3.fromRGB(100,180,255)
+PlayersValue_528.TextYAlignment = Enum.TextYAlignment.Center
+PlayersValue_528.TextScaled = false
+PlayersValue_528.BackgroundColor3 = Color3.fromRGB(163,162,165)
+PlayersValue_528.Parent = PlayersCard_462
+
+local OpenExecutor_568 = Instance.new("TextButton")
+OpenExecutor_568.Name = "OpenExecutor"
+OpenExecutor_568.LayoutOrder = 0
+OpenExecutor_568.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+OpenExecutor_568.LineHeight = 1
+OpenExecutor_568.BorderMode = Enum.BorderMode.Outline
+OpenExecutor_568.TextTransparency = 0
+OpenExecutor_568.Selected = false
+OpenExecutor_568.Modal = false
+OpenExecutor_568.TextStrokeTransparency = 1
+OpenExecutor_568.AnchorPoint = Vector2.new(0,0)
+OpenExecutor_568.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+OpenExecutor_568.TextWrapped = false
+OpenExecutor_568.Visible = true
+OpenExecutor_568.SizeConstraint = Enum.SizeConstraint.RelativeXY
+OpenExecutor_568.ZIndex = 1
+OpenExecutor_568.AutomaticSize = Enum.AutomaticSize.None
+OpenExecutor_568.Size = UDim2.new(0,300,0,38)
+OpenExecutor_568.TextXAlignment = Enum.TextXAlignment.Center
+OpenExecutor_568.RichText = false
+OpenExecutor_568.BorderSizePixel = 0
+OpenExecutor_568.ClipsDescendants = false
+OpenExecutor_568.BorderColor3 = Color3.fromRGB(27,42,53)
+OpenExecutor_568.Text = "Open Executor"
+OpenExecutor_568.TextSize = 14
+OpenExecutor_568.AutoButtonColor = false
+OpenExecutor_568.Rotation = 0
+OpenExecutor_568.BackgroundTransparency = 0
+OpenExecutor_568.Position = UDim2.new(0.5,-150,-0.024475524201989174,248)
+OpenExecutor_568.TextColor3 = Color3.fromRGB(140,200,255)
+OpenExecutor_568.TextYAlignment = Enum.TextYAlignment.Center
+OpenExecutor_568.TextScaled = false
+OpenExecutor_568.BackgroundColor3 = Color3.fromRGB(25,55,110)
+OpenExecutor_568.Parent = CenterArea_198
+
+local UICorner_602 = Instance.new("UICorner")
+UICorner_602.Name = "UICorner"
+UICorner_602.CornerRadius = UDim.new(0,8)
+UICorner_602.Parent = OpenExecutor_568
+
+local UIStroke_607 = Instance.new("UIStroke")
+UIStroke_607.Name = "UIStroke"
+UIStroke_607.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_607.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_607.Color = Color3.fromRGB(50,90,160)
+UIStroke_607.Enabled = true
+UIStroke_607.Transparency = 0.30000001192092896
+UIStroke_607.Thickness = 1
+UIStroke_607.Parent = OpenExecutor_568
+
+local BottomBar_619 = Instance.new("Frame")
+BottomBar_619.Name = "BottomBar"
+BottomBar_619.Visible = true
+BottomBar_619.ClipsDescendants = false
+BottomBar_619.BorderMode = Enum.BorderMode.Outline
+BottomBar_619.BorderColor3 = Color3.fromRGB(27,42,53)
+BottomBar_619.LayoutOrder = 0
+BottomBar_619.BackgroundColor3 = Color3.fromRGB(15,15,22)
+BottomBar_619.Rotation = 0
+BottomBar_619.AnchorPoint = Vector2.new(0,0)
+BottomBar_619.BorderSizePixel = 0
+BottomBar_619.BackgroundTransparency = 0
+BottomBar_619.Position = UDim2.new(0,0,1,-50)
+BottomBar_619.SizeConstraint = Enum.SizeConstraint.RelativeXY
+BottomBar_619.ZIndex = 1
+BottomBar_619.AutomaticSize = Enum.AutomaticSize.None
+BottomBar_619.Size = UDim2.new(1,0,0,50)
+BottomBar_619.Parent = Main_22
+
+local UICorner_637 = Instance.new("UICorner")
+UICorner_637.Name = "UICorner"
+UICorner_637.CornerRadius = UDim.new(0,12)
+UICorner_637.Parent = BottomBar_619
+
+local CreditsSub_642 = Instance.new("TextLabel")
+CreditsSub_642.Name = "CreditsSub"
+CreditsSub_642.LayoutOrder = 0
+CreditsSub_642.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+CreditsSub_642.LineHeight = 1
+CreditsSub_642.BorderMode = Enum.BorderMode.Outline
+CreditsSub_642.TextTransparency = 0
+CreditsSub_642.TextStrokeTransparency = 1
+CreditsSub_642.AnchorPoint = Vector2.new(0,0)
+CreditsSub_642.TextWrapped = false
+CreditsSub_642.MaxVisibleGraphemes = -1
+CreditsSub_642.Visible = true
+CreditsSub_642.SizeConstraint = Enum.SizeConstraint.RelativeXY
+CreditsSub_642.ZIndex = 1
+CreditsSub_642.AutomaticSize = Enum.AutomaticSize.None
+CreditsSub_642.Size = UDim2.new(1,-20,0,14)
+CreditsSub_642.TextXAlignment = Enum.TextXAlignment.Left
+CreditsSub_642.RichText = false
+CreditsSub_642.BorderSizePixel = 1
+CreditsSub_642.ClipsDescendants = false
+CreditsSub_642.BorderColor3 = Color3.fromRGB(27,42,53)
+CreditsSub_642.Text = "By westy  \194\183  Server-side code execution"
+CreditsSub_642.TextSize = 10
+CreditsSub_642.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+CreditsSub_642.Rotation = 0
+CreditsSub_642.BackgroundTransparency = 1
+CreditsSub_642.Position = UDim2.new(0,10,0,26)
+CreditsSub_642.TextColor3 = Color3.fromRGB(45,48,65)
+CreditsSub_642.TextYAlignment = Enum.TextYAlignment.Center
+CreditsSub_642.TextScaled = false
+CreditsSub_642.BackgroundColor3 = Color3.fromRGB(163,162,165)
+CreditsSub_642.Parent = BottomBar_619
+
+local Credits_675 = Instance.new("TextLabel")
+Credits_675.Name = "Credits"
+Credits_675.LayoutOrder = 0
+Credits_675.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Credits_675.LineHeight = 1
+Credits_675.BorderMode = Enum.BorderMode.Outline
+Credits_675.TextTransparency = 0
+Credits_675.TextStrokeTransparency = 1
+Credits_675.AnchorPoint = Vector2.new(0,0)
+Credits_675.TextWrapped = false
+Credits_675.MaxVisibleGraphemes = -1
+Credits_675.Visible = true
+Credits_675.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Credits_675.ZIndex = 1
+Credits_675.AutomaticSize = Enum.AutomaticSize.None
+Credits_675.Size = UDim2.new(1,-20,0,16)
+Credits_675.TextXAlignment = Enum.TextXAlignment.Left
+Credits_675.RichText = false
+Credits_675.BorderSizePixel = 1
+Credits_675.ClipsDescendants = false
+Credits_675.BorderColor3 = Color3.fromRGB(27,42,53)
+Credits_675.Text = "Lunar Backdoor Executor"
+Credits_675.TextSize = 11
+Credits_675.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Credits_675.Rotation = 0
+Credits_675.BackgroundTransparency = 1
+Credits_675.Position = UDim2.new(0,10,0,10)
+Credits_675.TextColor3 = Color3.fromRGB(60,65,85)
+Credits_675.TextYAlignment = Enum.TextYAlignment.Center
+Credits_675.TextScaled = false
+Credits_675.BackgroundColor3 = Color3.fromRGB(163,162,165)
+Credits_675.Parent = BottomBar_619
+
+local Executor_710 = Instance.new("Frame")
+Executor_710.Name = "Executor"
+Executor_710.Visible = false
+Executor_710.ClipsDescendants = true
+Executor_710.BorderMode = Enum.BorderMode.Outline
+Executor_710.BorderColor3 = Color3.fromRGB(0,0,0)
+Executor_710.LayoutOrder = 0
+Executor_710.BackgroundColor3 = Color3.fromRGB(15,15,20)
+Executor_710.Rotation = 0
+Executor_710.AnchorPoint = Vector2.new(0.5,0.5)
+Executor_710.BorderSizePixel = 0
+Executor_710.BackgroundTransparency = 0
+Executor_710.Position = UDim2.new(0.5,0,1.6,0)
+Executor_710.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Executor_710.ZIndex = 1
+Executor_710.AutomaticSize = Enum.AutomaticSize.None
+Executor_710.Size = UDim2.new(0,600,0,450)
+Executor_710.Parent = root
+
+local UICorner_728 = Instance.new("UICorner")
+UICorner_728.Name = "UICorner"
+UICorner_728.CornerRadius = UDim.new(0,12)
+UICorner_728.Parent = Executor_710
+
+local UIStroke_733 = Instance.new("UIStroke")
+UIStroke_733.Name = "UIStroke"
+UIStroke_733.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_733.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_733.Color = Color3.fromRGB(60,80,120)
+UIStroke_733.Enabled = true
+UIStroke_733.Transparency = 0
+UIStroke_733.Thickness = 2
+UIStroke_733.Parent = Executor_710
+
+local TitleBar_1722 = Instance.new("Frame")
+TitleBar_1722.Name = "TitleBar"
+TitleBar_1722.Visible = true
+TitleBar_1722.ClipsDescendants = false
+TitleBar_1722.BorderMode = Enum.BorderMode.Outline
+TitleBar_1722.BorderColor3 = Color3.fromRGB(27,42,53)
+TitleBar_1722.LayoutOrder = 0
+TitleBar_1722.BackgroundColor3 = Color3.fromRGB(25,25,35)
+TitleBar_1722.Rotation = 0
+TitleBar_1722.AnchorPoint = Vector2.new(0,0)
+TitleBar_1722.BorderSizePixel = 0
+TitleBar_1722.BackgroundTransparency = 0
+TitleBar_1722.Position = UDim2.new(0,0,0,0)
+TitleBar_1722.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TitleBar_1722.ZIndex = 1
+TitleBar_1722.AutomaticSize = Enum.AutomaticSize.None
+TitleBar_1722.Size = UDim2.new(1,0,0,35)
+TitleBar_1722.Parent = Executor_710
+
+local UICorner_1740 = Instance.new("UICorner")
+UICorner_1740.Name = "UICorner"
+UICorner_1740.CornerRadius = UDim.new(0,12)
+UICorner_1740.Parent = TitleBar_1722
+
+local Title_1745 = Instance.new("TextLabel")
+Title_1745.Name = "Title"
+Title_1745.LayoutOrder = 0
+Title_1745.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Title_1745.LineHeight = 1
+Title_1745.BorderMode = Enum.BorderMode.Outline
+Title_1745.TextTransparency = 0
+Title_1745.TextStrokeTransparency = 1
+Title_1745.AnchorPoint = Vector2.new(0,0)
+Title_1745.TextWrapped = false
+Title_1745.MaxVisibleGraphemes = -1
+Title_1745.Visible = true
+Title_1745.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Title_1745.ZIndex = 1
+Title_1745.AutomaticSize = Enum.AutomaticSize.None
+Title_1745.Size = UDim2.new(0.800000011920929,0,1,0)
+Title_1745.TextXAlignment = Enum.TextXAlignment.Left
+Title_1745.RichText = false
+Title_1745.BorderSizePixel = 1
+Title_1745.ClipsDescendants = false
+Title_1745.BorderColor3 = Color3.fromRGB(27,42,53)
+Title_1745.Text = "Lunar Backdoor /-- IN DEVELOPMENT RELEASED NEVER"
+Title_1745.TextSize = 13
+Title_1745.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Title_1745.Rotation = 0
+Title_1745.BackgroundTransparency = 1
+Title_1745.Position = UDim2.new(0,15,0,0)
+Title_1745.TextColor3 = Color3.fromRGB(180,190,220)
+Title_1745.TextYAlignment = Enum.TextYAlignment.Center
+Title_1745.TextScaled = false
+Title_1745.BackgroundColor3 = Color3.fromRGB(163,162,165)
+Title_1745.Parent = TitleBar_1722
+
+local Close_1778 = Instance.new("TextButton")
+Close_1778.Name = "Close"
+Close_1778.LayoutOrder = 0
+Close_1778.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Close_1778.LineHeight = 1
+Close_1778.BorderMode = Enum.BorderMode.Outline
+Close_1778.TextTransparency = 0
+Close_1778.Selected = false
+Close_1778.Modal = false
+Close_1778.TextStrokeTransparency = 1
+Close_1778.AnchorPoint = Vector2.new(0,0)
+Close_1778.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Close_1778.TextWrapped = false
+Close_1778.Visible = true
+Close_1778.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Close_1778.ZIndex = 1
+Close_1778.AutomaticSize = Enum.AutomaticSize.None
+Close_1778.Size = UDim2.new(0,30,0,30)
+Close_1778.TextXAlignment = Enum.TextXAlignment.Center
+Close_1778.RichText = false
+Close_1778.BorderSizePixel = 1
+Close_1778.ClipsDescendants = false
+Close_1778.BorderColor3 = Color3.fromRGB(27,42,53)
+Close_1778.Text = "X"
+Close_1778.TextSize = 16
+Close_1778.AutoButtonColor = true
+Close_1778.Rotation = 0
+Close_1778.BackgroundTransparency = 0
+Close_1778.Position = UDim2.new(1,-35,0,2)
+Close_1778.TextColor3 = Color3.fromRGB(120,120,140)
+Close_1778.TextYAlignment = Enum.TextYAlignment.Center
+Close_1778.TextScaled = false
+Close_1778.BackgroundColor3 = Color3.fromRGB(40,40,50)
+Close_1778.Parent = TitleBar_1722
+
+local UICorner_1812 = Instance.new("UICorner")
+UICorner_1812.Name = "UICorner"
+UICorner_1812.CornerRadius = UDim.new(0,8)
+UICorner_1812.Parent = Close_1778
+
+local Minimize_1837 = Instance.new("TextButton")
+Minimize_1837.Name = "Minimize"
+Minimize_1837.LayoutOrder = 0
+Minimize_1837.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Minimize_1837.LineHeight = 1
+Minimize_1837.BorderMode = Enum.BorderMode.Outline
+Minimize_1837.TextTransparency = 0
+Minimize_1837.Selected = false
+Minimize_1837.Modal = false
+Minimize_1837.TextStrokeTransparency = 1
+Minimize_1837.AnchorPoint = Vector2.new(0,0)
+Minimize_1837.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Minimize_1837.TextWrapped = false
+Minimize_1837.Visible = true
+Minimize_1837.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Minimize_1837.ZIndex = 1
+Minimize_1837.AutomaticSize = Enum.AutomaticSize.None
+Minimize_1837.Size = UDim2.new(0,30,0,30)
+Minimize_1837.TextXAlignment = Enum.TextXAlignment.Center
+Minimize_1837.RichText = false
+Minimize_1837.BorderSizePixel = 0
+Minimize_1837.ClipsDescendants = false
+Minimize_1837.BorderColor3 = Color3.fromRGB(27,42,53)
+Minimize_1837.Text = "\226\136\146"
+Minimize_1837.TextSize = 18
+Minimize_1837.AutoButtonColor = true
+Minimize_1837.Rotation = 0
+Minimize_1837.BackgroundTransparency = 0
+Minimize_1837.Position = UDim2.new(1,-70,0,2)
+Minimize_1837.TextColor3 = Color3.fromRGB(120,120,140)
+Minimize_1837.TextYAlignment = Enum.TextYAlignment.Center
+Minimize_1837.TextScaled = false
+Minimize_1837.BackgroundColor3 = Color3.fromRGB(40,40,50)
+Minimize_1837.Parent = TitleBar_1722
+
+local UICorner_1871 = Instance.new("UICorner")
+UICorner_1871.Name = "UICorner"
+UICorner_1871.CornerRadius = UDim.new(0,4)
+UICorner_1871.Parent = Minimize_1837
+
+local Separator_1818 = Instance.new("Frame")
+Separator_1818.Name = "Separator"
+Separator_1818.Visible = true
+Separator_1818.ClipsDescendants = false
+Separator_1818.BorderMode = Enum.BorderMode.Outline
+Separator_1818.BorderColor3 = Color3.fromRGB(27,42,53)
+Separator_1818.LayoutOrder = 0
+Separator_1818.BackgroundColor3 = Color3.fromRGB(30,40,55)
+Separator_1818.Rotation = 0
+Separator_1818.AnchorPoint = Vector2.new(0,0)
+Separator_1818.BorderSizePixel = 0
+Separator_1818.BackgroundTransparency = 0
+Separator_1818.Position = UDim2.new(0,0,1,-1)
+Separator_1818.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Separator_1818.ZIndex = 1
+Separator_1818.AutomaticSize = Enum.AutomaticSize.None
+Separator_1818.Size = UDim2.new(1,0,0,1)
+Separator_1818.Parent = TitleBar_1722
+
+local TabBar_1878 = Instance.new("Frame")
+TabBar_1878.Name = "TabBar"
+TabBar_1878.Visible = true
+TabBar_1878.ClipsDescendants = false
+TabBar_1878.BorderMode = Enum.BorderMode.Outline
+TabBar_1878.BorderColor3 = Color3.fromRGB(27,42,53)
+TabBar_1878.LayoutOrder = 0
+TabBar_1878.BackgroundColor3 = Color3.fromRGB(12,12,18)
+TabBar_1878.Rotation = 0
+TabBar_1878.AnchorPoint = Vector2.new(0,0)
+TabBar_1878.BorderSizePixel = 0
+TabBar_1878.BackgroundTransparency = 0
+TabBar_1878.Position = UDim2.new(0,0,0,35)
+TabBar_1878.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TabBar_1878.ZIndex = 1
+TabBar_1878.AutomaticSize = Enum.AutomaticSize.None
+TabBar_1878.Size = UDim2.new(1,0,0,28)
+TabBar_1878.Parent = Executor_710
+
+local Separator_1896 = Instance.new("Frame")
+Separator_1896.Name = "Separator"
+Separator_1896.Visible = true
+Separator_1896.ClipsDescendants = false
+Separator_1896.BorderMode = Enum.BorderMode.Outline
+Separator_1896.BorderColor3 = Color3.fromRGB(27,42,53)
+Separator_1896.LayoutOrder = 0
+Separator_1896.BackgroundColor3 = Color3.fromRGB(30,30,50)
+Separator_1896.Rotation = 0
+Separator_1896.AnchorPoint = Vector2.new(0,0)
+Separator_1896.BorderSizePixel = 0
+Separator_1896.BackgroundTransparency = 0
+Separator_1896.Position = UDim2.new(0,0,1,-1)
+Separator_1896.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Separator_1896.ZIndex = 1
+Separator_1896.AutomaticSize = Enum.AutomaticSize.None
+Separator_1896.Size = UDim2.new(1,0,0,1)
+Separator_1896.Parent = TabBar_1878
+
+local TabScroll_1915 = Instance.new("ScrollingFrame")
+TabScroll_1915.Name = "TabScroll"
+TabScroll_1915.LayoutOrder = 0
+TabScroll_1915.BorderMode = Enum.BorderMode.Outline
+TabScroll_1915.AnchorPoint = Vector2.new(0,0)
+TabScroll_1915.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+TabScroll_1915.ScrollingDirection = Enum.ScrollingDirection.X
+TabScroll_1915.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TabScroll_1915.ZIndex = 1
+TabScroll_1915.AutomaticSize = Enum.AutomaticSize.None
+TabScroll_1915.Size = UDim2.new(1,-38,1,0)
+TabScroll_1915.ScrollBarImageColor3 = Color3.fromRGB(255,255,255)
+TabScroll_1915.HorizontalScrollBarInset = Enum.ScrollBarInset.None
+TabScroll_1915.VerticalScrollBarInset = Enum.ScrollBarInset.None
+TabScroll_1915.ClipsDescendants = true
+TabScroll_1915.BorderColor3 = Color3.fromRGB(27,42,53)
+TabScroll_1915.CanvasPosition = Vector2.new(0,0)
+TabScroll_1915.Visible = true
+TabScroll_1915.ScrollBarThickness = 0
+TabScroll_1915.Rotation = 0
+TabScroll_1915.ScrollBarImageTransparency = 0
+TabScroll_1915.BackgroundTransparency = 1
+TabScroll_1915.Position = UDim2.new(0,5,0,0)
+TabScroll_1915.ScrollingEnabled = true
+TabScroll_1915.CanvasSize = UDim2.new(0,0,0,0)
+TabScroll_1915.BorderSizePixel = 1
+TabScroll_1915.BackgroundColor3 = Color3.fromRGB(163,162,165)
+TabScroll_1915.Parent = TabBar_1878
+
+local UIListLayout_1943 = Instance.new("UIListLayout")
+UIListLayout_1943.Name = "UIListLayout"
+UIListLayout_1943.VerticalAlignment = Enum.VerticalAlignment.Top
+UIListLayout_1943.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout_1943.HorizontalAlignment = Enum.HorizontalAlignment.Left
+UIListLayout_1943.Padding = UDim.new(0,2)
+UIListLayout_1943.Wraps = false
+UIListLayout_1943.FillDirection = Enum.FillDirection.Horizontal
+UIListLayout_1943.Parent = TabScroll_1915
+
+local NewTabBtn_1954 = Instance.new("TextButton")
+NewTabBtn_1954.Name = "NewTabBtn"
+NewTabBtn_1954.LayoutOrder = 0
+NewTabBtn_1954.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+NewTabBtn_1954.LineHeight = 1
+NewTabBtn_1954.BorderMode = Enum.BorderMode.Outline
+NewTabBtn_1954.TextTransparency = 0
+NewTabBtn_1954.Selected = false
+NewTabBtn_1954.Modal = false
+NewTabBtn_1954.TextStrokeTransparency = 1
+NewTabBtn_1954.AnchorPoint = Vector2.new(0,0)
+NewTabBtn_1954.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+NewTabBtn_1954.TextWrapped = false
+NewTabBtn_1954.Visible = true
+NewTabBtn_1954.SizeConstraint = Enum.SizeConstraint.RelativeXY
+NewTabBtn_1954.ZIndex = 1
+NewTabBtn_1954.AutomaticSize = Enum.AutomaticSize.None
+NewTabBtn_1954.Size = UDim2.new(0,28,0,22)
+NewTabBtn_1954.TextXAlignment = Enum.TextXAlignment.Center
+NewTabBtn_1954.RichText = false
+NewTabBtn_1954.BorderSizePixel = 0
+NewTabBtn_1954.ClipsDescendants = false
+NewTabBtn_1954.BorderColor3 = Color3.fromRGB(27,42,53)
+NewTabBtn_1954.Text = "+"
+NewTabBtn_1954.TextSize = 16
+NewTabBtn_1954.AutoButtonColor = true
+NewTabBtn_1954.Rotation = 0
+NewTabBtn_1954.BackgroundTransparency = 0
+NewTabBtn_1954.Position = UDim2.new(1,-32,0,3)
+NewTabBtn_1954.TextColor3 = Color3.fromRGB(150,150,170)
+NewTabBtn_1954.TextYAlignment = Enum.TextYAlignment.Center
+NewTabBtn_1954.TextScaled = false
+NewTabBtn_1954.BackgroundColor3 = Color3.fromRGB(25,25,40)
+NewTabBtn_1954.Parent = TabBar_1878
+
+local UICorner_1988 = Instance.new("UICorner")
+UICorner_1988.Name = "UICorner"
+UICorner_1988.CornerRadius = UDim.new(0,4)
+UICorner_1988.Parent = NewTabBtn_1954
+
+local TargetBar_1534 = Instance.new("Frame")
+TargetBar_1534.Name = "TargetBar"
+TargetBar_1534.Visible = true
+TargetBar_1534.ClipsDescendants = false
+TargetBar_1534.BorderMode = Enum.BorderMode.Outline
+TargetBar_1534.BorderColor3 = Color3.fromRGB(27,42,53)
+TargetBar_1534.LayoutOrder = 0
+TargetBar_1534.BackgroundColor3 = Color3.fromRGB(15,15,22)
+TargetBar_1534.Rotation = 0
+TargetBar_1534.AnchorPoint = Vector2.new(0,0)
+TargetBar_1534.BorderSizePixel = 0
+TargetBar_1534.BackgroundTransparency = 0
+TargetBar_1534.Position = UDim2.new(0,10,0,65)
+TargetBar_1534.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TargetBar_1534.ZIndex = 5
+TargetBar_1534.AutomaticSize = Enum.AutomaticSize.None
+TargetBar_1534.Size = UDim2.new(1,-20,0,24)
+TargetBar_1534.Parent = Executor_710
+
+local UICorner_1552 = Instance.new("UICorner")
+UICorner_1552.Name = "UICorner"
+UICorner_1552.CornerRadius = UDim.new(0,4)
+UICorner_1552.Parent = TargetBar_1534
+
+local UIStroke_1557 = Instance.new("UIStroke")
+UIStroke_1557.Name = "UIStroke"
+UIStroke_1557.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke_1557.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_1557.Color = Color3.fromRGB(60,80,120)
+UIStroke_1557.Enabled = true
+UIStroke_1557.Transparency = 0
+UIStroke_1557.Thickness = 1
+UIStroke_1557.Parent = TargetBar_1534
+
+local TargetLabel_1567 = Instance.new("TextLabel")
+TargetLabel_1567.Name = "TargetLabel"
+TargetLabel_1567.LayoutOrder = 0
+TargetLabel_1567.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+TargetLabel_1567.LineHeight = 1
+TargetLabel_1567.BorderMode = Enum.BorderMode.Outline
+TargetLabel_1567.TextTransparency = 0
+TargetLabel_1567.TextStrokeTransparency = 1
+TargetLabel_1567.AnchorPoint = Vector2.new(0,0)
+TargetLabel_1567.TextWrapped = false
+TargetLabel_1567.MaxVisibleGraphemes = -1
+TargetLabel_1567.Visible = true
+TargetLabel_1567.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TargetLabel_1567.ZIndex = 1
+TargetLabel_1567.AutomaticSize = Enum.AutomaticSize.None
+TargetLabel_1567.Size = UDim2.new(1,-60,1,0)
+TargetLabel_1567.TextXAlignment = Enum.TextXAlignment.Left
+TargetLabel_1567.RichText = false
+TargetLabel_1567.BorderSizePixel = 1
+TargetLabel_1567.ClipsDescendants = false
+TargetLabel_1567.BorderColor3 = Color3.fromRGB(27,42,53)
+TargetLabel_1567.Text = "Target: Self"
+TargetLabel_1567.TextSize = 11
+TargetLabel_1567.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+TargetLabel_1567.Rotation = 0
+TargetLabel_1567.BackgroundTransparency = 1
+TargetLabel_1567.Position = UDim2.new(0,20,0,0)
+TargetLabel_1567.TextColor3 = Color3.fromRGB(140,150,180)
+TargetLabel_1567.TextYAlignment = Enum.TextYAlignment.Center
+TargetLabel_1567.TextScaled = false
+TargetLabel_1567.BackgroundColor3 = Color3.fromRGB(163,162,165)
+TargetLabel_1567.Parent = TargetBar_1534
+
+local TargetDot_1600 = Instance.new("Frame")
+TargetDot_1600.Name = "TargetDot"
+TargetDot_1600.Visible = true
+TargetDot_1600.ClipsDescendants = false
+TargetDot_1600.BorderMode = Enum.BorderMode.Outline
+TargetDot_1600.BorderColor3 = Color3.fromRGB(27,42,53)
+TargetDot_1600.LayoutOrder = 0
+TargetDot_1600.BackgroundColor3 = Color3.fromRGB(80,180,120)
+TargetDot_1600.Rotation = 0
+TargetDot_1600.AnchorPoint = Vector2.new(0,0)
+TargetDot_1600.BorderSizePixel = 0
+TargetDot_1600.BackgroundTransparency = 0
+TargetDot_1600.Position = UDim2.new(0,8,0.5,-4)
+TargetDot_1600.SizeConstraint = Enum.SizeConstraint.RelativeXY
+TargetDot_1600.ZIndex = 1
+TargetDot_1600.AutomaticSize = Enum.AutomaticSize.None
+TargetDot_1600.Size = UDim2.new(0,8,0,8)
+TargetDot_1600.Parent = TargetBar_1534
+
+local UICorner_1618 = Instance.new("UICorner")
+UICorner_1618.Name = "UICorner"
+UICorner_1618.CornerRadius = UDim.new(1,0)
+UICorner_1618.Parent = TargetDot_1600
+
+local ClearTarget_1624 = Instance.new("TextButton")
+ClearTarget_1624.Name = "ClearTarget"
+ClearTarget_1624.LayoutOrder = 0
+ClearTarget_1624.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+ClearTarget_1624.LineHeight = 1
+ClearTarget_1624.BorderMode = Enum.BorderMode.Outline
+ClearTarget_1624.TextTransparency = 0
+ClearTarget_1624.Selected = false
+ClearTarget_1624.Modal = false
+ClearTarget_1624.TextStrokeTransparency = 1
+ClearTarget_1624.AnchorPoint = Vector2.new(0,0)
+ClearTarget_1624.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+ClearTarget_1624.TextWrapped = false
+ClearTarget_1624.Visible = true
+ClearTarget_1624.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ClearTarget_1624.ZIndex = 1
+ClearTarget_1624.AutomaticSize = Enum.AutomaticSize.None
+ClearTarget_1624.Size = UDim2.new(0,40,0,18)
+ClearTarget_1624.TextXAlignment = Enum.TextXAlignment.Center
+ClearTarget_1624.RichText = false
+ClearTarget_1624.BorderSizePixel = 0
+ClearTarget_1624.ClipsDescendants = false
+ClearTarget_1624.BorderColor3 = Color3.fromRGB(27,42,53)
+ClearTarget_1624.Text = "Clear"
+ClearTarget_1624.TextSize = 11
+ClearTarget_1624.AutoButtonColor = true
+ClearTarget_1624.Rotation = 0
+ClearTarget_1624.BackgroundTransparency = 0
+ClearTarget_1624.Position = UDim2.new(1,-48,0.5,-9)
+ClearTarget_1624.TextColor3 = Color3.fromRGB(140,140,160)
+ClearTarget_1624.TextYAlignment = Enum.TextYAlignment.Center
+ClearTarget_1624.TextScaled = false
+ClearTarget_1624.BackgroundColor3 = Color3.fromRGB(40,40,55)
+ClearTarget_1624.Parent = TargetBar_1534
+
+local UICorner_1658 = Instance.new("UICorner")
+UICorner_1658.Name = "UICorner"
+UICorner_1658.CornerRadius = UDim.new(0,3)
+UICorner_1658.Parent = ClearTarget_1624
+
+local MainContent_743 = Instance.new("Frame")
+MainContent_743.Name = "MainContent"
+MainContent_743.Visible = true
+MainContent_743.ClipsDescendants = true
+MainContent_743.BorderMode = Enum.BorderMode.Outline
+MainContent_743.BorderColor3 = Color3.fromRGB(27,42,53)
+MainContent_743.LayoutOrder = 0
+MainContent_743.BackgroundColor3 = Color3.fromRGB(10,10,15)
+MainContent_743.Rotation = 0
+MainContent_743.AnchorPoint = Vector2.new(0,0)
+MainContent_743.BorderSizePixel = 0
+MainContent_743.BackgroundTransparency = 0
+MainContent_743.Position = UDim2.new(0,10,0,92)
+MainContent_743.SizeConstraint = Enum.SizeConstraint.RelativeXY
+MainContent_743.ZIndex = 1
+MainContent_743.AutomaticSize = Enum.AutomaticSize.None
+MainContent_743.Size = UDim2.new(1,-20,1,-157)
+MainContent_743.Parent = Executor_710
+
+local UICorner_761 = Instance.new("UICorner")
+UICorner_761.Name = "UICorner"
+UICorner_761.CornerRadius = UDim.new(0,8)
+UICorner_761.Parent = MainContent_743
+
+local LineNumbers_766 = Instance.new("TextLabel")
+LineNumbers_766.Name = "LineNumbers"
+LineNumbers_766.LayoutOrder = 0
+LineNumbers_766.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+LineNumbers_766.LineHeight = 1
+LineNumbers_766.BorderMode = Enum.BorderMode.Outline
+LineNumbers_766.TextTransparency = 0
+LineNumbers_766.TextStrokeTransparency = 1
+LineNumbers_766.AnchorPoint = Vector2.new(0,0)
+LineNumbers_766.TextWrapped = false
+LineNumbers_766.MaxVisibleGraphemes = -1
+LineNumbers_766.Visible = true
+LineNumbers_766.SizeConstraint = Enum.SizeConstraint.RelativeXY
+LineNumbers_766.ZIndex = 1
+LineNumbers_766.AutomaticSize = Enum.AutomaticSize.None
+LineNumbers_766.Size = UDim2.new(0,40,1,-10)
+LineNumbers_766.TextXAlignment = Enum.TextXAlignment.Right
+LineNumbers_766.RichText = false
+LineNumbers_766.BorderSizePixel = 1
+LineNumbers_766.ClipsDescendants = false
+LineNumbers_766.BorderColor3 = Color3.fromRGB(27,42,53)
+LineNumbers_766.Text = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10"
+LineNumbers_766.TextSize = 13
+LineNumbers_766.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+LineNumbers_766.Rotation = 0
+LineNumbers_766.BackgroundTransparency = 0
+LineNumbers_766.Position = UDim2.new(0,5,0,5)
+LineNumbers_766.TextColor3 = Color3.fromRGB(50,55,70)
+LineNumbers_766.TextYAlignment = Enum.TextYAlignment.Top
+LineNumbers_766.TextScaled = false
+LineNumbers_766.BackgroundColor3 = Color3.fromRGB(8,8,14)
+LineNumbers_766.Parent = MainContent_743
+
+local Typer_799 = Instance.new("TextBox")
+Typer_799.Name = "Typer"
+Typer_799.Visible = true
+Typer_799.TextWrapped = false
+Typer_799.LineHeight = 1
+Typer_799.TextStrokeTransparency = 1
+Typer_799.PlaceholderColor3 = Color3.fromRGB(60,65,85)
+Typer_799.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Typer_799.ZIndex = 1
+Typer_799.BorderSizePixel = 1
+Typer_799.RichText = false
+Typer_799.TextYAlignment = Enum.TextYAlignment.Top
+Typer_799.TextScaled = false
+Typer_799.BackgroundColor3 = Color3.fromRGB(163,162,165)
+Typer_799.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Typer_799.BorderMode = Enum.BorderMode.Outline
+Typer_799.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Typer_799.AnchorPoint = Vector2.new(0,0)
+Typer_799.PlaceholderText = "-- Enter code here..."
+Typer_799.TextSize = 13
+Typer_799.Size = UDim2.new(1,-55,1,-10)
+Typer_799.ShowNativeInput = false
+Typer_799.AutomaticSize = Enum.AutomaticSize.None
+Typer_799.TextColor3 = Color3.fromRGB(200,205,220)
+Typer_799.BorderColor3 = Color3.fromRGB(27,42,53)
+Typer_799.Text = ""
+Typer_799.LayoutOrder = 0
+Typer_799.TextTransparency = 0
+Typer_799.Rotation = 0
+Typer_799.BackgroundTransparency = 1
+Typer_799.Position = UDim2.new(0,50,0,5)
+Typer_799.MultiLine = true
+Typer_799.ClearTextOnFocus = false
+Typer_799.TextXAlignment = Enum.TextXAlignment.Left
+Typer_799.ClipsDescendants = false
+Typer_799.Parent = MainContent_743
+
+local MoonLogo_836 = Instance.new("ImageLabel")
+MoonLogo_836.Name = "MoonLogo"
+MoonLogo_836.LayoutOrder = 0
+MoonLogo_836.BorderMode = Enum.BorderMode.Outline
+MoonLogo_836.AnchorPoint = Vector2.new(0,0)
+MoonLogo_836.Image = "rbxassetid://11565651939"
+MoonLogo_836.TileSize = UDim2.new(1,0,1,0)
+MoonLogo_836.ImageRectSize = Vector2.new(0,0)
+MoonLogo_836.SizeConstraint = Enum.SizeConstraint.RelativeXY
+MoonLogo_836.ZIndex = 5
+MoonLogo_836.AutomaticSize = Enum.AutomaticSize.None
+MoonLogo_836.Size = UDim2.new(0,80,0,80)
+MoonLogo_836.ScaleType = Enum.ScaleType.Stretch
+MoonLogo_836.ResampleMode = Enum.ResamplerMode.Default
+MoonLogo_836.ClipsDescendants = false
+MoonLogo_836.BorderColor3 = Color3.fromRGB(27,42,53)
+MoonLogo_836.ImageColor3 = Color3.fromRGB(100,200,255)
+MoonLogo_836.SliceCenter = Rect.new(0,0,0,0)
+MoonLogo_836.ImageTransparency = 0
+MoonLogo_836.Rotation = 0
+MoonLogo_836.ImageRectOffset = Vector2.new(0,0)
+MoonLogo_836.BackgroundTransparency = 1
+MoonLogo_836.Position = UDim2.new(0.5,-40,0.5,-40)
+MoonLogo_836.SliceScale = 1
+MoonLogo_836.Visible = true
+MoonLogo_836.BorderSizePixel = 1
+MoonLogo_836.BackgroundColor3 = Color3.fromRGB(163,162,165)
+MoonLogo_836.Parent = MainContent_743
+
+local Glow_865 = Instance.new("ImageLabel")
+Glow_865.Name = "Glow"
+Glow_865.LayoutOrder = 0
+Glow_865.BorderMode = Enum.BorderMode.Outline
+Glow_865.AnchorPoint = Vector2.new(0,0)
+Glow_865.Image = "rbxassetid://11565651939"
+Glow_865.TileSize = UDim2.new(1,0,1,0)
+Glow_865.ImageRectSize = Vector2.new(0,0)
+Glow_865.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Glow_865.ZIndex = 4
+Glow_865.AutomaticSize = Enum.AutomaticSize.None
+Glow_865.Size = UDim2.new(0,120,0,120)
+Glow_865.ScaleType = Enum.ScaleType.Stretch
+Glow_865.ResampleMode = Enum.ResamplerMode.Default
+Glow_865.ClipsDescendants = false
+Glow_865.BorderColor3 = Color3.fromRGB(27,42,53)
+Glow_865.ImageColor3 = Color3.fromRGB(50,150,255)
+Glow_865.SliceCenter = Rect.new(0,0,0,0)
+Glow_865.ImageTransparency = 0.5
+Glow_865.Rotation = 0
+Glow_865.ImageRectOffset = Vector2.new(0,0)
+Glow_865.BackgroundTransparency = 1
+Glow_865.Position = UDim2.new(0.5,-60,0.5,-60)
+Glow_865.SliceScale = 1
+Glow_865.Visible = true
+Glow_865.BorderSizePixel = 1
+Glow_865.BackgroundColor3 = Color3.fromRGB(163,162,165)
+Glow_865.Parent = MainContent_743
+
+local SyntaxDisplay_894 = Instance.new("TextLabel")
+SyntaxDisplay_894.Name = "SyntaxDisplay"
+SyntaxDisplay_894.LayoutOrder = 0
+SyntaxDisplay_894.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+SyntaxDisplay_894.LineHeight = 1
+SyntaxDisplay_894.BorderMode = Enum.BorderMode.Outline
+SyntaxDisplay_894.TextTransparency = 0
+SyntaxDisplay_894.TextStrokeTransparency = 1
+SyntaxDisplay_894.AnchorPoint = Vector2.new(0,0)
+SyntaxDisplay_894.TextWrapped = false
+SyntaxDisplay_894.MaxVisibleGraphemes = -1
+SyntaxDisplay_894.Visible = true
+SyntaxDisplay_894.SizeConstraint = Enum.SizeConstraint.RelativeXY
+SyntaxDisplay_894.ZIndex = 0
+SyntaxDisplay_894.AutomaticSize = Enum.AutomaticSize.None
+SyntaxDisplay_894.Size = UDim2.new(1,-55,1,-10)
+SyntaxDisplay_894.TextXAlignment = Enum.TextXAlignment.Left
+SyntaxDisplay_894.RichText = true
+SyntaxDisplay_894.BorderSizePixel = 1
+SyntaxDisplay_894.ClipsDescendants = true
+SyntaxDisplay_894.BorderColor3 = Color3.fromRGB(27,42,53)
+SyntaxDisplay_894.Text = ""
+SyntaxDisplay_894.TextSize = 14
+SyntaxDisplay_894.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+SyntaxDisplay_894.Rotation = 0
+SyntaxDisplay_894.BackgroundTransparency = 1
+SyntaxDisplay_894.Position = UDim2.new(0,50,0,5)
+SyntaxDisplay_894.TextColor3 = Color3.fromRGB(220,220,230)
+SyntaxDisplay_894.TextYAlignment = Enum.TextYAlignment.Top
+SyntaxDisplay_894.TextScaled = false
+SyntaxDisplay_894.BackgroundColor3 = Color3.fromRGB(163,162,165)
+SyntaxDisplay_894.Parent = MainContent_743
+
+local ErrorLine_927 = Instance.new("Frame")
+ErrorLine_927.Name = "ErrorLine"
+ErrorLine_927.Visible = false
+ErrorLine_927.ClipsDescendants = false
+ErrorLine_927.BorderMode = Enum.BorderMode.Outline
+ErrorLine_927.BorderColor3 = Color3.fromRGB(27,42,53)
+ErrorLine_927.LayoutOrder = 0
+ErrorLine_927.BackgroundColor3 = Color3.fromRGB(180,30,30)
+ErrorLine_927.Rotation = 0
+ErrorLine_927.AnchorPoint = Vector2.new(0,0)
+ErrorLine_927.BorderSizePixel = 0
+ErrorLine_927.BackgroundTransparency = 0.75
+ErrorLine_927.Position = UDim2.new(0,0,0,0)
+ErrorLine_927.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ErrorLine_927.ZIndex = 0
+ErrorLine_927.AutomaticSize = Enum.AutomaticSize.None
+ErrorLine_927.Size = UDim2.new(1,0,0,16)
+ErrorLine_927.Parent = MainContent_743
+
+local InnerBorder_946 = Instance.new("UIStroke")
+InnerBorder_946.Name = "InnerBorder"
+InnerBorder_946.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+InnerBorder_946.LineJoinMode = Enum.LineJoinMode.Round
+InnerBorder_946.Color = Color3.fromRGB(25,35,50)
+InnerBorder_946.Enabled = true
+InnerBorder_946.Transparency = 0.5
+InnerBorder_946.Thickness = 1
+InnerBorder_946.Parent = MainContent_743
+
+local Scanner_1308 = Instance.new("Frame")
+Scanner_1308.Name = "Scanner"
+Scanner_1308.Visible = false
+Scanner_1308.ClipsDescendants = true
+Scanner_1308.BorderMode = Enum.BorderMode.Outline
+Scanner_1308.BorderColor3 = Color3.fromRGB(27,42,53)
+Scanner_1308.LayoutOrder = 0
+Scanner_1308.BackgroundColor3 = Color3.fromRGB(10,10,15)
+Scanner_1308.Rotation = 0
+Scanner_1308.AnchorPoint = Vector2.new(0,0)
+Scanner_1308.BorderSizePixel = 0
+Scanner_1308.BackgroundTransparency = 0
+Scanner_1308.Position = UDim2.new(0,10,0,92)
+Scanner_1308.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Scanner_1308.ZIndex = 1
+Scanner_1308.AutomaticSize = Enum.AutomaticSize.None
+Scanner_1308.Size = UDim2.new(1,-20,1,-132)
+Scanner_1308.Parent = Executor_710
+
+local UICorner_1326 = Instance.new("UICorner")
+UICorner_1326.Name = "UICorner"
+UICorner_1326.CornerRadius = UDim.new(0,6)
+UICorner_1326.Parent = Scanner_1308
+
+local UIStroke_1331 = Instance.new("UIStroke")
+UIStroke_1331.Name = "UIStroke"
+UIStroke_1331.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_1331.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_1331.Color = Color3.fromRGB(60,80,120)
+UIStroke_1331.Enabled = true
+UIStroke_1331.Transparency = 0
+UIStroke_1331.Thickness = 1.5
+UIStroke_1331.Parent = Scanner_1308
+
+local Header_1341 = Instance.new("Frame")
+Header_1341.Name = "Header"
+Header_1341.Visible = true
+Header_1341.ClipsDescendants = false
+Header_1341.BorderMode = Enum.BorderMode.Outline
+Header_1341.BorderColor3 = Color3.fromRGB(27,42,53)
+Header_1341.LayoutOrder = 0
+Header_1341.BackgroundColor3 = Color3.fromRGB(20,20,30)
+Header_1341.Rotation = 0
+Header_1341.AnchorPoint = Vector2.new(0,0)
+Header_1341.BorderSizePixel = 0
+Header_1341.BackgroundTransparency = 0
+Header_1341.Position = UDim2.new(0,0,0,0)
+Header_1341.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Header_1341.ZIndex = 1
+Header_1341.AutomaticSize = Enum.AutomaticSize.None
+Header_1341.Size = UDim2.new(1,0,0,30)
+Header_1341.Parent = Scanner_1308
+
+local UICorner_1359 = Instance.new("UICorner")
+UICorner_1359.Name = "UICorner"
+UICorner_1359.CornerRadius = UDim.new(0,6)
+UICorner_1359.Parent = Header_1341
+
+local Title_1364 = Instance.new("TextLabel")
+Title_1364.Name = "Title"
+Title_1364.LayoutOrder = 0
+Title_1364.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Title_1364.LineHeight = 1
+Title_1364.BorderMode = Enum.BorderMode.Outline
+Title_1364.TextTransparency = 0
+Title_1364.TextStrokeTransparency = 1
+Title_1364.AnchorPoint = Vector2.new(0,0)
+Title_1364.TextWrapped = false
+Title_1364.MaxVisibleGraphemes = -1
+Title_1364.Visible = true
+Title_1364.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Title_1364.ZIndex = 1
+Title_1364.AutomaticSize = Enum.AutomaticSize.None
+Title_1364.Size = UDim2.new(0.699999988079071,0,1,0)
+Title_1364.TextXAlignment = Enum.TextXAlignment.Left
+Title_1364.RichText = false
+Title_1364.BorderSizePixel = 1
+Title_1364.ClipsDescendants = false
+Title_1364.BorderColor3 = Color3.fromRGB(27,42,53)
+Title_1364.Text = "Remote Scanner"
+Title_1364.TextSize = 14
+Title_1364.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Title_1364.Rotation = 0
+Title_1364.BackgroundTransparency = 1
+Title_1364.Position = UDim2.new(0,10,0,0)
+Title_1364.TextColor3 = Color3.fromRGB(100,200,255)
+Title_1364.TextYAlignment = Enum.TextYAlignment.Center
+Title_1364.TextScaled = false
+Title_1364.BackgroundColor3 = Color3.fromRGB(163,162,165)
+Title_1364.Parent = Header_1341
+
+local BackBtn_1397 = Instance.new("TextButton")
+BackBtn_1397.Name = "BackBtn"
+BackBtn_1397.LayoutOrder = 0
+BackBtn_1397.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+BackBtn_1397.LineHeight = 1
+BackBtn_1397.BorderMode = Enum.BorderMode.Outline
+BackBtn_1397.TextTransparency = 0
+BackBtn_1397.Selected = false
+BackBtn_1397.Modal = false
+BackBtn_1397.TextStrokeTransparency = 1
+BackBtn_1397.AnchorPoint = Vector2.new(0,0)
+BackBtn_1397.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+BackBtn_1397.TextWrapped = false
+BackBtn_1397.Visible = true
+BackBtn_1397.SizeConstraint = Enum.SizeConstraint.RelativeXY
+BackBtn_1397.ZIndex = 1
+BackBtn_1397.AutomaticSize = Enum.AutomaticSize.None
+BackBtn_1397.Size = UDim2.new(0,70,0,24)
+BackBtn_1397.TextXAlignment = Enum.TextXAlignment.Center
+BackBtn_1397.RichText = false
+BackBtn_1397.BorderSizePixel = 0
+BackBtn_1397.ClipsDescendants = false
+BackBtn_1397.BorderColor3 = Color3.fromRGB(27,42,53)
+BackBtn_1397.Text = "\226\134\144 Back"
+BackBtn_1397.TextSize = 12
+BackBtn_1397.AutoButtonColor = true
+BackBtn_1397.Rotation = 0
+BackBtn_1397.BackgroundTransparency = 0
+BackBtn_1397.Position = UDim2.new(1,-80,0,3)
+BackBtn_1397.TextColor3 = Color3.fromRGB(200,200,200)
+BackBtn_1397.TextYAlignment = Enum.TextYAlignment.Center
+BackBtn_1397.TextScaled = false
+BackBtn_1397.BackgroundColor3 = Color3.fromRGB(40,40,55)
+BackBtn_1397.Parent = Header_1341
+
+local UICorner_1431 = Instance.new("UICorner")
+UICorner_1431.Name = "UICorner"
+UICorner_1431.CornerRadius = UDim.new(0,4)
+UICorner_1431.Parent = BackBtn_1397
+
+local Status_1438 = Instance.new("TextLabel")
+Status_1438.Name = "Status"
+Status_1438.LayoutOrder = 0
+Status_1438.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Status_1438.LineHeight = 1
+Status_1438.BorderMode = Enum.BorderMode.Outline
+Status_1438.TextTransparency = 0
+Status_1438.TextStrokeTransparency = 1
+Status_1438.AnchorPoint = Vector2.new(0,0)
+Status_1438.TextWrapped = false
+Status_1438.MaxVisibleGraphemes = -1
+Status_1438.Visible = true
+Status_1438.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Status_1438.ZIndex = 1
+Status_1438.AutomaticSize = Enum.AutomaticSize.None
+Status_1438.Size = UDim2.new(1,0,0,25)
+Status_1438.TextXAlignment = Enum.TextXAlignment.Center
+Status_1438.RichText = false
+Status_1438.BorderSizePixel = 0
+Status_1438.ClipsDescendants = false
+Status_1438.BorderColor3 = Color3.fromRGB(27,42,53)
+Status_1438.Text = "Ready to scan..."
+Status_1438.TextSize = 12
+Status_1438.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+Status_1438.Rotation = 0
+Status_1438.BackgroundTransparency = 0
+Status_1438.Position = UDim2.new(0,0,0,30)
+Status_1438.TextColor3 = Color3.fromRGB(150,150,170)
+Status_1438.TextYAlignment = Enum.TextYAlignment.Center
+Status_1438.TextScaled = false
+Status_1438.BackgroundColor3 = Color3.fromRGB(15,15,22)
+Status_1438.Parent = Scanner_1308
+
+local ResultsList_1471 = Instance.new("ScrollingFrame")
+ResultsList_1471.Name = "ResultsList"
+ResultsList_1471.LayoutOrder = 0
+ResultsList_1471.BorderMode = Enum.BorderMode.Outline
+ResultsList_1471.AnchorPoint = Vector2.new(0,0)
+ResultsList_1471.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+ResultsList_1471.ScrollingDirection = Enum.ScrollingDirection.XY
+ResultsList_1471.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ResultsList_1471.ZIndex = 1
+ResultsList_1471.AutomaticSize = Enum.AutomaticSize.None
+ResultsList_1471.Size = UDim2.new(1,-10,1,-70)
+ResultsList_1471.ScrollBarImageColor3 = Color3.fromRGB(60,80,120)
+ResultsList_1471.HorizontalScrollBarInset = Enum.ScrollBarInset.None
+ResultsList_1471.VerticalScrollBarInset = Enum.ScrollBarInset.None
+ResultsList_1471.ClipsDescendants = true
+ResultsList_1471.BorderColor3 = Color3.fromRGB(27,42,53)
+ResultsList_1471.CanvasPosition = Vector2.new(0,0)
+ResultsList_1471.Visible = true
+ResultsList_1471.ScrollBarThickness = 4
+ResultsList_1471.Rotation = 0
+ResultsList_1471.ScrollBarImageTransparency = 0
+ResultsList_1471.BackgroundTransparency = 0
+ResultsList_1471.Position = UDim2.new(0,5,0,60)
+ResultsList_1471.ScrollingEnabled = true
+ResultsList_1471.CanvasSize = UDim2.new(0,0,0,0)
+ResultsList_1471.BorderSizePixel = 0
+ResultsList_1471.BackgroundColor3 = Color3.fromRGB(8,8,12)
+ResultsList_1471.Parent = Scanner_1308
+
+local UICorner_1499 = Instance.new("UICorner")
+UICorner_1499.Name = "UICorner"
+UICorner_1499.CornerRadius = UDim.new(0,4)
+UICorner_1499.Parent = ResultsList_1471
+
+local ListLayout_1504 = Instance.new("UIListLayout")
+ListLayout_1504.Name = "ListLayout"
+ListLayout_1504.VerticalAlignment = Enum.VerticalAlignment.Top
+ListLayout_1504.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout_1504.HorizontalAlignment = Enum.HorizontalAlignment.Left
+ListLayout_1504.Padding = UDim.new(0,3)
+ListLayout_1504.Wraps = false
+ListLayout_1504.FillDirection = Enum.FillDirection.Vertical
+ListLayout_1504.Parent = ResultsList_1471
+
+local Padding_1514 = Instance.new("UIPadding")
+Padding_1514.Name = "Padding"
+Padding_1514.PaddingBottom = UDim.new(0,5)
+Padding_1514.PaddingTop = UDim.new(0,5)
+Padding_1514.PaddingLeft = UDim.new(0,5)
+Padding_1514.PaddingRight = UDim.new(0,5)
+Padding_1514.Parent = ResultsList_1471
+
+local SavedPanel_1995 = Instance.new("Frame")
+SavedPanel_1995.Name = "SavedPanel"
+SavedPanel_1995.Visible = false
+SavedPanel_1995.ClipsDescendants = true
+SavedPanel_1995.BorderMode = Enum.BorderMode.Outline
+SavedPanel_1995.BorderColor3 = Color3.fromRGB(27,42,53)
+SavedPanel_1995.LayoutOrder = 0
+SavedPanel_1995.BackgroundColor3 = Color3.fromRGB(10,10,16)
+SavedPanel_1995.Rotation = 0
+SavedPanel_1995.AnchorPoint = Vector2.new(0,0)
+SavedPanel_1995.BorderSizePixel = 0
+SavedPanel_1995.BackgroundTransparency = 0
+SavedPanel_1995.Position = UDim2.new(0,10,0,92)
+SavedPanel_1995.SizeConstraint = Enum.SizeConstraint.RelativeXY
+SavedPanel_1995.ZIndex = 1
+SavedPanel_1995.AutomaticSize = Enum.AutomaticSize.None
+SavedPanel_1995.Size = UDim2.new(1,-20,1,-132)
+SavedPanel_1995.Parent = Executor_710
+
+local UICorner_2013 = Instance.new("UICorner")
+UICorner_2013.Name = "UICorner"
+UICorner_2013.CornerRadius = UDim.new(0,6)
+UICorner_2013.Parent = SavedPanel_1995
+
+local UIStroke_2018 = Instance.new("UIStroke")
+UIStroke_2018.Name = "UIStroke"
+UIStroke_2018.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_2018.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_2018.Color = Color3.fromRGB(30,30,50)
+UIStroke_2018.Enabled = true
+UIStroke_2018.Transparency = 0
+UIStroke_2018.Thickness = 1
+UIStroke_2018.Parent = SavedPanel_1995
+
+local SavedHeader_2028 = Instance.new("Frame")
+SavedHeader_2028.Name = "Header"
+SavedHeader_2028.Visible = true
+SavedHeader_2028.ClipsDescendants = false
+SavedHeader_2028.BorderMode = Enum.BorderMode.Outline
+SavedHeader_2028.BorderColor3 = Color3.fromRGB(27,42,53)
+SavedHeader_2028.LayoutOrder = 0
+SavedHeader_2028.BackgroundColor3 = Color3.fromRGB(15,15,22)
+SavedHeader_2028.Rotation = 0
+SavedHeader_2028.AnchorPoint = Vector2.new(0,0)
+SavedHeader_2028.BorderSizePixel = 0
+SavedHeader_2028.BackgroundTransparency = 0
+SavedHeader_2028.Position = UDim2.new(0,0,0,0)
+SavedHeader_2028.SizeConstraint = Enum.SizeConstraint.RelativeXY
+SavedHeader_2028.ZIndex = 1
+SavedHeader_2028.AutomaticSize = Enum.AutomaticSize.None
+SavedHeader_2028.Size = UDim2.new(1,0,0,35)
+SavedHeader_2028.Parent = SavedPanel_1995
+
+local UICorner_2046 = Instance.new("UICorner")
+UICorner_2046.Name = "UICorner"
+UICorner_2046.CornerRadius = UDim.new(0,6)
+UICorner_2046.Parent = SavedHeader_2028
+
+local SavedTitle_2051 = Instance.new("TextLabel")
+SavedTitle_2051.Name = "Title"
+SavedTitle_2051.LayoutOrder = 0
+SavedTitle_2051.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+SavedTitle_2051.LineHeight = 1
+SavedTitle_2051.BorderMode = Enum.BorderMode.Outline
+SavedTitle_2051.TextTransparency = 0
+SavedTitle_2051.TextStrokeTransparency = 1
+SavedTitle_2051.AnchorPoint = Vector2.new(0,0)
+SavedTitle_2051.TextWrapped = false
+SavedTitle_2051.MaxVisibleGraphemes = -1
+SavedTitle_2051.Visible = true
+SavedTitle_2051.SizeConstraint = Enum.SizeConstraint.RelativeXY
+SavedTitle_2051.ZIndex = 1
+SavedTitle_2051.AutomaticSize = Enum.AutomaticSize.None
+SavedTitle_2051.Size = UDim2.new(1,-80,1,0)
+SavedTitle_2051.TextXAlignment = Enum.TextXAlignment.Left
+SavedTitle_2051.RichText = false
+SavedTitle_2051.BorderSizePixel = 1
+SavedTitle_2051.ClipsDescendants = false
+SavedTitle_2051.BorderColor3 = Color3.fromRGB(27,42,53)
+SavedTitle_2051.Text = "Saved Scripts"
+SavedTitle_2051.TextSize = 14
+SavedTitle_2051.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+SavedTitle_2051.Rotation = 0
+SavedTitle_2051.BackgroundTransparency = 1
+SavedTitle_2051.Position = UDim2.new(0,12,0,0)
+SavedTitle_2051.TextColor3 = Color3.fromRGB(200,200,220)
+SavedTitle_2051.TextYAlignment = Enum.TextYAlignment.Center
+SavedTitle_2051.TextScaled = false
+SavedTitle_2051.BackgroundColor3 = Color3.fromRGB(163,162,165)
+SavedTitle_2051.Parent = SavedHeader_2028
+
+local SavedBackBtn_2084 = Instance.new("TextButton")
+SavedBackBtn_2084.Name = "BackBtn"
+SavedBackBtn_2084.LayoutOrder = 0
+SavedBackBtn_2084.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+SavedBackBtn_2084.LineHeight = 1
+SavedBackBtn_2084.BorderMode = Enum.BorderMode.Outline
+SavedBackBtn_2084.TextTransparency = 0
+SavedBackBtn_2084.Selected = false
+SavedBackBtn_2084.Modal = false
+SavedBackBtn_2084.TextStrokeTransparency = 1
+SavedBackBtn_2084.AnchorPoint = Vector2.new(0,0)
+SavedBackBtn_2084.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+SavedBackBtn_2084.TextWrapped = false
+SavedBackBtn_2084.Visible = true
+SavedBackBtn_2084.SizeConstraint = Enum.SizeConstraint.RelativeXY
+SavedBackBtn_2084.ZIndex = 1
+SavedBackBtn_2084.AutomaticSize = Enum.AutomaticSize.None
+SavedBackBtn_2084.Size = UDim2.new(0,60,0,24)
+SavedBackBtn_2084.TextXAlignment = Enum.TextXAlignment.Center
+SavedBackBtn_2084.RichText = false
+SavedBackBtn_2084.BorderSizePixel = 0
+SavedBackBtn_2084.ClipsDescendants = false
+SavedBackBtn_2084.BorderColor3 = Color3.fromRGB(27,42,53)
+SavedBackBtn_2084.Text = "Back"
+SavedBackBtn_2084.TextSize = 12
+SavedBackBtn_2084.AutoButtonColor = true
+SavedBackBtn_2084.Rotation = 0
+SavedBackBtn_2084.BackgroundTransparency = 0
+SavedBackBtn_2084.Position = UDim2.new(1,-68,0,6)
+SavedBackBtn_2084.TextColor3 = Color3.fromRGB(150,150,170)
+SavedBackBtn_2084.TextYAlignment = Enum.TextYAlignment.Center
+SavedBackBtn_2084.TextScaled = false
+SavedBackBtn_2084.BackgroundColor3 = Color3.fromRGB(30,30,50)
+SavedBackBtn_2084.Parent = SavedHeader_2028
+
+local UICorner_2118 = Instance.new("UICorner")
+UICorner_2118.Name = "UICorner"
+UICorner_2118.CornerRadius = UDim.new(0,4)
+UICorner_2118.Parent = SavedBackBtn_2084
+
+local SavedStatus_2125 = Instance.new("TextLabel")
+SavedStatus_2125.Name = "Status"
+SavedStatus_2125.LayoutOrder = 0
+SavedStatus_2125.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+SavedStatus_2125.LineHeight = 1
+SavedStatus_2125.BorderMode = Enum.BorderMode.Outline
+SavedStatus_2125.TextTransparency = 0
+SavedStatus_2125.TextStrokeTransparency = 1
+SavedStatus_2125.AnchorPoint = Vector2.new(0,0)
+SavedStatus_2125.TextWrapped = false
+SavedStatus_2125.MaxVisibleGraphemes = -1
+SavedStatus_2125.Visible = true
+SavedStatus_2125.SizeConstraint = Enum.SizeConstraint.RelativeXY
+SavedStatus_2125.ZIndex = 1
+SavedStatus_2125.AutomaticSize = Enum.AutomaticSize.None
+SavedStatus_2125.Size = UDim2.new(1,-20,0,20)
+SavedStatus_2125.TextXAlignment = Enum.TextXAlignment.Left
+SavedStatus_2125.RichText = false
+SavedStatus_2125.BorderSizePixel = 1
+SavedStatus_2125.ClipsDescendants = false
+SavedStatus_2125.BorderColor3 = Color3.fromRGB(27,42,53)
+SavedStatus_2125.Text = "No saved scripts"
+SavedStatus_2125.TextSize = 11
+SavedStatus_2125.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+SavedStatus_2125.Rotation = 0
+SavedStatus_2125.BackgroundTransparency = 1
+SavedStatus_2125.Position = UDim2.new(0,10,0,40)
+SavedStatus_2125.TextColor3 = Color3.fromRGB(100,100,120)
+SavedStatus_2125.TextYAlignment = Enum.TextYAlignment.Center
+SavedStatus_2125.TextScaled = false
+SavedStatus_2125.BackgroundColor3 = Color3.fromRGB(163,162,165)
+SavedStatus_2125.Parent = SavedPanel_1995
+
+local SavedList_2158 = Instance.new("ScrollingFrame")
+SavedList_2158.Name = "SavedList"
+SavedList_2158.LayoutOrder = 0
+SavedList_2158.BorderMode = Enum.BorderMode.Outline
+SavedList_2158.AnchorPoint = Vector2.new(0,0)
+SavedList_2158.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+SavedList_2158.ScrollingDirection = Enum.ScrollingDirection.XY
+SavedList_2158.SizeConstraint = Enum.SizeConstraint.RelativeXY
+SavedList_2158.ZIndex = 1
+SavedList_2158.AutomaticSize = Enum.AutomaticSize.None
+SavedList_2158.Size = UDim2.new(1,-20,1,-70)
+SavedList_2158.ScrollBarImageColor3 = Color3.fromRGB(60,60,80)
+SavedList_2158.HorizontalScrollBarInset = Enum.ScrollBarInset.None
+SavedList_2158.VerticalScrollBarInset = Enum.ScrollBarInset.None
+SavedList_2158.ClipsDescendants = true
+SavedList_2158.BorderColor3 = Color3.fromRGB(27,42,53)
+SavedList_2158.CanvasPosition = Vector2.new(0,0)
+SavedList_2158.Visible = true
+SavedList_2158.ScrollBarThickness = 4
+SavedList_2158.Rotation = 0
+SavedList_2158.ScrollBarImageTransparency = 0
+SavedList_2158.BackgroundTransparency = 1
+SavedList_2158.Position = UDim2.new(0,10,0,60)
+SavedList_2158.ScrollingEnabled = true
+SavedList_2158.CanvasSize = UDim2.new(0,0,0,0)
+SavedList_2158.BorderSizePixel = 1
+SavedList_2158.BackgroundColor3 = Color3.fromRGB(163,162,165)
+SavedList_2158.Parent = SavedPanel_1995
+
+local UIListLayout_2186 = Instance.new("UIListLayout")
+UIListLayout_2186.Name = "UIListLayout"
+UIListLayout_2186.VerticalAlignment = Enum.VerticalAlignment.Top
+UIListLayout_2186.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout_2186.HorizontalAlignment = Enum.HorizontalAlignment.Left
+UIListLayout_2186.Padding = UDim.new(0,4)
+UIListLayout_2186.Wraps = false
+UIListLayout_2186.FillDirection = Enum.FillDirection.Vertical
+UIListLayout_2186.Parent = SavedList_2158
+
+local UIPadding_2196 = Instance.new("UIPadding")
+UIPadding_2196.Name = "UIPadding"
+UIPadding_2196.PaddingBottom = UDim.new(0,0)
+UIPadding_2196.PaddingTop = UDim.new(0,2)
+UIPadding_2196.PaddingLeft = UDim.new(0,0)
+UIPadding_2196.PaddingRight = UDim.new(0,0)
+UIPadding_2196.Parent = SavedList_2158
+
+local BottomBar_957 = Instance.new("Frame")
+BottomBar_957.Name = "BottomBar"
+BottomBar_957.Visible = true
+BottomBar_957.ClipsDescendants = false
+BottomBar_957.BorderMode = Enum.BorderMode.Outline
+BottomBar_957.BorderColor3 = Color3.fromRGB(27,42,53)
+BottomBar_957.LayoutOrder = 0
+BottomBar_957.BackgroundColor3 = Color3.fromRGB(163,162,165)
+BottomBar_957.Rotation = 0
+BottomBar_957.AnchorPoint = Vector2.new(0,0)
+BottomBar_957.BorderSizePixel = 1
+BottomBar_957.BackgroundTransparency = 1
+BottomBar_957.Position = UDim2.new(0,10,1,-45)
+BottomBar_957.SizeConstraint = Enum.SizeConstraint.RelativeXY
+BottomBar_957.ZIndex = 1
+BottomBar_957.AutomaticSize = Enum.AutomaticSize.None
+BottomBar_957.Size = UDim2.new(1,-20,0,40)
+BottomBar_957.Parent = Executor_710
+
+local ExecuteBtn_975 = Instance.new("TextButton")
+ExecuteBtn_975.Name = "ExecuteBtn"
+ExecuteBtn_975.LayoutOrder = 8
+ExecuteBtn_975.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+ExecuteBtn_975.LineHeight = 1
+ExecuteBtn_975.BorderMode = Enum.BorderMode.Outline
+ExecuteBtn_975.TextTransparency = 0
+ExecuteBtn_975.Selected = false
+ExecuteBtn_975.Modal = false
+ExecuteBtn_975.TextStrokeTransparency = 1
+ExecuteBtn_975.AnchorPoint = Vector2.new(0,0)
+ExecuteBtn_975.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+ExecuteBtn_975.TextWrapped = false
+ExecuteBtn_975.Visible = true
+ExecuteBtn_975.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ExecuteBtn_975.ZIndex = 1
+ExecuteBtn_975.AutomaticSize = Enum.AutomaticSize.None
+ExecuteBtn_975.Size = UDim2.new(0,80,0,26)
+ExecuteBtn_975.TextXAlignment = Enum.TextXAlignment.Center
+ExecuteBtn_975.RichText = false
+ExecuteBtn_975.BorderSizePixel = 1
+ExecuteBtn_975.ClipsDescendants = false
+ExecuteBtn_975.BorderColor3 = Color3.fromRGB(27,42,53)
+ExecuteBtn_975.Text = "Execute"
+ExecuteBtn_975.TextSize = 14
+ExecuteBtn_975.AutoButtonColor = true
+ExecuteBtn_975.Rotation = 0
+ExecuteBtn_975.BackgroundTransparency = 0
+ExecuteBtn_975.Position = UDim2.new(0,0,0,7)
+ExecuteBtn_975.TextColor3 = Color3.fromRGB(255,255,255)
+ExecuteBtn_975.TextYAlignment = Enum.TextYAlignment.Center
+ExecuteBtn_975.TextScaled = false
+ExecuteBtn_975.BackgroundColor3 = Color3.fromRGB(40,80,140)
+ExecuteBtn_975.Parent = BottomBar_957
+
+local UICorner_1009 = Instance.new("UICorner")
+UICorner_1009.Name = "UICorner"
+UICorner_1009.CornerRadius = UDim.new(0,6)
+UICorner_1009.Parent = ExecuteBtn_975
+
+local ClearBtn_1025 = Instance.new("TextButton")
+ClearBtn_1025.Name = "ClearBtn"
+ClearBtn_1025.LayoutOrder = 7
+ClearBtn_1025.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+ClearBtn_1025.LineHeight = 1
+ClearBtn_1025.BorderMode = Enum.BorderMode.Outline
+ClearBtn_1025.TextTransparency = 0
+ClearBtn_1025.Selected = false
+ClearBtn_1025.Modal = false
+ClearBtn_1025.TextStrokeTransparency = 1
+ClearBtn_1025.AnchorPoint = Vector2.new(0,0)
+ClearBtn_1025.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+ClearBtn_1025.TextWrapped = false
+ClearBtn_1025.Visible = true
+ClearBtn_1025.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ClearBtn_1025.ZIndex = 1
+ClearBtn_1025.AutomaticSize = Enum.AutomaticSize.None
+ClearBtn_1025.Size = UDim2.new(0,72,0,26)
+ClearBtn_1025.TextXAlignment = Enum.TextXAlignment.Center
+ClearBtn_1025.RichText = false
+ClearBtn_1025.BorderSizePixel = 1
+ClearBtn_1025.ClipsDescendants = false
+ClearBtn_1025.BorderColor3 = Color3.fromRGB(27,42,53)
+ClearBtn_1025.Text = "Clear"
+ClearBtn_1025.TextSize = 14
+ClearBtn_1025.AutoButtonColor = true
+ClearBtn_1025.Rotation = 0
+ClearBtn_1025.BackgroundTransparency = 0
+ClearBtn_1025.Position = UDim2.new(0,434,0,7)
+ClearBtn_1025.TextColor3 = Color3.fromRGB(255,255,255)
+ClearBtn_1025.TextYAlignment = Enum.TextYAlignment.Center
+ClearBtn_1025.TextScaled = false
+ClearBtn_1025.BackgroundColor3 = Color3.fromRGB(60,60,80)
+ClearBtn_1025.Parent = BottomBar_957
+
+local UICorner_1059 = Instance.new("UICorner")
+UICorner_1059.Name = "UICorner"
+UICorner_1059.CornerRadius = UDim.new(0,6)
+UICorner_1059.Parent = ClearBtn_1025
+
+local ScanBtn_1065 = Instance.new("TextButton")
+ScanBtn_1065.Name = "ScanBtn"
+ScanBtn_1065.LayoutOrder = 2
+ScanBtn_1065.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+ScanBtn_1065.LineHeight = 1
+ScanBtn_1065.BorderMode = Enum.BorderMode.Outline
+ScanBtn_1065.TextTransparency = 0
+ScanBtn_1065.Selected = false
+ScanBtn_1065.Modal = false
+ScanBtn_1065.TextStrokeTransparency = 1
+ScanBtn_1065.AnchorPoint = Vector2.new(0,0)
+ScanBtn_1065.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+ScanBtn_1065.TextWrapped = false
+ScanBtn_1065.Visible = true
+ScanBtn_1065.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ScanBtn_1065.ZIndex = 1
+ScanBtn_1065.AutomaticSize = Enum.AutomaticSize.None
+ScanBtn_1065.Size = UDim2.new(0,72,0,26)
+ScanBtn_1065.TextXAlignment = Enum.TextXAlignment.Center
+ScanBtn_1065.RichText = false
+ScanBtn_1065.BorderSizePixel = 1
+ScanBtn_1065.ClipsDescendants = false
+ScanBtn_1065.BorderColor3 = Color3.fromRGB(27,42,53)
+ScanBtn_1065.Text = "Scan"
+ScanBtn_1065.TextSize = 12
+ScanBtn_1065.AutoButtonColor = true
+ScanBtn_1065.Rotation = 0
+ScanBtn_1065.BackgroundTransparency = 0
+ScanBtn_1065.Position = UDim2.new(0,88,0,7)
+ScanBtn_1065.TextColor3 = Color3.fromRGB(255,255,255)
+ScanBtn_1065.TextYAlignment = Enum.TextYAlignment.Center
+ScanBtn_1065.TextScaled = false
+ScanBtn_1065.BackgroundColor3 = Color3.fromRGB(60,60,80)
+ScanBtn_1065.Parent = BottomBar_957
+
+local UICorner_1099 = Instance.new("UICorner")
+UICorner_1099.Name = "UICorner"
+UICorner_1099.CornerRadius = UDim.new(0,6)
+UICorner_1099.Parent = ScanBtn_1065
+
+local R6Btn_1221 = Instance.new("TextButton")
+R6Btn_1221.Name = "R6Btn"
+R6Btn_1221.LayoutOrder = 3
+R6Btn_1221.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+R6Btn_1221.LineHeight = 1
+R6Btn_1221.BorderMode = Enum.BorderMode.Outline
+R6Btn_1221.TextTransparency = 0
+R6Btn_1221.Selected = false
+R6Btn_1221.Modal = false
+R6Btn_1221.TextStrokeTransparency = 1
+R6Btn_1221.AnchorPoint = Vector2.new(0,0)
+R6Btn_1221.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+R6Btn_1221.TextWrapped = false
+R6Btn_1221.Visible = true
+R6Btn_1221.SizeConstraint = Enum.SizeConstraint.RelativeXY
+R6Btn_1221.ZIndex = 1
+R6Btn_1221.AutomaticSize = Enum.AutomaticSize.None
+R6Btn_1221.Size = UDim2.new(0,48,0,26)
+R6Btn_1221.TextXAlignment = Enum.TextXAlignment.Center
+R6Btn_1221.RichText = false
+R6Btn_1221.BorderSizePixel = 0
+R6Btn_1221.ClipsDescendants = false
+R6Btn_1221.BorderColor3 = Color3.fromRGB(27,42,53)
+R6Btn_1221.Text = "R6"
+R6Btn_1221.TextSize = 12
+R6Btn_1221.AutoButtonColor = true
+R6Btn_1221.Rotation = 0
+R6Btn_1221.BackgroundTransparency = 0
+R6Btn_1221.Position = UDim2.new(0,168,0,7)
+R6Btn_1221.TextColor3 = Color3.fromRGB(255,180,40)
+R6Btn_1221.TextYAlignment = Enum.TextYAlignment.Center
+R6Btn_1221.TextScaled = false
+R6Btn_1221.BackgroundColor3 = Color3.fromRGB(100,60,30)
+R6Btn_1221.Parent = BottomBar_957
+
+local UICorner_1255 = Instance.new("UICorner")
+UICorner_1255.Name = "UICorner"
+UICorner_1255.CornerRadius = UDim.new(0,4)
+UICorner_1255.Parent = R6Btn_1221
+
+local SaveBtn_1267 = Instance.new("TextButton")
+SaveBtn_1267.Name = "SaveBtn"
+SaveBtn_1267.LayoutOrder = 5
+SaveBtn_1267.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+SaveBtn_1267.LineHeight = 1
+SaveBtn_1267.BorderMode = Enum.BorderMode.Outline
+SaveBtn_1267.TextTransparency = 0
+SaveBtn_1267.Selected = false
+SaveBtn_1267.Modal = false
+SaveBtn_1267.TextStrokeTransparency = 1
+SaveBtn_1267.AnchorPoint = Vector2.new(0,0)
+SaveBtn_1267.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+SaveBtn_1267.TextWrapped = false
+SaveBtn_1267.Visible = true
+SaveBtn_1267.SizeConstraint = Enum.SizeConstraint.RelativeXY
+SaveBtn_1267.ZIndex = 1
+SaveBtn_1267.AutomaticSize = Enum.AutomaticSize.None
+SaveBtn_1267.Size = UDim2.new(0,55,0,26)
+SaveBtn_1267.TextXAlignment = Enum.TextXAlignment.Center
+SaveBtn_1267.RichText = false
+SaveBtn_1267.BorderSizePixel = 0
+SaveBtn_1267.ClipsDescendants = false
+SaveBtn_1267.BorderColor3 = Color3.fromRGB(27,42,53)
+SaveBtn_1267.Text = "Save"
+SaveBtn_1267.TextSize = 12
+SaveBtn_1267.AutoButtonColor = true
+SaveBtn_1267.Rotation = 0
+SaveBtn_1267.BackgroundTransparency = 0
+SaveBtn_1267.Position = UDim2.new(0,280,0,7)
+SaveBtn_1267.TextColor3 = Color3.fromRGB(80,200,120)
+SaveBtn_1267.TextYAlignment = Enum.TextYAlignment.Center
+SaveBtn_1267.TextScaled = false
+SaveBtn_1267.BackgroundColor3 = Color3.fromRGB(20,60,35)
+SaveBtn_1267.Parent = BottomBar_957
+
+local UICorner_1301 = Instance.new("UICorner")
+UICorner_1301.Name = "UICorner"
+UICorner_1301.CornerRadius = UDim.new(0,4)
+UICorner_1301.Parent = SaveBtn_1267
+
+local ModeBtn_1162 = Instance.new("TextButton")
+ModeBtn_1162.Name = "ModeBtn"
+ModeBtn_1162.LayoutOrder = 1
+ModeBtn_1162.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+ModeBtn_1162.LineHeight = 1
+ModeBtn_1162.BorderMode = Enum.BorderMode.Outline
+ModeBtn_1162.TextTransparency = 0
+ModeBtn_1162.Selected = false
+ModeBtn_1162.Modal = false
+ModeBtn_1162.TextStrokeTransparency = 1
+ModeBtn_1162.AnchorPoint = Vector2.new(0,0)
+ModeBtn_1162.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+ModeBtn_1162.TextWrapped = false
+ModeBtn_1162.Visible = true
+ModeBtn_1162.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ModeBtn_1162.ZIndex = 1
+ModeBtn_1162.AutomaticSize = Enum.AutomaticSize.None
+ModeBtn_1162.Size = UDim2.new(0,72,0,26)
+ModeBtn_1162.TextXAlignment = Enum.TextXAlignment.Center
+ModeBtn_1162.RichText = false
+ModeBtn_1162.BorderSizePixel = 0
+ModeBtn_1162.ClipsDescendants = false
+ModeBtn_1162.BorderColor3 = Color3.fromRGB(27,42,53)
+ModeBtn_1162.Text = "Server"
+ModeBtn_1162.TextSize = 11
+ModeBtn_1162.AutoButtonColor = true
+ModeBtn_1162.Rotation = 0
+ModeBtn_1162.BackgroundTransparency = 0
+ModeBtn_1162.Position = UDim2.new(0,350,0,7)
+ModeBtn_1162.TextColor3 = Color3.fromRGB(100,200,255)
+ModeBtn_1162.TextYAlignment = Enum.TextYAlignment.Center
+ModeBtn_1162.TextScaled = false
+ModeBtn_1162.BackgroundColor3 = Color3.fromRGB(30,60,100)
+ModeBtn_1162.Parent = BottomBar_957
+
+local UICorner_1196 = Instance.new("UICorner")
+UICorner_1196.Name = "UICorner"
+UICorner_1196.CornerRadius = UDim.new(0,4)
+UICorner_1196.Parent = ModeBtn_1162
+
+local StatusIndicator_1105 = Instance.new("Frame")
+StatusIndicator_1105.Name = "StatusIndicator"
+StatusIndicator_1105.Visible = true
+StatusIndicator_1105.ClipsDescendants = false
+StatusIndicator_1105.BorderMode = Enum.BorderMode.Outline
+StatusIndicator_1105.BorderColor3 = Color3.fromRGB(27,42,53)
+StatusIndicator_1105.LayoutOrder = 4
+StatusIndicator_1105.BackgroundColor3 = Color3.fromRGB(100,100,120)
+StatusIndicator_1105.Rotation = 0
+StatusIndicator_1105.AnchorPoint = Vector2.new(0,0)
+StatusIndicator_1105.BorderSizePixel = 0
+StatusIndicator_1105.BackgroundTransparency = 0
+StatusIndicator_1105.Position = UDim2.new(0,566,0,14)
+StatusIndicator_1105.SizeConstraint = Enum.SizeConstraint.RelativeXY
+StatusIndicator_1105.ZIndex = 2
+StatusIndicator_1105.AutomaticSize = Enum.AutomaticSize.None
+StatusIndicator_1105.Size = UDim2.new(0,8,0,12)
+StatusIndicator_1105.Parent = BottomBar_957
+
+local UICorner_1123 = Instance.new("UICorner")
+UICorner_1123.Name = "UICorner"
+UICorner_1123.CornerRadius = UDim.new(1,0)
+UICorner_1123.Parent = StatusIndicator_1105
+
+local StatusText_1129 = Instance.new("TextLabel")
+StatusText_1129.Name = "StatusText"
+StatusText_1129.LayoutOrder = 3
+StatusText_1129.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+StatusText_1129.LineHeight = 1
+StatusText_1129.BorderMode = Enum.BorderMode.Outline
+StatusText_1129.TextTransparency = 0
+StatusText_1129.TextStrokeTransparency = 1
+StatusText_1129.AnchorPoint = Vector2.new(0,0)
+StatusText_1129.TextWrapped = false
+StatusText_1129.MaxVisibleGraphemes = -1
+StatusText_1129.Visible = true
+StatusText_1129.SizeConstraint = Enum.SizeConstraint.RelativeXY
+StatusText_1129.ZIndex = 1
+StatusText_1129.AutomaticSize = Enum.AutomaticSize.None
+StatusText_1129.Size = UDim2.new(0,220,0,16)
+StatusText_1129.TextXAlignment = Enum.TextXAlignment.Right
+StatusText_1129.RichText = false
+StatusText_1129.BorderSizePixel = 1
+StatusText_1129.ClipsDescendants = false
+StatusText_1129.BorderColor3 = Color3.fromRGB(27,42,53)
+StatusText_1129.Text = "Idle"
+StatusText_1129.TextSize = 11
+StatusText_1129.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+StatusText_1129.Rotation = 0
+StatusText_1129.BackgroundTransparency = 1
+StatusText_1129.Position = UDim2.new(0,320,0,10)
+StatusText_1129.TextColor3 = Color3.fromRGB(100,100,120)
+StatusText_1129.TextYAlignment = Enum.TextYAlignment.Center
+StatusText_1129.TextScaled = false
+StatusText_1129.BackgroundColor3 = Color3.fromRGB(163,162,165)
+StatusText_1129.Parent = BottomBar_957
+
+local Separator_1202 = Instance.new("Frame")
+Separator_1202.Name = "Separator"
+Separator_1202.Visible = true
+Separator_1202.ClipsDescendants = false
+Separator_1202.BorderMode = Enum.BorderMode.Outline
+Separator_1202.BorderColor3 = Color3.fromRGB(27,42,53)
+Separator_1202.LayoutOrder = 0
+Separator_1202.BackgroundColor3 = Color3.fromRGB(30,40,55)
+Separator_1202.Rotation = 0
+Separator_1202.AnchorPoint = Vector2.new(0,0)
+Separator_1202.BorderSizePixel = 0
+Separator_1202.BackgroundTransparency = 0
+Separator_1202.Position = UDim2.new(0,0,0,0)
+Separator_1202.SizeConstraint = Enum.SizeConstraint.RelativeXY
+Separator_1202.ZIndex = 1
+Separator_1202.AutomaticSize = Enum.AutomaticSize.None
+Separator_1202.Size = UDim2.new(1,0,0,1)
+Separator_1202.Parent = BottomBar_957
+
+local ErrorBar_1665 = Instance.new("Frame")
+ErrorBar_1665.Name = "ErrorBar"
+ErrorBar_1665.Visible = false
+ErrorBar_1665.ClipsDescendants = true
+ErrorBar_1665.BorderMode = Enum.BorderMode.Outline
+ErrorBar_1665.BorderColor3 = Color3.fromRGB(27,42,53)
+ErrorBar_1665.LayoutOrder = 0
+ErrorBar_1665.BackgroundColor3 = Color3.fromRGB(60,15,15)
+ErrorBar_1665.Rotation = 0
+ErrorBar_1665.AnchorPoint = Vector2.new(0,0)
+ErrorBar_1665.BorderSizePixel = 0
+ErrorBar_1665.BackgroundTransparency = 0
+ErrorBar_1665.Position = UDim2.new(0,10,1,-90)
+ErrorBar_1665.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ErrorBar_1665.ZIndex = 10
+ErrorBar_1665.AutomaticSize = Enum.AutomaticSize.None
+ErrorBar_1665.Size = UDim2.new(1,-20,0,30)
+ErrorBar_1665.Parent = Executor_710
+
+local UICorner_1683 = Instance.new("UICorner")
+UICorner_1683.Name = "UICorner"
+UICorner_1683.CornerRadius = UDim.new(0,4)
+UICorner_1683.Parent = ErrorBar_1665
+
+local ErrorMsg_1688 = Instance.new("TextLabel")
+ErrorMsg_1688.Name = "ErrorMsg"
+ErrorMsg_1688.LayoutOrder = 0
+ErrorMsg_1688.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+ErrorMsg_1688.LineHeight = 1
+ErrorMsg_1688.BorderMode = Enum.BorderMode.Outline
+ErrorMsg_1688.TextTransparency = 0
+ErrorMsg_1688.TextStrokeTransparency = 1
+ErrorMsg_1688.AnchorPoint = Vector2.new(0,0)
+ErrorMsg_1688.TextWrapped = true
+ErrorMsg_1688.MaxVisibleGraphemes = -1
+ErrorMsg_1688.Visible = true
+ErrorMsg_1688.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ErrorMsg_1688.ZIndex = 1
+ErrorMsg_1688.AutomaticSize = Enum.AutomaticSize.None
+ErrorMsg_1688.Size = UDim2.new(1,-10,1,0)
+ErrorMsg_1688.TextXAlignment = Enum.TextXAlignment.Left
+ErrorMsg_1688.RichText = false
+ErrorMsg_1688.BorderSizePixel = 1
+ErrorMsg_1688.ClipsDescendants = false
+ErrorMsg_1688.BorderColor3 = Color3.fromRGB(27,42,53)
+ErrorMsg_1688.Text = ""
+ErrorMsg_1688.TextSize = 11
+ErrorMsg_1688.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+ErrorMsg_1688.Rotation = 0
+ErrorMsg_1688.BackgroundTransparency = 1
+ErrorMsg_1688.Position = UDim2.new(0,5,0,0)
+ErrorMsg_1688.TextColor3 = Color3.fromRGB(255,120,120)
+ErrorMsg_1688.TextYAlignment = Enum.TextYAlignment.Center
+ErrorMsg_1688.TextScaled = false
+ErrorMsg_1688.BackgroundColor3 = Color3.fromRGB(163,162,165)
+ErrorMsg_1688.Parent = ErrorBar_1665
+
+local ImageLabel_2213 = Instance.new("ImageButton")
+ImageLabel_2213.Name = "ImageLabel"
+ImageLabel_2213.LayoutOrder = 0
+ImageLabel_2213.BorderMode = Enum.BorderMode.Outline
+ImageLabel_2213.PressedImage = ""
+ImageLabel_2213.HoverImage = ""
+ImageLabel_2213.Selected = false
+ImageLabel_2213.Modal = false
+ImageLabel_2213.AnchorPoint = Vector2.new(0,0)
+ImageLabel_2213.Image = "rbxassetid://11565651939"
+ImageLabel_2213.TileSize = UDim2.new(1,0,1,0)
+ImageLabel_2213.ImageRectSize = Vector2.new(0,0)
+ImageLabel_2213.SizeConstraint = Enum.SizeConstraint.RelativeXY
+ImageLabel_2213.ZIndex = 1
+ImageLabel_2213.AutomaticSize = Enum.AutomaticSize.None
+ImageLabel_2213.Size = UDim2.new(0,30,0,30)
+ImageLabel_2213.ImageTransparency = 0
+ImageLabel_2213.ScaleType = Enum.ScaleType.Stretch
+ImageLabel_2213.ResampleMode = Enum.ResamplerMode.Default
+ImageLabel_2213.ClipsDescendants = false
+ImageLabel_2213.BorderColor3 = Color3.fromRGB(27,42,53)
+ImageLabel_2213.ImageColor3 = Color3.fromRGB(100,200,255)
+ImageLabel_2213.SliceCenter = Rect.new(0,0,0,0)
+ImageLabel_2213.AutoButtonColor = true
+ImageLabel_2213.Rotation = 0
+ImageLabel_2213.ImageRectOffset = Vector2.new(0,0)
+ImageLabel_2213.BackgroundTransparency = 0.30000001192092896
+ImageLabel_2213.Position = UDim2.new(0,10,0,10)
+ImageLabel_2213.SliceScale = 1
+ImageLabel_2213.Visible = true
+ImageLabel_2213.BorderSizePixel = 0
+ImageLabel_2213.BackgroundColor3 = Color3.fromRGB(25,25,35)
+ImageLabel_2213.Parent = root
+
+local UICorner_2246 = Instance.new("UICorner")
+UICorner_2246.Name = "UICorner"
+UICorner_2246.CornerRadius = UDim.new(0,6)
+UICorner_2246.Parent = ImageLabel_2213
+
+local UIStroke_2251 = Instance.new("UIStroke")
+UIStroke_2251.Name = "UIStroke"
+UIStroke_2251.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+UIStroke_2251.LineJoinMode = Enum.LineJoinMode.Round
+UIStroke_2251.Color = Color3.fromRGB(60,80,120)
+UIStroke_2251.Enabled = true
+UIStroke_2251.Transparency = 0
+UIStroke_2251.Thickness = 1.5
+UIStroke_2251.Parent = ImageLabel_2213
+
+local Fire = Instance.new("Folder")
+Fire.Name = "Fire"
+Fire.Parent = root
+
+local loadModule = Instance.new("ModuleScript")
+loadModule.Name = "load"
+loadModule.Parent = Fire
+
+local pheeoweModule = Instance.new("ModuleScript")
+pheeoweModule.Name = "pheeowe"
+pheeoweModule.Parent = loadModule
+
+local pheeoweSource = [[
+local type = type
+local pcall = pcall
+local error = error
+local tonumber = tonumber
+local assert = assert
+local setmetatable = setmetatable
+local string_format = string.format
+local table_move = table.move
+local table_pack = table.pack
+local table_unpack = table.unpack
+local table_create = table.create
+local table_insert = table.insert
+local table_remove = table.remove
+local table_concat = table.concat
+local coroutine_create = coroutine.create
+local coroutine_yield = coroutine.yield
+local coroutine_resume = coroutine.resume
+local coroutine_close = coroutine.close
+local buffer_fromstring = buffer.fromstring
+local buffer_len = buffer.len
+local buffer_readu8 = buffer.readu8
+local buffer_readu32 = buffer.readu32
+local buffer_readstring = buffer.readstring
+local buffer_readf32 = buffer.readf32
+local buffer_readf64 = buffer.readf64
+local bit32_bor = bit32.bor
+local bit32_band = bit32.band
+local bit32_btest = bit32.btest
+local bit32_rshift = bit32.rshift
+local bit32_lshift = bit32.lshift
+local bit32_extract = bit32.extract
+local ttisnumber = function(v) return type(v) == "number" end
+local ttisstring = function(v) return type(v) == "string" end
+local ttisboolean = function(v) return type(v) == "boolean" end
+local ttisfunction = function(v) return type(v) == "function" end
+local opList = {
+	{ "NOP", 0, 0, false },
+	{ "BREAK", 0, 0, false },
+	{ "LOADNIL", 1, 0, false },
+	{ "LOADB", 3, 0, false },
+	{ "LOADN", 4, 0, false },
+	{ "LOADK", 4, 3, false },
+	{ "MOVE", 2, 0, false },
+	{ "GETGLOBAL", 1, 1, true },
+	{ "SETGLOBAL", 1, 1, true },
+	{ "GETUPVAL", 2, 0, false },
+	{ "SETUPVAL", 2, 0, false },
+	{ "CLOSEUPVALS", 1, 0, false },
+	{ "GETIMPORT", 4, 4, true },
+	{ "GETTABLE", 3, 0, false },
+	{ "SETTABLE", 3, 0, false },
+	{ "GETTABLEKS", 3, 1, true },
+	{ "SETTABLEKS", 3, 1, true },
+	{ "GETTABLEN", 3, 0, false },
+	{ "SETTABLEN", 3, 0, false },
+	{ "NEWCLOSURE", 4, 0, false },
+	{ "NAMECALL", 3, 1, true },
+	{ "CALL", 3, 0, false },
+	{ "RETURN", 2, 0, false },
+	{ "JUMP", 4, 0, false },
+	{ "JUMPBACK", 4, 0, false },
+	{ "JUMPIF", 4, 0, false },
+	{ "JUMPIFNOT", 4, 0, false },
+	{ "JUMPIFEQ", 4, 0, true },
+	{ "JUMPIFLE", 4, 0, true },
+	{ "JUMPIFLT", 4, 0, true },
+	{ "JUMPIFNOTEQ", 4, 0, true },
+	{ "JUMPIFNOTLE", 4, 0, true },
+	{ "JUMPIFNOTLT", 4, 0, true },
+	{ "ADD", 3, 0, false },
+	{ "SUB", 3, 0, false },
+	{ "MUL", 3, 0, false },
+	{ "DIV", 3, 0, false },
+	{ "MOD", 3, 0, false },
+	{ "POW", 3, 0, false },
+	{ "ADDK", 3, 2, false },
+	{ "SUBK", 3, 2, false },
+	{ "MULK", 3, 2, false },
+	{ "DIVK", 3, 2, false },
+	{ "MODK", 3, 2, false },
+	{ "POWK", 3, 2, false },
+	{ "AND", 3, 0, false },
+	{ "OR", 3, 0, false },
+	{ "ANDK", 3, 2, false },
+	{ "ORK", 3, 2, false },
+	{ "CONCAT", 3, 0, false },
+	{ "NOT", 2, 0, false },
+	{ "MINUS", 2, 0, false },
+	{ "LENGTH", 2, 0, false },
+	{ "NEWTABLE", 2, 0, true },
+	{ "DUPTABLE", 4, 3, false },
+	{ "SETLIST", 3, 0, true },
+	{ "FORNPREP", 4, 0, false },
+	{ "FORNLOOP", 4, 0, false },
+	{ "FORGLOOP", 4, 8, true },
+	{ "FORGPREP_INEXT", 4, 0, false },
+	{ "FASTCALL3", 3, 1, true },
+	{ "FORGPREP_NEXT", 4, 0, false },
+	{ "DEP_FORGLOOP_NEXT", 0, 0, false },
+	{ "GETVARARGS", 2, 0, false },
+	{ "DUPCLOSURE", 4, 3, false },
+	{ "PREPVARARGS", 1, 0, false },
+	{ "LOADKX", 1, 1, true },
+	{ "JUMPX", 5, 0, false },
+	{ "FASTCALL", 3, 0, false },
+	{ "COVERAGE", 5, 0, false },
+	{ "CAPTURE", 2, 0, false },
+	{ "SUBRK", 3, 7, false },
+	{ "DIVRK", 3, 7, false },
+	{ "FASTCALL1", 3, 0, false },
+	{ "FASTCALL2", 3, 0, true },
+	{ "FASTCALL2K", 3, 1, true },
+	{ "FORGPREP", 4, 0, false },
+	{ "JUMPXEQKNIL", 4, 5, true },
+	{ "JUMPXEQKB", 4, 5, true },
+	{ "JUMPXEQKN", 4, 6, true },
+	{ "JUMPXEQKS", 4, 6, true },
+	{ "IDIV", 3, 0, false },
+	{ "IDIVK", 3, 2, false },
+}
+local LUA_MULTRET = -1
+local LUA_GENERALIZED_TERMINATOR = -2
+local function luau_newsettings()
+	return {
+		vectorCtor = function() error("vectorCtor was not provided") end,
+		vectorSize = 4,
+		useNativeNamecall = false,
+		namecallHandler = function() error("Native __namecall handler was not provided") end,
+		extensions = {},
+		callHooks = {},
+		errorHandling = true,
+		generalizedIteration = true,
+		allowProxyErrors = false,
+		useImportConstants = false,
+		staticEnvironment = {},
+		decodeOp = function(op) return op end
+	}
+end
+local function luau_validatesettings(luau_settings)
+	assert(type(luau_settings) == "table", "luau_settings should be a table")
+	assert(type(luau_settings.vectorCtor) == "function", "luau_settings.vectorCtor should be a function")
+	assert(type(luau_settings.vectorSize) == "number", "luau_settings.vectorSize should be a number")
+	assert(type(luau_settings.useNativeNamecall) == "boolean", "luau_settings.useNativeNamecall should be a boolean")
+	assert(type(luau_settings.namecallHandler) == "function", "luau_settings.namecallHandler should be a function")
+	assert(type(luau_settings.extensions) == "table", "luau_settings.extensions should be a table of functions")
+	assert(type(luau_settings.callHooks) == "table", "luau_settings.callHooks should be a table of functions")
+	assert(type(luau_settings.errorHandling) == "boolean", "luau_settings.errorHandling should be a boolean")
+	assert(type(luau_settings.generalizedIteration) == "boolean", "luau_settings.generalizedIteration should be a boolean")
+	assert(type(luau_settings.allowProxyErrors) == "boolean", "luau_settings.allowProxyErrors should be a boolean")
+	assert(type(luau_settings.staticEnvironment) == "table", "luau_settings.staticEnvironment should be a table")
+	assert(type(luau_settings.useImportConstants) == "boolean", "luau_settings.useImportConstants should be a boolean")
+	assert(type(luau_settings.decodeOp) == "function", "luau_settings.decodeOp should be a function")
+end
+local function getmaxline(module, protoid)
+	local proto = if (protoid == nil) then module.mainProto else module.protoList[protoid]
+	local size = -1
+	assert(proto.lineinfoenabled, "proto must have debug enabled")
+	for pc = 1, proto.sizecode do
+		local line = proto.instructionlineinfo[pc]
+		size = if (line > size) then line else size
+	end
+	for i, subid in proto.protos do
+		local maxline = getmaxline(module, subid)
+		size = if (maxline > size) then maxline else size
+	end
+	return size
+end
+local function getcoverage(module, protoid, depth, callback, size)
+	local proto = if (protoid == nil) then module.mainProto else module.protoList[protoid]
+	assert(proto.lineinfoenabled, "proto must have debug enabled")
+	local buffer = {}
+	for pc = 1, proto.sizecode do
+		local inst = proto.code[pc]
+		local line = proto.instructionlineinfo[pc]
+		if (inst.opcode ~= 69) then
+		else
+			local hits = inst.E
+			buffer[line] = if ((buffer[line] or 0) > hits) then buffer[line] else hits
+		end
+	end
+	callback(proto.debugname, proto.linedefined, depth, buffer, size)
+	for i, subid in proto.protos do
+		getcoverage(module, subid, depth + 1, callback, size)
+	end
+end
+local function luau_getcoverage(module, protoid, callback)
+	assert(type(module) == "table", "module must be a table")
+	assert(type(protoid) == "number" or type(protoid) == "nil", "protoid must be a number or nil")
+	assert(type(callback) == "function", "callback must be a function")
+	getcoverage(module, protoid, 0, callback, getmaxline(module))
+end
+local function resolveImportConstant(static, count, k0, k1, k2)
+	local res = static[k0]
+	if count < 2 or res == nil then
+		return res
+	end
+	res = res[k1]
+	if count < 3 or res == nil then
+		return res
+	end
+	res = res[k2]
+	return res
+end
+local function luau_deserialize(bytecode, luau_settings)
+	if luau_settings == nil then
+		luau_settings = luau_newsettings()
+	else 
+		luau_validatesettings(luau_settings)
+	end
+	local stream = if type(bytecode) == "string" then buffer_fromstring(bytecode) else bytecode
+	local cursor = 0
+local function readByte()
+		local byte = buffer_readu8(stream, cursor)
+		cursor = cursor + 1
+		return byte
+	end
+	local function readWord()
+		local word = buffer_readu32(stream, cursor)
+		cursor = cursor + 4
+		return word
+	end
+	local function readFloat()
+		local float = buffer_readf32(stream, cursor)
+		cursor = cursor + 4
+		return float
+	end
+	local function readDouble()
+		local double = buffer_readf64(stream, cursor)
+		cursor = cursor + 8
+		return double
+	end
+	local function readVarInt()
+		local result = 0
+		for i = 0, 4 do
+			local value = readByte()
+			result = bit32_bor(result, bit32_lshift(bit32_band(value, 0x7F), i * 7))
+			if not bit32_btest(value, 0x80) then
+				break
+			end
+		end
+		return result
+	end
+	local function readString()
+		local size = readVarInt()
+		if size == 0 then
+			return ""
+		else
+			local str = buffer_readstring(stream, cursor, size)
+			cursor = cursor + size
+			return str
+		end
+	end
+	local luauVersion = readByte()
+	local typesVersion = 0
+	if luauVersion == 0 then
+		error("the provided bytecode is an error message",0)
+	elseif luauVersion < 3 or luauVersion > 6 then
+		error("the version of the provided bytecode is unsupported",0)
+	elseif luauVersion >= 4 then
+		typesVersion = readByte()
+	end
+	local stringCount = readVarInt()
+	local stringList = table_create(stringCount)
+	for i = 1, stringCount do
+		stringList[i] = readString()
+	end
+	local function readInstruction(codeList)
+		local value = luau_settings.decodeOp(readWord())
+		local opcode = bit32_band(value, 0xFF)
+		local opinfo = opList[opcode + 1]
+		local opname = opinfo[1]
+		local opmode = opinfo[2]
+		local kmode = opinfo[3]
+		local usesAux = opinfo[4]
+		local inst = {
+			opcode = opcode;
+			opname = opname;
+			opmode = opmode;
+			kmode = kmode;
+			usesAux = usesAux;
+		}
+		table_insert(codeList, inst)
+		if opmode == 1 then
+			inst.A = bit32_band(bit32_rshift(value, 8), 0xFF)
+		elseif opmode == 2 then
+			inst.A = bit32_band(bit32_rshift(value, 8), 0xFF)
+			inst.B = bit32_band(bit32_rshift(value, 16), 0xFF)
+		elseif opmode == 3 then
+			inst.A = bit32_band(bit32_rshift(value, 8), 0xFF)
+			inst.B = bit32_band(bit32_rshift(value, 16), 0xFF)
+			inst.C = bit32_band(bit32_rshift(value, 24), 0xFF)
+		elseif opmode == 4 then
+			inst.A = bit32_band(bit32_rshift(value, 8), 0xFF)
+			local temp = bit32_band(bit32_rshift(value, 16), 0xFFFF)
+			inst.D = if temp < 0x8000 then temp else temp - 0x10000
+		elseif opmode == 5 then
+			local temp = bit32_band(bit32_rshift(value, 8), 0xFFFFFF)
+			inst.E = if temp < 0x800000 then temp else temp - 0x1000000
+		end
+		if usesAux then 
+			local aux = readWord()
+			inst.aux = aux
+			table_insert(codeList, {value = aux, opname = "auxvalue" })
+		end
+		return usesAux
+	end
+	local function checkkmode(inst, k)
+		local kmode = inst.kmode
+		if kmode == 1 then
+			inst.K = k[inst.aux +  1]
+		elseif kmode == 2 then
+			inst.K = k[inst.C + 1]
+		elseif kmode == 3 then
+			inst.K = k[inst.D + 1]
+		elseif kmode == 4 then
+			local extend = inst.aux
+			local count = bit32_rshift(extend, 30)
+			local id0 = bit32_band(bit32_rshift(extend, 20), 0x3FF)
+			inst.K0 = k[id0 + 1]
+			inst.KC = count
+			if count == 2 then
+				local id1 = bit32_band(bit32_rshift(extend, 10), 0x3FF)
+				inst.K1 = k[id1 + 1]
+			elseif count == 3 then
+				local id1 = bit32_band(bit32_rshift(extend, 10), 0x3FF)
+				local id2 = bit32_band(bit32_rshift(extend, 0), 0x3FF)
+				inst.K1 = k[id1 + 1]
+				inst.K2 = k[id2 + 1]
+			end
+			if luau_settings.useImportConstants then
+				inst.K = resolveImportConstant(
+					luau_settings.staticEnvironment,
+					count, inst.K0, inst.K1, inst.K2
+				)
+			end
+		elseif kmode == 5 then
+			inst.K = bit32_extract(inst.aux, 0, 1) == 1
+			inst.KN = bit32_extract(inst.aux, 31, 1) == 1
+		elseif kmode == 6 then
+			inst.K = k[bit32_extract(inst.aux, 0, 24) + 1]
+			inst.KN = bit32_extract(inst.aux, 31, 1) == 1
+		elseif kmode == 7 then
+			inst.K = k[inst.B + 1]
+		elseif kmode == 8 then
+			inst.K = bit32_band(inst.aux, 0xf)
+		end
+	end
+	local function readProto(bytecodeid)
+		local maxstacksize = readByte()
+		local numparams = readByte()
+		local nups = readByte()
+		local isvararg = readByte() ~= 0
+		if luauVersion >= 4 then
+			readByte()
+			local typesize = readVarInt();
+			cursor = cursor + typesize;
+		end
+		local sizecode = readVarInt()
+		local codelist = table_create(sizecode)
+		local skipnext = false 
+		for i = 1, sizecode do
+			if skipnext then 
+				skipnext = false
+			else
+				skipnext = readInstruction(codelist)
+			end
+		end
+		local debugcodelist = table_create(sizecode) 
+		for i = 1, sizecode do 
+			debugcodelist[i] = codelist[i].opcode
+		end 
+		local sizek = readVarInt()
+		local klist = table_create(sizek)
+		for i = 1, sizek do
+			local kt = readByte()
+			local k
+			if kt == 0 then
+				k = nil
+			elseif kt == 1 then
+				k = readByte() ~= 0
+			elseif kt == 2 then
+				k = readDouble()
+			elseif kt == 3 then
+				k = stringList[readVarInt()]
+			elseif kt == 4 then
+				k = readWord()
+			elseif kt == 5 then
+				local dataLength = readVarInt()
+				k = table_create(dataLength)
+				for i = 1, dataLength do
+					k[i] = readVarInt()
+				end
+			elseif kt == 6 then
+				k = readVarInt()
+			elseif kt == 7 then
+				local x,y,z,w = readFloat(), readFloat(), readFloat(), readFloat()
+				if luau_settings.vectorSize == 4 then
+					k = luau_settings.vectorCtor(x,y,z,w)
+				else 
+					k = luau_settings.vectorCtor(x,y,z)
+				end
+			end
+			klist[i] = k
+		end
+		for i = 1, sizecode do
+			checkkmode(codelist[i], klist)
+		end
+		local sizep = readVarInt()
+		local protolist = table_create(sizep)
+		for i = 1, sizep do
+			protolist[i] = readVarInt() + 1
+		end
+		local linedefined = readVarInt()
+		local debugnameindex = readVarInt()
+		local debugname 
+		if debugnameindex ~= 0 then
+			debugname = stringList[debugnameindex]
+		else 
+			debugname = "(??)"
+		end
+		local lineinfoenabled = readByte() ~= 0
+		local instructionlineinfo = nil 
+		if lineinfoenabled then
+			local linegaplog2 = readByte()
+			local intervals = bit32_rshift((sizecode - 1), linegaplog2) + 1
+			local lineinfo = table_create(sizecode)
+			local abslineinfo = table_create(intervals)
+			local lastoffset = 0
+			for j = 1, sizecode do
+				lastoffset += readByte()
+				lineinfo[j] = lastoffset
+			end
+			local lastline = 0
+			for j = 1, intervals do
+				lastline += readWord()
+				abslineinfo[j] = lastline % (2 ^ 32)
+			end
+			instructionlineinfo = table_create(sizecode)
+			for i = 1, sizecode do 
+				table_insert(instructionlineinfo, abslineinfo[bit32_rshift(i - 1, linegaplog2) + 1] + lineinfo[i])
+			end
+		end
+		if readByte() ~= 0 then
+			local sizel = readVarInt()
+			for i = 1, sizel do
+				readVarInt()
+				readVarInt()
+				readVarInt()
+				readByte()
+			end
+			local sizeupvalues = readVarInt()
+			for i = 1, sizeupvalues do
+				readVarInt()
+			end
+		end
+		return {
+			maxstacksize = maxstacksize;
+			numparams = numparams;
+			nups = nups;
+			isvararg = isvararg;
+			linedefined = linedefined;
+			debugname = debugname;
+			sizecode = sizecode;
+			code = codelist;
+			debugcode = debugcodelist;
+			sizek = sizek;
+			k = klist;
+			sizep = sizep;
+			protos = protolist;
+			lineinfoenabled = lineinfoenabled;
+			instructionlineinfo = instructionlineinfo;
+			bytecodeid = bytecodeid;
+		}
+	end
+	if typesVersion == 3 then
+		local index = readByte()
+		while index ~= 0 do
+			readVarInt()
+			index = readByte()
+		end
+	end
+	local protoCount = readVarInt()
+	local protoList = table_create(protoCount)
+	for i = 1, protoCount do
+		protoList[i] = readProto(i - 1)
+	end
+	local mainProto = protoList[readVarInt() + 1]
+	assert(cursor == buffer_len(stream), "deserializer cursor position mismatch")
+	mainProto.debugname = "(main)"
+	return {
+		stringList = stringList;
+		protoList = protoList;
+		mainProto = mainProto;
+		typesVersion = typesVersion;
+	}
+end
+local function luau_load(module, env, luau_settings)
+	if luau_settings == nil then
+		luau_settings = luau_newsettings()
+	else 
+		luau_validatesettings(luau_settings)
+	end
+	if type(module) ~= "table" then
+		module = luau_deserialize(module, luau_settings)
+	end
+	local protolist = module.protoList
+	local mainProto = module.mainProto
+	local breakHook = luau_settings.callHooks.breakHook
+	local stepHook = luau_settings.callHooks.stepHook
+	local interruptHook = luau_settings.callHooks.interruptHook
+	local panicHook = luau_settings.callHooks.panicHook
+	local alive = true 
+	local function luau_close()
+		alive = false
+	end
+	local function luau_wrapclosure(module, proto, upvals)
+		local function luau_execute(...)
+			local debugging, stack, protos, code, varargs
+			if luau_settings.errorHandling then
+				debugging, stack, protos, code, varargs = ... 
+			else 
+				local passed = table_pack(...)
+				stack = table_create(proto.maxstacksize)
+				varargs = {
+					len = 0,
+					list = {},
+				}
+				table_move(passed, 1, proto.numparams, 0, stack)
+				if proto.numparams < passed.n then
+					local start = proto.numparams + 1
+					local len = passed.n - proto.numparams
+					varargs.len = len
+					table_move(passed, start, start + len - 1, 1, varargs.list)
+				end
+				passed = nil
+				debugging = {pc = 0, name = "NONE"}
+				protos = proto.protos 
+				code = proto.code
+			end 
+			local top, pc, open_upvalues, generalized_iterators = -1, 1, setmetatable({}, {__mode = "vs"}), setmetatable({}, {__mode = "ks"})
+			local constants = proto.k
+			local debugopcodes = proto.debugcode
+			local extensions = luau_settings.extensions
+			local handlingBreak = false
+			local inst, op
+			while alive do
+				if not handlingBreak then
+					inst = code[pc]
+					op = inst.opcode
+				end
+				handlingBreak = false
+				debugging.pc = pc
+				debugging.top = top
+				debugging.name = inst.opname
+				pc += 1
+				if stepHook then
+					stepHook(stack, debugging, proto, module, upvals)
+				end
+				if op == 0 then
+				elseif op == 1 then
+					if breakHook then
+						local results = table.pack(breakHook(stack, debugging, proto, module, upvals))
+						if results[1] then 
+							return table_unpack(results, 2, #results)
+						end 
+					end
+					pc -= 1
+					op = debugopcodes[pc]
+					handlingBreak = true
+				elseif op == 2 then
+					stack[inst.A] = nil
+				elseif op == 3 then
+					stack[inst.A] = inst.B == 1
+					pc += inst.C
+				elseif op == 4 then
+					stack[inst.A] = inst.D
+				elseif op == 5 then
+					stack[inst.A] = inst.K
+				elseif op == 6 then
+					stack[inst.A] = stack[inst.B]
+				elseif op == 7 then
+					local kv = inst.K
+					stack[inst.A] = extensions[kv] or env[kv]
+					pc += 1
+				elseif op == 8 then
+					local kv = inst.K
+					env[kv] = stack[inst.A]
+					pc += 1
+				elseif op == 9 then
+					local uv = upvals[inst.B + 1]
+					stack[inst.A] = uv.store[uv.index]
+				elseif op == 10 then
+					local uv = upvals[inst.B + 1]
+					uv.store[uv.index] = stack[inst.A]
+				elseif op == 11 then
+					for i, uv in open_upvalues do
+						if uv.index >= inst.A then
+							uv.value = uv.store[uv.index]
+							uv.store = uv
+							uv.index = "value"
+							open_upvalues[i] = nil
+						end
+					end
+				elseif op == 12 then
+					if luau_settings.useImportConstants then
+						stack[inst.A] = inst.K
+					else
+						local count = inst.KC
+						local k0 = inst.K0
+						local import = extensions[k0] or env[k0]
+						if count == 1 then
+							stack[inst.A] = import
+						elseif count == 2 then
+							stack[inst.A] = import[inst.K1]
+						elseif count == 3 then
+							stack[inst.A] = import[inst.K1][inst.K2]
+						end
+					end
+					pc += 1
+				elseif op == 13 then
+					stack[inst.A] = stack[inst.B][stack[inst.C]]
+				elseif op == 14 then
+					stack[inst.B][stack[inst.C]] = stack[inst.A]
+				elseif op == 15 then
+					local index = inst.K
+					stack[inst.A] = stack[inst.B][index]
+					pc += 1
+				elseif op == 16 then
+					local index = inst.K
+					stack[inst.B][index] = stack[inst.A]
+					pc += 1
+				elseif op == 17 then
+					stack[inst.A] = stack[inst.B][inst.C + 1]
+				elseif op == 18 then
+					stack[inst.B][inst.C + 1] = stack[inst.A]
+				elseif op == 19 then
+					local newPrototype = protolist[protos[inst.D + 1]]
+					local nups = newPrototype.nups
+					local upvalues = table_create(nups)
+					stack[inst.A] = luau_wrapclosure(module, newPrototype, upvalues)
+					for i = 1, nups do
+						local pseudo = code[pc]
+						pc += 1
+						local utype = pseudo.A
+						if utype == 0 then
+							local upvalue = {
+								value = stack[pseudo.B],
+								index = "value",
+							}
+							upvalue.store = upvalue
+							upvalues[i] = upvalue
+						elseif utype == 1 then
+							local index = pseudo.B
+							local prev = open_upvalues[index]
+							if prev == nil then
+								prev = {
+									index = index,
+									store = stack,
+								}
+								open_upvalues[index] = prev
+							end
+							upvalues[i] = prev
+						elseif utype == 2 then
+							upvalues[i] = upvals[pseudo.B + 1]
+						end
+					end
+				elseif op == 20 then
+					local A = inst.A
+					local B = inst.B
+					local kv = inst.K
+					local sb = stack[B]
+					stack[A + 1] = sb
+					pc += 1
+					local useFallback = true
+					local useNativeHandler = luau_settings.useNativeNamecall
+					if useNativeHandler then
+						local nativeNamecall = luau_settings.namecallHandler
+						local callInst = code[pc]
+						local callOp = callInst.opcode
+						local callA, callB, callC = callInst.A, callInst.B, callInst.C
+						if stepHook then
+							stepHook(stack, debugging, proto, module, upvals)
+						end
+						if interruptHook then
+							interruptHook(stack, debugging, proto, module, upvals)	
+						end
+						local params = if callB == 0 then top - callA else callB - 1
+						local ret_list = table_pack(
+							nativeNamecall(kv, table_unpack(stack, callA + 1, callA + params))
+						)
+						if ret_list[1] == true then
+							useFallback = false
+							pc += 1
+							inst = callInst
+							op = callOp
+							debugging.pc = pc
+							debugging.name = inst.opname
+							table_remove(ret_list, 1)
+							local ret_num = ret_list.n - 1
+							if callC == 0 then
+								top = callA + ret_num - 1
+							else
+								ret_num = callC - 1
+							end
+							table_move(ret_list, 1, ret_num, callA, stack)
+						end
+					end
+					if useFallback then
+						stack[A] = sb[kv]
+					end
+				elseif op == 21 then
+					if interruptHook then
+						interruptHook(stack, debugging, proto, module, upvals)	
+					end
+					local A, B, C = inst.A, inst.B, inst.C
+					local params = if B == 0 then top - A else B - 1
+					local func = stack[A]
+					local ret_list = table_pack(
+						func(table_unpack(stack, A + 1, A + params))
+					)
+					local ret_num = ret_list.n
+					if C == 0 then
+						top = A + ret_num - 1
+					else
+						ret_num = C - 1
+					end
+					table_move(ret_list, 1, ret_num, A, stack)
+				elseif op == 22 then
+					if interruptHook then
+						interruptHook(stack, debugging, proto, module, upvals)	
+					end
+					local A = inst.A
+					local B = inst.B 
+					local b = B - 1
+					local nresults
+					if b == LUA_MULTRET then
+						nresults = top - A + 1
+					else
+						nresults = B - 1
+					end
+					return table_unpack(stack, A, A + nresults - 1)
+				elseif op == 23 then
+					pc += inst.D
+				elseif op == 24 then
+					if interruptHook then
+						interruptHook(stack, debugging, proto, module, upvals)	
+					end
+					pc += inst.D
+				elseif op == 25 then
+					if stack[inst.A] then
+						pc += inst.D
+					end
+				elseif op == 26 then
+					if not stack[inst.A] then
+						pc += inst.D
+					end
+				elseif op == 27 then
+					if stack[inst.A] == stack[inst.aux] then
+						pc += inst.D
+					else
+						pc += 1
+					end
+				elseif op == 28 then
+					if stack[inst.A] <= stack[inst.aux] then
+						pc += inst.D
+					else
+						pc += 1
+					end
+				elseif op == 29 then
+					if stack[inst.A] < stack[inst.aux] then
+						pc += inst.D
+					else
+						pc += 1
+					end
+				elseif op == 30 then
+					if stack[inst.A] == stack[inst.aux] then
+						pc += 1
+					else
+						pc += inst.D
+					end
+				elseif op == 31 then
+					if stack[inst.A] <= stack[inst.aux] then
+						pc += 1
+					else
+						pc += inst.D
+					end
+				elseif op == 32 then
+					if stack[inst.A] < stack[inst.aux] then
+						pc += 1
+					else
+						pc += inst.D
+					end
+				elseif op == 33 then
+					stack[inst.A] = stack[inst.B] + stack[inst.C]
+				elseif op == 34 then
+					stack[inst.A] = stack[inst.B] - stack[inst.C]
+				elseif op == 35 then
+					stack[inst.A] = stack[inst.B] * stack[inst.C]
+				elseif op == 36 then
+					stack[inst.A] = stack[inst.B] / stack[inst.C]
+				elseif op == 37 then
+					stack[inst.A] = stack[inst.B] % stack[inst.C]
+				elseif op == 38 then
+					stack[inst.A] = stack[inst.B] ^ stack[inst.C]
+				elseif op == 39 then
+					stack[inst.A] = stack[inst.B] + inst.K
+				elseif op == 40 then
+					stack[inst.A] = stack[inst.B] - inst.K
+				elseif op == 41 then
+					stack[inst.A] = stack[inst.B] * inst.K
+				elseif op == 42 then
+					stack[inst.A] = stack[inst.B] / inst.K
+				elseif op == 43 then
+					stack[inst.A] = stack[inst.B] % inst.K
+				elseif op == 44 then
+					stack[inst.A] = stack[inst.B] ^ inst.K
+				elseif op == 45 then
+					local value = stack[inst.B]
+					stack[inst.A] = if value then stack[inst.C] or false else value
+				elseif op == 46 then
+					local value = stack[inst.B]
+					stack[inst.A] = if value then value else stack[inst.C] or false
+				elseif op == 47 then
+					local value = stack[inst.B]
+					stack[inst.A] = if value then inst.K or false else value
+				elseif op == 48 then
+					local value = stack[inst.B]
+					stack[inst.A] = if value then value else inst.K or false
+				elseif op == 49 then
+					local B, C = inst.B, inst.C
+					local success, s = pcall(table_concat, stack, "", B, C)
+					if not success then
+						s = stack[B]
+						for i = B + 1, C do
+							s ..= stack[i]
+						end
+					end
+					stack[inst.A] = s
+				elseif op == 50 then
+					stack[inst.A] = not stack[inst.B]
+				elseif op == 51 then
+					stack[inst.A] = -stack[inst.B]
+				elseif op == 52 then
+					stack[inst.A] = #stack[inst.B]
+				elseif op == 53 then
+					stack[inst.A] = table_create(inst.aux)
+					pc += 1
+				elseif op == 54 then
+					local template = inst.K
+					local serialized = {}
+					for _, id in template do
+						serialized[constants[id + 1]] = nil
+					end
+					stack[inst.A] = serialized
+				elseif op == 55 then
+					local A = inst.A
+					local B = inst.B
+					local c = inst.C - 1
+					if c == LUA_MULTRET then
+						c = top - B + 1
+					end
+					table_move(stack, B, B + c - 1, inst.aux, stack[A])
+					pc += 1
+				elseif op == 56 then
+					local A = inst.A
+					local limit = stack[A]
+					if not ttisnumber(limit) then
+						local number = tonumber(limit)
+						if number == nil then
+							error("invalid 'for' limit (number expected)")
+						end
+						stack[A] = number
+						limit = number
+					end
+					local step = stack[A + 1]
+					if not ttisnumber(step) then
+						local number = tonumber(step)
+						if number == nil then
+							error("invalid 'for' step (number expected)")
+						end
+						stack[A + 1] = number
+						step = number
+					end
+					local index = stack[A + 2]
+					if not ttisnumber(index) then
+						local number = tonumber(index)
+						if number == nil then
+							error("invalid 'for' index (number expected)")
+						end
+						stack[A + 2] = number
+						index = number
+					end
+					if step > 0 then
+						if not (index <= limit) then
+							pc += inst.D
+						end
+					else
+						if not (limit <= index) then
+							pc += inst.D
+						end
+					end
+				elseif op == 57 then
+					if interruptHook then
+						interruptHook(stack, debugging, proto, module, upvals)	
+					end
+					local A = inst.A
+					local limit = stack[A]
+					local step = stack[A + 1]
+					local index = stack[A + 2] + step
+					stack[A + 2] = index
+					if step > 0 then
+						if index <= limit then
+							pc += inst.D
+						end
+					else
+						if limit <= index then
+							pc += inst.D
+						end
+					end
+				elseif op == 58 then
+					if interruptHook then
+						interruptHook(stack, debugging, proto, module, upvals)	
+					end
+					local A = inst.A
+					local res = inst.K
+					top = A + 6
+					local it = stack[A]
+					if (luau_settings.generalizedIteration == false) or ttisfunction(it) then 
+						local vals = { it(stack[A + 1], stack[A + 2]) }
+						table_move(vals, 1, res, A + 3, stack)
+						if stack[A + 3] ~= nil then
+							stack[A + 2] = stack[A + 3]
+							pc += inst.D
+						else
+							pc += 1
+						end
+					else
+						local ok, vals = coroutine_resume(generalized_iterators[inst], it, stack[A + 1], stack[A + 2])
+						if not ok then
+							error(vals)
+						end
+						if vals == LUA_GENERALIZED_TERMINATOR then 
+							generalized_iterators[inst] = nil
+							pc += 1
+						else
+							table_move(vals, 1, res, A + 3, stack)
+							stack[A + 2] = stack[A + 3]
+							pc += inst.D
+						end
+					end
+				elseif op == 59 then
+					if not ttisfunction(stack[inst.A]) then
+						error(string_format("attempt to iterate over a %s value", type(stack[inst.A])))
+					end
+					pc += inst.D
+				elseif op == 60 then
+					pc += 1
+				elseif op == 61 then
+					if not ttisfunction(stack[inst.A]) then
+						error(string_format("attempt to iterate over a %s value", type(stack[inst.A])))
+					end
+					pc += inst.D
+				elseif op == 63 then
+					local A = inst.A
+					local b = inst.B - 1
+					if b == LUA_MULTRET then
+						b = varargs.len
+						top = A + b - 1
+					end
+					table_move(varargs.list, 1, b, A, stack)
+				elseif op == 64 then
+					local newPrototype = protolist[inst.K + 1]
+					local nups = newPrototype.nups
+					local upvalues = table_create(nups)
+					stack[inst.A] = luau_wrapclosure(module, newPrototype, upvalues)
+					for i = 1, nups do
+						local pseudo = code[pc]
+						pc += 1
+						local utype = pseudo.A
+						if utype == 0 then
+							local upvalue = {
+								value = stack[pseudo.B],
+								index = "value",
+							}
+							upvalue.store = upvalue
+							upvalues[i] = upvalue
+						elseif utype == 2 then
+							upvalues[i] = upvals[pseudo.B + 1]
+						end
+					end
+				elseif op == 65 then
+				elseif op == 66 then
+					local kv = inst.K
+					stack[inst.A] = kv
+					pc += 1
+				elseif op == 67 then
+					if interruptHook then
+						interruptHook(stack, debugging, proto, module, upvals)	
+					end
+					pc += inst.E
+				elseif op == 68 then
+				elseif op == 69 then
+					inst.E += 1
+				elseif op == 70 then
+					error("encountered unhandled CAPTURE")
+				elseif op == 71 then
+					stack[inst.A] = inst.K - stack[inst.C]
+				elseif op == 72 then
+					stack[inst.A] = inst.K / stack[inst.C]
+				elseif op == 73 then
+				elseif op == 74 then
+					pc += 1
+				elseif op == 75 then
+					pc += 1
+				elseif op == 76 then
+					local iterator = stack[inst.A]
+					if luau_settings.generalizedIteration and not ttisfunction(iterator) then
+						local loopInstruction = code[pc + inst.D]
+						if generalized_iterators[loopInstruction] == nil then 
+							local function gen_iterator(...)
+								for r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, r36, r37, r38, r39, r40, r41, r42, r43, r44, r45, r46, r47, r48, r49, r50, r51, r52, r53, r54, r55, r56, r57, r58, r59, r60, r61, r62, r63, r64, r65, r66, r67, r68, r69, r70, r71, r72, r73, r74, r75, r76, r77, r78, r79, r80, r81, r82, r83, r84, r85, r86, r87, r88, r89, r90, r91, r92, r93, r94, r95, r96, r97, r98, r99, r100, r101, r102, r103, r104, r105, r106, r107, r108, r109, r110, r111, r112, r113, r114, r115, r116, r117, r118, r119, r120, r121, r122, r123, r124, r125, r126, r127, r128, r129, r130, r131, r132, r133, r134, r135, r136, r137, r138, r139, r140, r141, r142, r143, r144, r145, r146, r147, r148, r149, r150, r151, r152, r153, r154, r155, r156, r157, r158, r159, r160, r161, r162, r163, r164, r165, r166, r167, r168, r169, r170, r171, r172, r173, r174, r175, r176, r177, r178, r179, r180, r181, r182, r183, r184, r185, r186, r187, r188, r189, r190, r191, r192, r193, r194, r195, r196, r197, r198, r199, r200 in ... do 
+									coroutine_yield({r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, r36, r37, r38, r39, r40, r41, r42, r43, r44, r45, r46, r47, r48, r49, r50, r51, r52, r53, r54, r55, r56, r57, r58, r59, r60, r61, r62, r63, r64, r65, r66, r67, r68, r69, r70, r71, r72, r73, r74, r75, r76, r77, r78, r79, r80, r81, r82, r83, r84, r85, r86, r87, r88, r89, r90, r91, r92, r93, r94, r95, r96, r97, r98, r99, r100, r101, r102, r103, r104, r105, r106, r107, r108, r109, r110, r111, r112, r113, r114, r115, r116, r117, r118, r119, r120, r121, r122, r123, r124, r125, r126, r127, r128, r129, r130, r131, r132, r133, r134, r135, r136, r137, r138, r139, r140, r141, r142, r143, r144, r145, r146, r147, r148, r149, r150, r151, r152, r153, r154, r155, r156, r157, r158, r159, r160, r161, r162, r163, r164, r165, r166, r167, r168, r169, r170, r171, r172, r173, r174, r175, r176, r177, r178, r179, r180, r181, r182, r183, r184, r185, r186, r187, r188, r189, r190, r191, r192, r193, r194, r195, r196, r197, r198, r199, r200})
+								end
+								coroutine_yield(LUA_GENERALIZED_TERMINATOR)
+							end
+							generalized_iterators[loopInstruction] = coroutine_create(gen_iterator)
+						end
+					end
+					pc += inst.D
+				elseif op == 77 then
+					local kn = inst.KN
+					if (stack[inst.A] == nil) ~= kn then
+						pc += inst.D
+					else
+						pc += 1
+					end
+				elseif op == 78 then
+					local kv = inst.K
+					local kn = inst.KN
+					local ra = stack[inst.A]
+					if (ttisboolean(ra) and (ra == kv)) ~= kn then
+						pc += inst.D
+					else
+						pc += 1
+					end
+				elseif op == 79 then
+					local kv = inst.K
+					local kn = inst.KN
+					local ra = stack[inst.A]
+					if (ra == kv) ~= kn then
+						pc += inst.D
+					else
+						pc += 1
+					end
+				elseif op == 80 then
+					local kv = inst.K
+					local kn = inst.KN
+					local ra = stack[inst.A]
+					if (ra == kv) ~= kn then
+						pc += inst.D
+					else
+						pc += 1
+					end
+				elseif op == 81 then
+					stack[inst.A] = stack[inst.B] // stack[inst.C]
+				elseif op == 82 then
+					stack[inst.A] = stack[inst.B] // inst.K
+				else
+					error("Unsupported Opcode: " .. inst.opname .. " op: " .. op)
+				end
+			end
+			for i, uv in open_upvalues do
+				uv.value = uv.store[uv.index]
+				uv.store = uv
+				uv.index = "value"
+				open_upvalues[i] = nil
+			end
+			for i, iter in generalized_iterators do 
+				coroutine_close(iter)
+				generalized_iterators[i] = nil
+			end
+		end
+		local function wrapped(...)
+			local passed = table_pack(...)
+			local stack = table_create(proto.maxstacksize)
+			local varargs = {
+				len = 0,
+				list = {},
+			}
+			table_move(passed, 1, proto.numparams, 0, stack)
+			if proto.numparams < passed.n then
+				local start = proto.numparams + 1
+				local len = passed.n - proto.numparams
+				varargs.len = len
+				table_move(passed, start, start + len - 1, 1, varargs.list)
+			end
+			passed = nil
+			local debugging = {pc = 0, name = "NONE"}
+			local result
+			if luau_settings.errorHandling then 
+				result = table_pack(pcall(luau_execute, debugging, stack, proto.protos, proto.code, varargs))
+			else
+				result = table_pack(true, luau_execute(debugging, stack, proto.protos, proto.code, varargs))
+			end
+			if result[1] then
+				return table_unpack(result, 2, result.n)
+			else
+				local message = result[2]
+				if panicHook then
+					panicHook(message, stack, debugging, proto, module, upvals)
+				end
+				if ttisstring(message) == false then
+					if luau_settings.allowProxyErrors then
+						error(message)
+					else 
+						message = type(message)
+					end
+				end
+				if proto.lineinfoenabled then
+					return error(string_format("Fiu VM Error { Name: %s Line: %s PC: %s Opcode: %s }: %s", proto.debugname, proto.instructionlineinfo[debugging.pc], debugging.pc, debugging.name, message), 0)
+				else 
+					return error(string_format("Fiu VM Error { Name: %s PC: %s Opcode: %s }: %s", proto.debugname, debugging.pc, debugging.name, message), 0)
+				end
+			end
+		end
+		if luau_settings.errorHandling then 
+			return wrapped
+		else 
+			return luau_execute
+		end 
+	end
+	return luau_wrapclosure(module, mainProto),  luau_close
+end
+return {
+	luau_newsettings = luau_newsettings,
+	luau_validatesettings = luau_validatesettings,
+	luau_deserialize = luau_deserialize,
+	luau_load = luau_load,
+	luau_getcoverage = luau_getcoverage,
+}
+]]
+
+pheeoweModule.Source = pheeoweSource
+
+local loadSource = [[
+local pheeowe = require(script.pheeowe)
+local nativeLoadstring = loadstring
+
+local function luau_compile(source, optLevel, dbgLevel, typInfLevel, covLevel)
+	local func, err = nativeLoadstring(source)
+	if not func then
+		error(err, 0)
+	end
+	return string.dump(func)
+end
+local function buildEnv(overrides)
+	local env = {}
+	env.game             = game
+	env.workspace        = workspace
+	env.require          = require
+	env.script           = script
+	env.pcall            = pcall
+	env.xpcall           = xpcall
+	env.error            = error
+	env.assert           = assert
+	env.type             = type
+	env.typeof           = typeof
+	env.tonumber         = tonumber
+	env.tostring         = tostring
+	env.select           = select
+	env.unpack           = unpack
+	env.pairs            = pairs
+	env.ipairs           = ipairs
+	env.next             = next
+	env.rawget           = rawget
+	env.rawset           = rawset
+	env.rawequal         = rawequal
+	env.rawlen           = rawlen
+	env.setmetatable     = setmetatable
+	env.getmetatable     = getmetatable
+	env.print            = print
+	env.warn             = warn
+	env.math             = math
+	env.string           = string
+	env.table            = table
+	env.coroutine        = coroutine
+	env.bit32            = bit32
+	env.os               = os
+	env.debug            = debug
+	env.utf8             = utf8
+	env.buffer           = buffer
+	env.task             = task
+	env.wait             = task.wait
+	env.spawn            = task.spawn
+	env.delay            = task.delay
+	env.tick             = tick
+	env.time             = time
+	env.Instance         = Instance
+	env.Enum             = Enum
+	env.Vector3          = Vector3
+	env.Vector3int16     = Vector3int16
+	env.CFrame           = CFrame
+	env.Color3           = Color3
+	env.BrickColor       = BrickColor
+	env.UDim             = UDim
+	env.UDim2            = UDim2
+	env.Ray              = Ray
+	env.Region3          = Region3
+	env.Region3int16     = Region3int16
+	env.TweenInfo        = TweenInfo
+	env.Random           = Random
+	env.Rect             = Rect
+	env.PhysicalProperties    = PhysicalProperties
+	env.NumberSequence        = NumberSequence
+	env.NumberSequenceKeypoint = NumberSequenceKeypoint
+	env.ColorSequence         = ColorSequence
+	env.ColorSequenceKeypoint = ColorSequenceKeypoint
+	env.Faces            = Faces
+	env.Axes             = Axes
+	env._G               = _G
+	env.gcinfo           = gcinfo
+	env.newproxy         = newproxy
+	env.Vector3_new      = Vector3.new
+	env.CFrame_new       = CFrame.new
+	env.CFrame_Angles    = CFrame.Angles
+	env.Instance_new     = Instance.new
+	env.Color3_fromRGB   = Color3.fromRGB
+	env.Color3_new       = Color3.new
+	local success, gev = pcall(function() return getgenv() end)
+	if success and gev then
+		env.getgenv = getgenv
+		env.getrenv = getrenv
+	else
+		env.getgenv = function() return _G end
+		env.getrenv = function() return _G end
+	end
+	if overrides then
+		for key, value in overrides do
+			env[key] = value
+		end
+	end
+	return env
+end
+local function loadstring(source, env)
+	local compileOk, bytecode = pcall(function()
+		return luau_compile(source, 1, 1, 0, 0)
+	end)
+	if not compileOk then
+		return nil, "Compile error: " .. tostring(bytecode)
+	end
+	local settings = pheeowe.luau_newsettings()
+	settings.vectorCtor = Vector3.new
+	settings.vectorSize = 3
+	if not env then
+		env = buildEnv()
+	end
+	local loadOk, func = pcall(pheeowe.luau_load, bytecode, env, settings)
+	if not loadOk then
+		return nil, "Load error: " .. tostring(func)
+	end
+	return func
+end
+return {
+	loadstring = loadstring,
+	buildEnv   = buildEnv,
+}
+]]
+
+loadModule.Source = loadSource
+task.wait(0.1)
+
+local loadstringModule = Fire:FindFirstChild("load")
+
+local executor = root:FindFirstChild("Executor")
+local imageLabel = root:FindFirstChild("ImageLabel")
+local scanner = executor and executor:FindFirstChild("Scanner")
+local mainContent = executor and executor:FindFirstChild("MainContent")
+local centerArea = Main_22 and Main_22:FindFirstChild("CenterArea")
+local openBtn = centerArea and centerArea:FindFirstChild("OpenExecutor")
+
+task.spawn(function()
+	local success, thumbnailUrl = pcall(function()
+		return Players:GetUserThumbnailAsync(
+			LocalPlayer.UserId,
+			Enum.ThumbnailType.HeadShot,
+			Enum.ThumbnailSize.Size420x420
+		)
+	end)
+	if success then
+		local avatar = centerArea and centerArea:FindFirstChild("Avatar")
+		if avatar then
+			avatar.Image = thumbnailUrl
+		end
+	end
+end)
+
+local playerNameLabel = centerArea and centerArea:FindFirstChild("PlayerName")
+if playerNameLabel then
+	playerNameLabel.Text = LocalPlayer.DisplayName
+	LocalPlayer:GetPropertyChangedSignal("DisplayName"):Connect(function()
+		playerNameLabel.Text = LocalPlayer.DisplayName
+	end)
+end
+
+local playersValueLabel = centerArea and centerArea:FindFirstChild("PlayersCard") and centerArea.PlayersCard:FindFirstChild("PlayersValue")
+if playersValueLabel then
+	local function updatePlayerCount()
+		playersValueLabel.Text = tostring(#Players:GetPlayers())
+	end
+	Players.PlayerAdded:Connect(updatePlayerCount)
+	Players.PlayerRemoving:Connect(updatePlayerCount)
+	updatePlayerCount()
+end
+
+local function popEffect(button)
+	TweenService:Create(button, TweenInfo.new(0.08), {
+		ImageTransparency = 0.6
+	}):Play()
+	task.wait(0.1)
+	TweenService:Create(button, TweenInfo.new(0.12), {
+		ImageTransparency = 0
+	}):Play()
+end
+
+local function switchToExecutor()
+	if not Main_22 then return end
+	local slideOut = TweenService:Create(Main_22, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		Position = UDim2.new(0.5, 0, 1.6, 0)
+	})
+	slideOut:Play()
+	slideOut.Completed:Connect(function()
+		Main_22.Visible = false
+		if executor then
+			executor.Visible = true
+			executor.Position = UDim2.new(0.5, 0, 1.6, 0)
+			local sc = executor:FindFirstChild("Scanner")
+			local mc = executor:FindFirstChild("MainContent")
+			if sc then sc.Visible = false end
+			if mc then mc.Visible = true end
+			TweenService:Create(executor, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+				Position = UDim2.new(0.5, 0, 0.5, 0)
+			}):Play()
+		end
+	end)
+end
+
+local function switchToMain()
+	if not executor then return end
+	local slideOut = TweenService:Create(executor, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		Position = UDim2.new(0.5, 0, 1.6, 0)
+	})
+	slideOut:Play()
+	slideOut.Completed:Connect(function()
+		executor.Visible = false
+		if Main_22 then
+			Main_22.Visible = true
+			Main_22.Position = UDim2.new(0.5, 0, -0.6, 0)
+			TweenService:Create(Main_22, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+				Position = UDim2.new(0.5, 0, 0.5, 0)
+			}):Play()
+		end
+	end)
+end
+
+if imageLabel then
+	imageLabel.MouseButton1Click:Connect(function()
+		popEffect(imageLabel)
+		if Main_22 and Main_22.Visible then
+			switchToExecutor()
+		else
+			switchToMain()
+		end
+	end)
+end
+
+if openBtn then
+	openBtn.MouseButton1Click:Connect(function()
+		local orig = openBtn.BackgroundColor3
+		TweenService:Create(openBtn, TweenInfo.new(0.08), {
+			BackgroundColor3 = Color3.fromRGB(20, 50, 110)
+		}):Play()
+		task.wait(0.12)
+		TweenService:Create(openBtn, TweenInfo.new(0.1), {
+			BackgroundColor3 = orig
+		}):Play()
+		task.wait(0.05)
+		switchToExecutor()
+	end)
+	openBtn.MouseEnter:Connect(function()
+		TweenService:Create(openBtn, TweenInfo.new(0.18, Enum.EasingStyle.Sine), {
+			BackgroundColor3 = Color3.fromRGB(35, 70, 140),
+			TextColor3 = Color3.fromRGB(190, 225, 255)
+		}):Play()
+	end)
+	openBtn.MouseLeave:Connect(function()
+		TweenService:Create(openBtn, TweenInfo.new(0.18, Enum.EasingStyle.Sine), {
+			BackgroundColor3 = Color3.fromRGB(25, 55, 110),
+			TextColor3 = Color3.fromRGB(140, 200, 255)
+		}):Play()
+	end)
+end
+
+local bottomBar = executor and executor:FindFirstChild("BottomBar")
+local r6Btn = bottomBar and bottomBar:FindFirstChild("R6Btn")
+if r6Btn then
+	r6Btn.MouseButton1Click:Connect(function()
+		task.spawn(function()
+			local plr = LocalPlayer
+			local success, humanoidModel = pcall(function()
+				return Players:CreateHumanoidModelFromDescription(
+					Players:GetHumanoidDescriptionFromUserId(plr.UserId),
+					Enum.HumanoidRigType.R6
+				)
+			end)
+			if not success or not humanoidModel then
+				warn("Failed to create R6 model")
+				return
+			end
+			local character = plr.Character
+			if not character or not character.PrimaryPart then
+				warn("Character or PrimaryPart not found")
+				return
+			end
+			local cframe = character.PrimaryPart.CFrame
+			humanoidModel.Name = character.Name
+			humanoidModel:SetPrimaryPartCFrame(cframe)
+			character:Destroy()
+			task.wait(0.1)
+			plr.Character = humanoidModel
+			humanoidModel.Parent = workspace
+		end)
+	end)
+end
+
+local titleBar = executor and executor:FindFirstChild("TitleBar")
+local closeBtn = titleBar and titleBar:FindFirstChild("Close")
+local minBtn = titleBar and titleBar:FindFirstChild("Minimize")
+local executeBtn = bottomBar and bottomBar:FindFirstChild("ExecuteBtn")
+local clearBtn = bottomBar and bottomBar:FindFirstChild("ClearBtn")
+local scanBtn = bottomBar and bottomBar:FindFirstChild("ScanBtn")
+local statusText = bottomBar and bottomBar:FindFirstChild("StatusText")
+local statusIndicator = bottomBar and bottomBar:FindFirstChild("StatusIndicator")
+local scannerBackBtn = scanner and scanner:FindFirstChild("Header") and scanner.Header:FindFirstChild("BackBtn")
+local statusLabel = scanner and scanner:FindFirstChild("Status")
+local resultsList = scanner and scanner:FindFirstChild("ResultsList")
+local typer = mainContent and mainContent:FindFirstChild("Typer")
+local lineNumbers = mainContent and mainContent:FindFirstChild("LineNumbers")
+local syntaxDisplay = mainContent and mainContent:FindFirstChild("SyntaxDisplay")
+local targetBar = executor and executor:FindFirstChild("TargetBar")
+local targetLabel = targetBar and targetBar:FindFirstChild("TargetLabel")
+local clearTargetBtn = targetBar and targetBar:FindFirstChild("ClearTarget")
+local errorBar = executor and executor:FindFirstChild("ErrorBar")
+local errorMsg = errorBar and errorBar:FindFirstChild("ErrorMsg")
+local modeBtn = bottomBar and bottomBar:FindFirstChild("ModeBtn")
+local tabBar = executor and executor:FindFirstChild("TabBar")
+local tabScroll = tabBar and tabBar:FindFirstChild("TabScroll")
+local newTabBtn = tabBar and tabBar:FindFirstChild("NewTabBtn")
+local saveBtn = bottomBar and bottomBar:FindFirstChild("SaveBtn")
+local savedPanel = executor and executor:FindFirstChild("SavedPanel")
+local savedBackBtn = savedPanel and savedPanel:FindFirstChild("Header") and savedPanel.Header:FindFirstChild("BackBtn")
+local savedStatus = savedPanel and savedPanel:FindFirstChild("Status")
+local savedList = savedPanel and savedPanel:FindFirstChild("SavedList")
+
+local selectedTarget = "self"
+local selectedTargetClass = "self"
+local isScanning = false
+local isMinimized = false
+local execMode = "Auto"
+local tabs = {{name = "Script 1", content = ""}}
+local activeTabIndex = 1
+local tabCounter = 1
+local savedScripts = {}
+local dragActive = false
+local dragStartPos = Vector3.zero
+local dragStartInput = Vector3.zero
+local FULL_SIZE = UDim2.new(0, 600, 0, 450)
+local MIN_SIZE = UDim2.new(0, 600, 0, 35)
+
+local function clampPosition()
+	local camera = workspace.CurrentCamera
+	if not camera then return end
+	local viewportSize = camera.ViewportSize
+	local halfW = viewportSize.X / 2
+	local halfH = viewportSize.Y / 2
+	local offsetX = executor.Position.X.Offset
+	local offsetY = executor.Position.Y.Offset
+	local minVisible = 30
+	local minX = -(halfW - minVisible)
+	local maxX = halfW - minVisible
+	local minY = -(halfH - minVisible)
+	local maxY = halfH - minVisible
+	offsetX = math.clamp(offsetX, minX, maxX)
+	offsetY = math.clamp(offsetY, minY, maxY)
+	executor.Position = UDim2.new(0.5, offsetX, 0.5, offsetY)
+end
+
+local COLOR = {
+	HIGH   = Color3.fromRGB(255, 60, 60),
+	MEDIUM = Color3.fromRGB(255, 180, 40),
+	LOW    = Color3.fromRGB(60, 200, 120),
+	INFO   = Color3.fromRGB(100, 200, 255),
+	MUTED  = Color3.fromRGB(150, 150, 170),
+	DIM    = Color3.fromRGB(100, 100, 120),
+	PLAYER = Color3.fromRGB(100, 200, 255),
+}
+
+local function setStatus(text, color)
+	if statusText then
+		statusText.Text = text
+		statusText.TextColor3 = color
+	end
+end
+
+local function setIndicator(color)
+	if statusIndicator then
+		statusIndicator.BackgroundColor3 = color
+	end
+end
+
+local function showError(text)
+	if errorBar then
+		errorBar.Visible = true
+		errorBar.Size = UDim2.new(1, -20, 0, 36)
+	end
+	if errorMsg then
+		errorMsg.Text = text
+	end
+end
+
+local function hideError()
+	if errorBar then
+		errorBar.Visible = false
+		errorBar.Size = UDim2.new(1, -20, 0, 0)
+	end
+	if errorMsg then
+		errorMsg.Text = ""
+	end
+end
+
+local function updateCanvasSize(scrollingFrame)
+	if not scrollingFrame then return end
+	local totalHeight = 0
+	for _, child in scrollingFrame:GetChildren() do
+		if child:IsA("Frame") then
+			totalHeight = totalHeight + child.AbsoluteSize.Y
+		end
+	end
+	scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 10)
+end
+
+local function updateLineNumbers()
+	if not typer or not lineNumbers then return end
+	local lineCount = 1
+	for _ in typer.Text:gmatch("\n") do
+		lineCount += 1
+	end
+	local lines = table.create(lineCount)
+	for i = 1, lineCount do lines[i] = tostring(i) end
+	lineNumbers.Text = table.concat(lines, "\n")
+end
+
+local function createTabButton(index)
+	if not tabScroll then return end
+	local tab = tabs[index]
+	if not tab then return end
+	local isActive = (index == activeTabIndex)
+	local btn = Instance.new("TextButton")
+	btn.Name = "Tab_" .. index
+	btn.Size = UDim2.new(0, 120, 0, 22)
+	btn.BackgroundColor3 = if isActive then Color3.fromRGB(20, 20, 35) else Color3.fromRGB(12, 12, 18)
+	btn.Text = ""
+	btn.BorderSizePixel = 0
+	btn.LayoutOrder = index
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Name = "TabName"
+	nameLabel.Size = UDim2.new(1, -30, 1, 0)
+	nameLabel.Position = UDim2.new(0, 8, 0, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text = tab.name
+	nameLabel.TextColor3 = if isActive then Color3.fromRGB(220, 220, 240) else Color3.fromRGB(120, 120, 140)
+	nameLabel.TextSize = 11
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+	nameLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	nameLabel.Parent = btn
+	local closeTabBtn = Instance.new("TextButton")
+	closeTabBtn.Name = "CloseBtn"
+	closeTabBtn.Size = UDim2.new(0, 16, 0, 16)
+	closeTabBtn.Position = UDim2.new(1, -20, 0, 3)
+	closeTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+	closeTabBtn.Text = "\195\151"
+	closeTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
+	closeTabBtn.TextSize = 12
+	closeTabBtn.BorderSizePixel = 0
+	Instance.new("UICorner", closeTabBtn).CornerRadius = UDim.new(0, 3)
+	closeTabBtn.Parent = btn
+	if isActive then
+		local indicator = Instance.new("Frame")
+		indicator.Name = "ActiveIndicator"
+		indicator.Size = UDim2.new(1, -4, 0, 2)
+		indicator.Position = UDim2.new(0, 2, 1, -2)
+		indicator.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+		indicator.BorderSizePixel = 0
+		Instance.new("UICorner", indicator).CornerRadius = UDim.new(0, 1)
+		indicator.Parent = btn
+	end
+	local lastClick = 0
+	local lastClickIndex = 0
+	btn.MouseButton1Click:Connect(function()
+		local now = tick()
+		if now - lastClick < 0.4 and lastClickIndex == index then
+			local renameBox = Instance.new("TextBox")
+			renameBox.Name = "RenameBox"
+			renameBox.Size = UDim2.new(1, -30, 1, 0)
+			renameBox.Position = UDim2.new(0, 8, 0, 0)
+			renameBox.BackgroundTransparency = 0.8
+			renameBox.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
+			renameBox.Text = tab.name
+			renameBox.TextColor3 = Color3.fromRGB(220, 220, 240)
+			renameBox.TextSize = 11
+			renameBox.TextXAlignment = Enum.TextXAlignment.Left
+			renameBox.TextTruncate = Enum.TextTruncate.None
+			renameBox.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+			renameBox.ClearTextOnFocus = false
+			renameBox.Parent = btn
+			nameLabel.Visible = false
+			renameBox:CaptureFocus()
+			renameBox.FocusLost:Connect(function()
+				local newName = renameBox.Text
+				if newName ~= "" then
+					tab.name = newName
+					nameLabel.Text = newName
+				end
+				nameLabel.Visible = true
+				renameBox:Destroy()
+			end)
+		else
+			if index ~= activeTabIndex then
+				switchToTab(index)
+			end
+		end
+		lastClick = now
+		lastClickIndex = index
+	end)
+	closeTabBtn.MouseButton1Click:Connect(function()
+		closeTab(index)
+	end)
+	btn.Parent = tabScroll
+	return btn
+end
+
+local function updateTabButtons()
+	if not tabScroll then return end
+	for _, child in tabScroll:GetChildren() do
+		if child.Name:match("^Tab_%d+$") then
+			child:Destroy()
+		end
+	end
+	for i = 1, #tabs do
+		createTabButton(i)
+	end
+end
+
+local function switchToTab(index)
+	if not tabs[index] then return end
+	if tabs[activeTabIndex] and typer then
+		tabs[activeTabIndex].content = typer.Text
+	end
+	activeTabIndex = index
+	if typer then
+		typer.Text = tabs[index].content
+		updateLineNumbers()
+		if syntaxDisplay then
+			syntaxDisplay.Text = typer.Text
+		end
+	end
+	updateTabButtons()
+end
+
+local function closeTab(index)
+	if #tabs <= 1 then
+		if tabs[1] then
+			tabs[1].content = ""
+			tabs[1].name = "Script 1"
+		end
+		if typer then
+			typer.Text = ""
+			updateLineNumbers()
+			if syntaxDisplay then
+				syntaxDisplay.Text = ""
+			end
+		end
+		updateTabButtons()
+		return
+	end
+	table.remove(tabs, index)
+	if activeTabIndex >= index then
+		activeTabIndex = math.max(1, activeTabIndex - 1)
+	end
+	if tabs[activeTabIndex] and typer then
+		typer.Text = tabs[activeTabIndex].content
+		updateLineNumbers()
+		if syntaxDisplay then
+			syntaxDisplay.Text = typer.Text
+		end
+	end
+	updateTabButtons()
+end
+
+local function addNewTab()
+	tabCounter += 1
+	local newTab = {name = "Script " .. tabCounter, content = ""}
+	table.insert(tabs, newTab)
+	switchToTab(#tabs)
+end
+
+if newTabBtn then
+	newTabBtn.MouseButton1Click:Connect(addNewTab)
+end
+
+updateTabButtons()
+
+if typer then
+	typer:GetPropertyChangedSignal("Text"):Connect(function()
+		if tabs[activeTabIndex] then
+			tabs[activeTabIndex].content = typer.Text
+		end
+		updateLineNumbers()
+		if syntaxDisplay then
+			syntaxDisplay.Text = typer.Text
+		end
+	end)
+	updateLineNumbers()
+end
+
+local function createSavedEntry(index)
+	if not savedList then return end
+	local saved = savedScripts[index]
+	if not saved then return end
+	local entry = Instance.new("Frame")
+	entry.Name = "Saved_" .. index
+	entry.Size = UDim2.new(1, 0, 0, 50)
+	entry.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+	entry.BorderSizePixel = 0
+	entry.LayoutOrder = index
+	Instance.new("UICorner", entry).CornerRadius = UDim.new(0, 4)
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.new(1, -100, 0, 20)
+	nameLabel.Position = UDim2.new(0, 10, 0, 4)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text = saved.name
+	nameLabel.TextColor3 = Color3.fromRGB(220, 220, 230)
+	nameLabel.TextSize = 13
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+	nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+	nameLabel.Parent = entry
+	local infoLabel = Instance.new("TextLabel")
+	infoLabel.Size = UDim2.new(1, -100, 0, 14)
+	infoLabel.Position = UDim2.new(0, 10, 0, 22)
+	infoLabel.BackgroundTransparency = 1
+	local lineCount = 1
+	for _ in saved.content:gmatch("\n") do lineCount += 1 end
+	infoLabel.Text = string.format("%d lines \194\183 %d bytes \194\183 %s", lineCount, #saved.content, os.date("!%H:%M", saved.timestamp or 0))
+	infoLabel.TextColor3 = Color3.fromRGB(90, 90, 110)
+	infoLabel.TextSize = 10
+	infoLabel.TextXAlignment = Enum.TextXAlignment.Left
+	infoLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	infoLabel.Parent = entry
+	local previewLabel = Instance.new("TextLabel")
+	previewLabel.Size = UDim2.new(1, -100, 0, 14)
+	previewLabel.Position = UDim2.new(0, 10, 0, 34)
+	previewLabel.BackgroundTransparency = 1
+	local preview = saved.content:match("^[^\n]*") or ""
+	previewLabel.Text = preview:sub(1, 60) .. (preview:len() > 60 and "..." or "")
+	previewLabel.TextColor3 = Color3.fromRGB(70, 70, 90)
+	previewLabel.TextSize = 9
+	previewLabel.TextXAlignment = Enum.TextXAlignment.Left
+	previewLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	previewLabel.TextTruncate = Enum.TextTruncate.AtEnd
+	previewLabel.Parent = entry
+	local loadBtn = Instance.new("TextButton")
+	loadBtn.Name = "LoadBtn"
+	loadBtn.Size = UDim2.new(0, 40, 0, 20)
+	loadBtn.Position = UDim2.new(1, -90, 0, 4)
+	loadBtn.BackgroundColor3 = Color3.fromRGB(20, 60, 35)
+	loadBtn.Text = "Load"
+	loadBtn.TextColor3 = Color3.fromRGB(80, 200, 120)
+	loadBtn.TextSize = 10
+	loadBtn.BorderSizePixel = 0
+	Instance.new("UICorner", loadBtn).CornerRadius = UDim.new(0, 3)
+	loadBtn.Parent = entry
+	local delBtn = Instance.new("TextButton")
+	delBtn.Name = "DeleteBtn"
+	delBtn.Size = UDim2.new(0, 40, 0, 20)
+	delBtn.Position = UDim2.new(1, -45, 0, 4)
+	delBtn.BackgroundColor3 = Color3.fromRGB(60, 20, 20)
+	delBtn.Text = "Del"
+	delBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+	delBtn.TextSize = 10
+	delBtn.BorderSizePixel = 0
+	Instance.new("UICorner", delBtn).CornerRadius = UDim.new(0, 3)
+	delBtn.Parent = entry
+	local clickOverlay = Instance.new("TextButton")
+	clickOverlay.Size = UDim2.new(1, -95, 1, 0)
+	clickOverlay.BackgroundTransparency = 1
+	clickOverlay.Text = ""
+	clickOverlay.Parent = entry
+	local function loadThis()
+		if tabs[activeTabIndex] and typer then
+			tabs[activeTabIndex].content = typer.Text
+		end
+		if tabs[activeTabIndex] then
+			tabs[activeTabIndex].content = saved.content
+			tabs[activeTabIndex].name = saved.name
+		end
+		if typer then
+			typer.Text = saved.content
+			updateLineNumbers()
+			if syntaxDisplay then
+				syntaxDisplay.Text = typer.Text
+			end
+		end
+		if savedPanel then savedPanel.Visible = false end
+		if mainContent then mainContent.Visible = true end
+		updateTabButtons()
+		setStatus("Loaded: " .. saved.name, COLOR.LOW)
+		setIndicator(COLOR.LOW)
+	end
+	loadBtn.MouseButton1Click:Connect(loadThis)
+	clickOverlay.MouseButton1Click:Connect(loadThis)
+	delBtn.MouseButton1Click:Connect(function()
+		table.remove(savedScripts, index)
+		updateSavedList()
+	end)
+	clickOverlay.MouseEnter:Connect(function()
+		TweenService:Create(entry, TweenInfo.new(0.1), {
+			BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+		}):Play()
+	end)
+	clickOverlay.MouseLeave:Connect(function()
+		TweenService:Create(entry, TweenInfo.new(0.1), {
+			BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+		}):Play()
+	end)
+	entry.Parent = savedList
+end
+
+local function updateSavedList()
+	if not savedList then return end
+	for _, child in savedList:GetChildren() do
+		if child:IsA("Frame") then child:Destroy() end
+	end
+	if savedStatus then
+		if #savedScripts == 0 then
+			savedStatus.Text = "No saved scripts"
+		else
+			savedStatus.Text = #savedScripts .. " saved script" .. (#savedScripts ~= 1 and "s" or "")
+		end
+	end
+	for i = 1, #savedScripts do
+		createSavedEntry(i)
+	end
+	updateCanvasSize(savedList)
+end
+
+local function saveCurrentScript()
+	if not tabs[activeTabIndex] then return end
+	if typer then
+		tabs[activeTabIndex].content = typer.Text
+	end
+	local tab = tabs[activeTabIndex]
+	if tab.content == "" then
+		setStatus("Nothing to save", COLOR.MEDIUM)
+		setIndicator(COLOR.MEDIUM)
+		return
+	end
+	local existingIndex = nil
+	for i, saved in savedScripts do
+		if saved.name == tab.name then
+			existingIndex = i
+			break
+		end
+	end
+	local entry = {
+		name = tab.name,
+		content = tab.content,
+		timestamp = os.time(),
+	}
+	if existingIndex then
+		savedScripts[existingIndex] = entry
+	else
+		table.insert(savedScripts, entry)
+	end
+	setStatus("Saved: " .. tab.name, COLOR.LOW)
+	setIndicator(COLOR.LOW)
+	updateSavedList()
+end
+
+if saveBtn then
+	saveBtn.MouseButton1Click:Connect(saveCurrentScript)
+end
+
+if savedBackBtn then
+	savedBackBtn.MouseButton1Click:Connect(function()
+		if savedPanel then savedPanel.Visible = false end
+		if mainContent then mainContent.Visible = true end
+	end)
+end
+
+local function setTarget(name, className, color)
+	selectedTarget = name
+	selectedTargetClass = className
+	if targetLabel then
+		targetLabel.Text = "Target: " .. name
+		targetLabel.TextColor3 = color
+	end
+	if scanner then scanner.Visible = false end
+	if mainContent then mainContent.Visible = true end
+end
+
+local function clearTarget()
+	selectedTarget = "self"
+	selectedTargetClass = "self"
+	if targetLabel then
+		targetLabel.Text = "Target: Self"
+		targetLabel.TextColor3 = COLOR.MUTED
+	end
+end
+
+if clearTargetBtn then
+	clearTargetBtn.MouseButton1Click:Connect(clearTarget)
+end
+
+if modeBtn then
+	modeBtn.MouseButton1Click:Connect(function()
+		if execMode == "Auto" then
+			execMode = "Client"
+			modeBtn.Text = "Client"
+			modeBtn.BackgroundColor3 = Color3.fromRGB(30, 100, 50)
+			modeBtn.TextColor3 = Color3.fromRGB(60, 200, 120)
+		elseif execMode == "Client" then
+			execMode = "Server"
+			modeBtn.Text = "Server"
+			modeBtn.BackgroundColor3 = Color3.fromRGB(100, 60, 30)
+			modeBtn.TextColor3 = Color3.fromRGB(255, 180, 40)
+		else
+			execMode = "Auto"
+			modeBtn.Text = "Auto"
+			modeBtn.BackgroundColor3 = Color3.fromRGB(30, 60, 100)
+			modeBtn.TextColor3 = Color3.fromRGB(100, 200, 255)
+		end
+	end)
+end
+
+if minBtn then
+	minBtn.MouseButton1Click:Connect(function()
+		isMinimized = not isMinimized
+		if isMinimized then
+			minBtn.Text = "+"
+			if mainContent then mainContent.Visible = false end
+			if bottomBar then bottomBar.Visible = false end
+			if targetBar then targetBar.Visible = false end
+			if errorBar then errorBar.Visible = false end
+			if scanner then scanner.Visible = false end
+			if tabBar then tabBar.Visible = false end
+			if savedPanel then savedPanel.Visible = false end
+			TweenService:Create(executor, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Size = MIN_SIZE
+			}):Play()
+		else
+			minBtn.Text = "\226\136\146"
+			if mainContent then mainContent.Visible = true end
+			if bottomBar then bottomBar.Visible = true end
+			if targetBar then targetBar.Visible = true end
+			if tabBar then tabBar.Visible = true end
+			TweenService:Create(executor, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Size = FULL_SIZE
+			}):Play()
+			task.delay(0.22, clampPosition)
+		end
+	end)
+end
+
+if titleBar then
+	titleBar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			if input.UserInputState == Enum.UserInputState.Begin then
+				local guiObj = input:FindFirstAncestorWhichIsA("TextButton")
+				if guiObj and (guiObj == closeBtn or guiObj == minBtn) then return end
+			end
+			dragActive = true
+			dragStartInput = Vector3.new(input.Position.X, input.Position.Y, 0)
+			dragStartPos = Vector3.new(executor.Position.X.Offset, executor.Position.Y.Offset, 0)
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragActive = false
+				end
+			end)
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input)
+		if not dragActive then return end
+		if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+		local delta = Vector3.new(input.Position.X, input.Position.Y, 0) - dragStartInput
+		local newX = dragStartPos.X + delta.X
+		local newY = dragStartPos.Y + delta.Y
+		local camera = workspace.CurrentCamera
+		if not camera then return end
+		local viewportSize = camera.ViewportSize
+		local halfW = viewportSize.X / 2
+		local halfH = viewportSize.Y / 2
+		local minVisible = 30
+		newX = math.clamp(newX, -(halfW - minVisible), halfW - minVisible)
+		newY = math.clamp(newY, -(halfH - minVisible), halfH - minVisible)
+		executor.Position = UDim2.new(0.5, newX, 0.5, newY)
+	end)
+end
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragActive = false
+	end
+end)
+
+if closeBtn then
+	closeBtn.MouseButton1Click:Connect(function()
+		local slideOut = TweenService:Create(executor, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Position = UDim2.new(0.5, 0, 0.5, 300)
+		})
+		slideOut:Play()
+		slideOut.Completed:Connect(function()
+			executor.Visible = false
+			if scanner then scanner.Visible = false end
+			if savedPanel then savedPanel.Visible = false end
+			if mainContent then mainContent.Visible = true end
+			if bottomBar then bottomBar.Visible = true end
+			if tabBar then tabBar.Visible = true end
+			if targetBar then targetBar.Visible = true end
+			isMinimized = false
+			if minBtn then minBtn.Text = "\226\136\146" end
+			executor.Size = FULL_SIZE
+			executor.Position = UDim2.new(0.5, 0, 0.5, 0)
+		end)
+	end)
+end
+
+local CLIENT_PATTERNS = {
+	"LocalPlayer", "CurrentCamera", "UserInputService", "RenderStepped",
+	"PlayerGui", "GetMouse", "ContextActionService", "InputBegan",
+	"InputEnded", "StarterPlayerScripts", "StarterCharacterScripts",
+	"LocalTransparencyModifier", "CameraMode", "MouseIcon",
+}
+
+local SERVER_PATTERNS = {
+	"FireAllClients", "FireClient(", "DataStoreService",
+	"OnServerEvent", "OnServerInvoke", "ServerScriptService",
+}
+
+local function detectContext(code)
+	local hasClient = false
+	local hasServer = false
+	for _, pattern in CLIENT_PATTERNS do
+		if code:find(pattern) then
+			hasClient = true
+			break
+		end
+	end
+	for _, pattern in SERVER_PATTERNS do
+		if code:find(pattern) then
+			hasServer = true
+			break
+		end
+	end
+	if hasClient and hasServer then
+		return "BOTH"
+	elseif hasClient then
+		return "CLIENT"
+	else
+		return "SERVER"
+	end
+end
+
+local function executeOnClient(code)
+	local outputLines = {}
+	local originalPrint = print
+	local originalWarn = warn
+	local function capturePrint(...)
+		local parts = {}
+		for i = 1, select("#", ...) do
+			parts[i] = tostring(select(i, ...))
+		end
+		table.insert(outputLines, { type = "print", text = table.concat(parts, "\t") })
+		originalPrint(...)
+	end
+	local function captureWarn(...)
+		local parts = {}
+		for i = 1, select("#", ...) do
+			parts[i] = tostring(select(i, ...))
+		end
+		table.insert(outputLines, { type = "warn", text = table.concat(parts, "\t") })
+		originalWarn(...)
+	end
+	local vm = loadstringModule and require(loadstringModule)
+	if not vm then
+		table.insert(outputLines, { type = "error", text = "VM pipeline not available" })
+		return "ERROR", outputLines
+	end
+	local env = vm.buildEnv({
+		print = capturePrint,
+		warn = captureWarn,
+		player = LocalPlayer,
+		LocalPlayer = LocalPlayer,
+		character = LocalPlayer.Character,
+		humanoidRootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"),
+	})
+	local success, gev = pcall(function() return getgenv() end)
+	if success and gev then
+		for k, v in pairs(gev) do
+			if env[k] == nil then
+				env[k] = v
+			end
+		end
+	end
+	local func, err = vm.loadstring(code, env)
+	if not func then
+		table.insert(outputLines, { type = "error", text = tostring(err) })
+		return "ERROR", outputLines
+	end
+	local ok, runErr = pcall(func)
+	if ok then
+		return "SUCCESS", outputLines
+	else
+		table.insert(outputLines, { type = "error", text = tostring(runErr) })
+		return "ERROR", outputLines
+	end
+end
+
+local function handleOutput(status, outputLines, source)
+	if status == "SUCCESS" then
+		setStatus(source .. " execution completed", COLOR.LOW)
+		setIndicator(COLOR.LOW)
+		hideError()
+	elseif status == "ERROR" then
+		local errorText = "Unknown " .. source:lower() .. " error"
+		if type(outputLines) == "table" then
+			for _, entry in ipairs(outputLines) do
+				if entry.type == "error" then
+					errorText = entry.text
+					break
+				end
+			end
+		end
+		setStatus(source .. " execution failed", COLOR.HIGH)
+		setIndicator(COLOR.HIGH)
+		showError(errorText)
+	end
+	if type(outputLines) == "table" then
+		for _, entry in ipairs(outputLines) do
+			if entry.type == "print" then
+				print("[Lunar " .. source .. "]", entry.text)
+			elseif entry.type == "warn" then
+				warn("[Lunar " .. source .. "]", entry.text)
+			elseif entry.type == "error" then
+				warn("[Lunar Error " .. source .. "]", entry.text)
+			end
+		end
+	end
+end
+
+if executeBtn then
+	executeBtn.MouseButton1Click:Connect(function()
+		if not typer then return end
+		if savedPanel and savedPanel.Visible then
+			savedPanel.Visible = false
+			if mainContent then mainContent.Visible = true end
+		end
+		if tabs[activeTabIndex] then
+			tabs[activeTabIndex].content = typer.Text
+		end
+		local code = typer.Text
+		if code == "" then return end
+		executeBtn.Text = "Running..."
+		executeBtn.BackgroundColor3 = Color3.fromRGB(40, 120, 60)
+		hideError()
+		local context = execMode
+		if context == "Auto" then
+			context = detectContext(code)
+		end
+		if context == "CLIENT" or context == "BOTH" then
+			task.spawn(function()
+				setStatus("Executing on client...", COLOR.INFO)
+				setIndicator(COLOR.INFO)
+				local status, outputLines = executeOnClient(code)
+				handleOutput(status, outputLines, "Client")
+				if context == "CLIENT" then
+					if executeBtn then
+						executeBtn.Text = "Execute"
+						executeBtn.BackgroundColor3 = Color3.fromRGB(40, 80, 140)
+					end
+				end
+			end)
+		end
+		if context == "SERVER" then
+			setStatus("No server connection", COLOR.HIGH)
+			setIndicator(COLOR.HIGH)
+			if executeBtn then
+				executeBtn.Text = "Execute"
+				executeBtn.BackgroundColor3 = Color3.fromRGB(40, 80, 140)
+			end
+		end
+	end)
+end
+
+if clearBtn then
+	clearBtn.MouseButton1Click:Connect(function()
+		if typer then
+			typer.Text = ""
+			updateLineNumbers()
+			if syntaxDisplay then
+				syntaxDisplay.Text = ""
+			end
+		end
+		if tabs[activeTabIndex] then
+			tabs[activeTabIndex].content = ""
+		end
+		hideError()
+		setStatus("Idle", COLOR.DIM)
+		setIndicator(COLOR.DIM)
+	end)
+end
+
+local HIGH_KEYWORDS = {
+	"execute", "eval", "run", "load", "admin", "command", "cmd",
+	"exploit", "hack", "bypass", "inject", "remote", "server",
+	"backdoor", "console", "shell", "rce",
+}
+local MEDIUM_KEYWORDS = {
+	"data", "player", "event", "action", "request", "submit",
+	"send", "give", "take", "buy", "sell", "trade", "transfer",
+	"update", "change", "set", "get", "fetch", "reward", "coin",
+	"kill", "teleport", "speed", "god", "ban", "kick",
+}
+
+local VULN_PATTERNS = {
+	{pattern = "FireServer", reason = "fires to server (client-controlled)", risk = "MEDIUM"},
+	{pattern = "InvokeServer", reason = "invokes server (client-controlled)", risk = "MEDIUM"},
+	{pattern = "_G%.", reason = "exposes data via _G global", risk = "MEDIUM"},
+	{pattern = "_G%[", reason = "exposes data via _G global", risk = "MEDIUM"},
+	{pattern = "loadstring", reason = "uses loadstring (code execution)", risk = "HIGH"},
+	{pattern = "getfenv", reason = "uses getfenv (env manipulation)", risk = "HIGH"},
+	{pattern = "setfenv", reason = "uses setfenv (env manipulation)", risk = "HIGH"},
+	{pattern = "API_KEY", reason = "hardcoded API key", risk = "HIGH"},
+	{pattern = "PASSWORD", reason = "hardcoded password", risk = "HIGH"},
+	{pattern = "SECRET", reason = "hardcoded secret", risk = "HIGH"},
+	{pattern = "TOKEN", reason = "hardcoded token", risk = "HIGH"},
+	{pattern = "BACKDOOR", reason = "backdoor reference found", risk = "HIGH"},
+	{pattern = "ADMIN", reason = "admin logic on client", risk = "HIGH"},
+	{pattern = "IS_ADMIN", reason = "client-side admin flag", risk = "HIGH"},
+	{pattern = "Chatted:Connect", reason = "listens to chat (command backdoor)", risk = "MEDIUM"},
+	{pattern = "OnServerEvent", reason = "server event handler (check for validation)", risk = "LOW"},
+	{pattern = "OnServerInvoke", reason = "server invoke handler (check for auth)", risk = "LOW"},
+	{pattern = "WalkSpeed", reason = "modifies walkspeed", risk = "MEDIUM"},
+	{pattern = "Humanoid", reason = "accesses humanoid (health/speed control)", risk = "MEDIUM"},
+	{pattern = "Health", reason = "accesses health (damage/god mode)", risk = "MEDIUM"},
+	{pattern = "DataStore", reason = "data persistence (potential data manipulation)", risk = "MEDIUM"},
+	{pattern = "RemoteEvent", reason = "references RemoteEvent", risk = "LOW"},
+	{pattern = "RemoteFunction", reason = "references RemoteFunction", risk = "LOW"},
+}
+
+local function scanScriptSource(source)
+	local found = {}
+	local score = 0
+	local seen = {}
+	for _, vp in VULN_PATTERNS do
+		if source:find(vp.pattern) and not seen[vp.pattern] then
+			seen[vp.pattern] = true
+			table.insert(found, {risk = vp.risk, reason = vp.reason})
+			if vp.risk == "HIGH" then
+				score += 3
+			elseif vp.risk == "MEDIUM" then
+				score += 1
+			end
+		end
+	end
+	return {vulnerabilities = found, score = score}
+end
+
+local function assessRemoteRisk(inst)
+	local name = string.lower(inst.Name)
+	local className = inst.ClassName
+	local risk = "LOW"
+	local reason = "standard remote"
+	local metadata = {}
+	if className == "RemoteFunction" then
+		risk = "MEDIUM"
+		reason = "RemoteFunction (returns data to caller)"
+		table.insert(metadata, "type: returns data on invoke")
+	end
+	if inst.Parent and inst.Parent:IsA("ReplicatedStorage") then
+		risk = "MEDIUM"
+		reason = "root-level in ReplicatedStorage (no folder protection)"
+		table.insert(metadata, "parent: ReplicatedStorage (root)")
+	elseif inst.Parent and inst.Parent:IsA("Folder") then
+		table.insert(metadata, "parent: " .. inst.Parent.Name .. " (folder)")
+	else
+		table.insert(metadata, "parent: " .. (inst.Parent and inst.Parent.Name or "unknown"))
+	end
+	if name:match("^event%d*$") or name:match("^remote%d*$") or name:match("^re%d*$") or name == "event" or name == "remote" then
+		risk = "MEDIUM"
+		reason = "generic/auto-generated name (likely unprotected)"
+		table.insert(metadata, "naming: generic pattern detected")
+	end
+	local childCount = 0
+	for _, _ in inst:GetChildren() do
+		childCount += 1
+	end
+	if childCount > 0 then
+		table.insert(metadata, "children: " .. childCount .. " (has attached logic)")
+	end
+	for _, kw in HIGH_KEYWORDS do
+		if name:find(kw) then
+			risk = "HIGH"
+			reason = "HIGH keyword: \"" .. kw .. "\" (likely exploitable)"
+			table.insert(metadata, "keyword: \"" .. kw .. "\" -> potential RCE/admin bypass")
+			break
+		end
+	end
+	if risk ~= "HIGH" then
+		for _, kw in MEDIUM_KEYWORDS do
+			if name:find(kw) then
+				if risk == "LOW" then risk = "MEDIUM" end
+				reason = "keyword: \"" .. kw .. "\" (manipulates game state)"
+				table.insert(metadata, "keyword: \"" .. kw .. "\" -> state manipulation possible")
+				break
+			end
+		end
+	end
+	if name:find("execute") or name:find("command") or name:find("exec") then
+		risk = "HIGH"
+		reason = "code execution remote (CRITICAL)"
+		table.insert(metadata, "WARNING: CAN RUN ARBITRARY CODE ON SERVER")
+	elseif name:find("admin") then
+		risk = "HIGH"
+		reason = "admin remote (no auth expected)"
+		table.insert(metadata, "WARNING: NO ADMIN VERIFICATION EXPECTED")
+	elseif name:find("kill") then
+		risk = "HIGH"
+		reason = "kill remote (no permission check)"
+		table.insert(metadata, "WARNING: CAN KILL ANY PLAYER")
+	elseif name:find("teleport") then
+		risk = "HIGH"
+		reason = "teleport remote (no auth check)"
+		table.insert(metadata, "WARNING: CAN TELEPORT ANY PLAYER")
+	elseif name:find("give") and (name:find("coin") or name:find("reward") or name:find("item")) then
+		risk = "HIGH"
+		reason = "give remote (no amount validation)"
+		table.insert(metadata, "WARNING: NO AMOUNT/OWNERSHIP VALIDATION")
+	elseif name:find("set") and (name:find("speed") or name:find("walk")) then
+		risk = "HIGH"
+		reason = "speed remote (no cap/permission check)"
+		table.insert(metadata, "WARNING: NO SPEED CAP OR PERMISSION CHECK")
+	elseif name:find("data") or name:find("fetch") or name:find("get") then
+		if className == "RemoteFunction" then
+			risk = "HIGH"
+			reason = "data-returning remote (leaks server data)"
+			table.insert(metadata, "WARNING: RETURNS SERVER-SIDE DATA TO CALLER")
+		end
+	elseif name:find("trade") then
+		risk = "MEDIUM"
+		reason = "trade remote (no ownership verification)"
+		table.insert(metadata, "WARNING: NO ITEM OWNERSHIP VERIFICATION")
+	elseif name:find("leaderboard") or name:find("score") or name:find("update") then
+		risk = "MEDIUM"
+		reason = "score update remote (trusts client value)"
+		table.insert(metadata, "WARNING: CLIENT CONTROLS OWN SCORE")
+	end
+	return {risk = risk, reason = reason, metadata = metadata}
+end
+
+local function clearResults()
+	if not resultsList then return end
+	for _, child in resultsList:GetChildren() do
+		if child:IsA("Frame") then child:Destroy() end
+	end
+end
+
+local SCAN_TARGETS = {
+	game:GetService("ReplicatedStorage"),
+	game:GetService("ReplicatedFirst"),
+	game:GetService("StarterGui"),
+	game:GetService("StarterPlayer"),
+	game:GetService("StarterPack"),
+	workspace,
+}
+
+local function safeGetFullName(instance)
+	local ok, result = pcall(function() return instance:GetFullName() end)
+	if ok then return result else return "(destroyed)" end
+end
+
+local function createDetailedEntry(name, className, path, riskLevel, reason, metadata, vulns)
+	if not resultsList then return end
+	local riskColor = COLOR[riskLevel] or COLOR.LOW
+	local metaLines = metadata or {}
+	local vulnList = vulns or {}
+	local extraLines = #metaLines + #vulnList
+	local entryHeight = 54 + math.clamp(extraLines, 0, 6) * 14
+	local entry = Instance.new("Frame")
+	entry.Name = name
+	entry.Size = UDim2.new(1, 0, 0, entryHeight)
+	entry.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+	entry.BorderSizePixel = 0
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 4)
+	corner.Parent = entry
+	local dot = Instance.new("Frame")
+	dot.Size = UDim2.new(0, 8, 0, 8)
+	dot.Position = UDim2.new(0, 8, 0, 6)
+	dot.BackgroundColor3 = riskColor
+	dot.BorderSizePixel = 0
+	Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+	dot.Parent = entry
+	local classPrefix = "[?]  "
+	if className == "RemoteEvent" then classPrefix = "[RE] "
+	elseif className == "RemoteFunction" then classPrefix = "[RF] "
+	elseif className == "Player" then classPrefix = "[P]  "
+	elseif className == "LocalScript" then classPrefix = "[LS] "
+	elseif className == "ModuleScript" then classPrefix = "[MS] "
+	elseif className == "Script" then classPrefix = "[S]  "
+	elseif className == "BasePart" then classPrefix = "[BP] "
+	elseif className == "Table" then classPrefix = "[T]  "
+	end
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.new(1, -80, 0, 20)
+	nameLabel.Position = UDim2.new(0, 22, 0, 2)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text = classPrefix .. name
+	nameLabel.TextColor3 = Color3.fromRGB(220, 220, 230)
+	nameLabel.TextSize = 13
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+	nameLabel.Parent = entry
+	local pathLabel = Instance.new("TextLabel")
+	pathLabel.Size = UDim2.new(1, -80, 0, 14)
+	pathLabel.Position = UDim2.new(0, 22, 0, 20)
+	pathLabel.BackgroundTransparency = 1
+	pathLabel.Text = path
+	pathLabel.TextColor3 = Color3.fromRGB(90, 90, 110)
+	pathLabel.TextSize = 10
+	pathLabel.TextXAlignment = Enum.TextXAlignment.Left
+	pathLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	pathLabel.TextTruncate = Enum.TextTruncate.AtEnd
+	pathLabel.Parent = entry
+	local reasonLabel = Instance.new("TextLabel")
+	reasonLabel.Size = UDim2.new(1, -80, 0, 14)
+	reasonLabel.Position = UDim2.new(0, 22, 0, 34)
+	reasonLabel.BackgroundTransparency = 1
+	reasonLabel.Text = "\226\134\146 " .. reason
+	reasonLabel.TextColor3 = riskColor
+	reasonLabel.TextTransparency = 0.3
+	reasonLabel.TextSize = 10
+	reasonLabel.TextXAlignment = Enum.TextXAlignment.Left
+	reasonLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	reasonLabel.Parent = entry
+	local yOffset = 48
+	for _, meta in metaLines do
+		local metaLabel = Instance.new("TextLabel")
+		metaLabel.Size = UDim2.new(1, -80, 0, 13)
+		metaLabel.Position = UDim2.new(0, 30, 0, yOffset)
+		metaLabel.BackgroundTransparency = 1
+		metaLabel.Text = meta
+		metaLabel.TextColor3 = Color3.fromRGB(130, 130, 155)
+		metaLabel.TextSize = 9
+		metaLabel.TextXAlignment = Enum.TextXAlignment.Left
+		metaLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+		metaLabel.TextTruncate = Enum.TextTruncate.AtEnd
+		metaLabel.Parent = entry
+		yOffset += 13
+	end
+	for _, vuln in vulnList do
+		local vulnColor = COLOR[vuln.risk] or COLOR.LOW
+		local vulnLabel = Instance.new("TextLabel")
+		vulnLabel.Size = UDim2.new(1, -80, 0, 13)
+		vulnLabel.Position = UDim2.new(0, 30, 0, yOffset)
+		vulnLabel.BackgroundTransparency = 1
+		vulnLabel.Text = "[" .. vuln.risk .. "] " .. vuln.reason
+		vulnLabel.TextColor3 = vulnColor
+		vulnLabel.TextTransparency = 0.2
+		vulnLabel.TextSize = 9
+		vulnLabel.TextXAlignment = Enum.TextXAlignment.Left
+		vulnLabel.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+		vulnLabel.TextTruncate = Enum.TextTruncate.AtEnd
+		vulnLabel.Parent = entry
+		yOffset += 13
+	end
+	local riskBadge = Instance.new("TextLabel")
+	riskBadge.Size = UDim2.new(0, 55, 0, 18)
+	riskBadge.Position = UDim2.new(1, -62, 0, 4)
+	riskBadge.BackgroundColor3 = riskColor
+	riskBadge.BackgroundTransparency = 0.7
+	riskBadge.Text = riskLevel
+	riskBadge.TextColor3 = riskColor
+	riskBadge.TextSize = 10
+	riskBadge.FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+	riskBadge.BorderSizePixel = 0
+	Instance.new("UICorner", riskBadge).CornerRadius = UDim.new(0, 3)
+	riskBadge.Parent = entry
+	local clickDetector = Instance.new("TextButton")
+	clickDetector.Size = UDim2.new(1, 0, 1, 0)
+	clickDetector.BackgroundTransparency = 1
+	clickDetector.Text = ""
+	clickDetector.Parent = entry
+	clickDetector.MouseButton1Click:Connect(function()
+		if className == "RemoteEvent" or className == "RemoteFunction" then
+			local fullPath = path:gsub("^game%.", "")
+			local exploitCode = ""
+			if className == "RemoteEvent" then
+				exploitCode = "game." .. fullPath .. ":FireServer()"
+			elseif className == "RemoteFunction" then
+				exploitCode = "local result = game." .. fullPath .. ":InvokeServer()\nprint(result)"
+			end
+			setTarget(name, className, riskColor)
+			if typer then
+				typer.Text = exploitCode
+				updateLineNumbers()
+				if syntaxDisplay then
+					syntaxDisplay.Text = typer.Text
+				end
+			end
+			if tabs[activeTabIndex] then
+				tabs[activeTabIndex].content = exploitCode
+			end
+		elseif className == "Player" then
+			setTarget(name, className, COLOR.PLAYER)
+			if typer then
+				typer.Text = "-- Target: " .. name .. "\nlocal target = game.Players:FindFirstChild(\"" .. name .. "\")"
+				updateLineNumbers()
+				if syntaxDisplay then
+					syntaxDisplay.Text = typer.Text
+				end
+			end
+			if tabs[activeTabIndex] then
+				tabs[activeTabIndex].content = typer.Text
+			end
+		end
+	end)
+	clickDetector.MouseEnter:Connect(function()
+		TweenService:Create(entry, TweenInfo.new(0.1), {
+			BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+		}):Play()
+	end)
+	clickDetector.MouseLeave:Connect(function()
+		TweenService:Create(entry, TweenInfo.new(0.1), {
+			BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+		}):Play()
+	end)
+	entry.Parent = resultsList
+end
+
+local scanDebounce = false
+
+local function runScan()
+	if isScanning or scanDebounce then return end
+	scanDebounce = true
+	isScanning = true
+	scanner.Visible = true
+	if mainContent then mainContent.Visible = false end
+	if savedPanel then savedPanel.Visible = false end
+	clearResults()
+	statusLabel.Text = "Scanning..."
+	statusLabel.TextColor3 = COLOR.INFO
+	local remotesFound = 0
+	local scriptsFound = 0
+	local playersFound = 0
+	local vulnCount = 0
+	local highCount = 0
+
+	local remoteEntries = {}
+	local scriptEntries = {}
+	local partEntries = {}
+	local playerEntries = {}
+	local gMetaEntries = {}
+
+	local function cleanupScan()
+		isScanning = false
+		scanDebounce = false
+	end
+
+	local success, err = pcall(function()
+		statusLabel.Text = "Scanning remotes..."
+		for _, target in SCAN_TARGETS do
+			if target then
+				local ok, descendants = pcall(function() return target:GetDescendants() end)
+				if ok then
+					for _, desc in descendants do
+						if desc:IsA("RemoteEvent") or desc:IsA("RemoteFunction") then
+							remotesFound += 1
+							local result = assessRemoteRisk(desc)
+							if result.risk == "HIGH" then highCount += 1 end
+							vulnCount += #result.metadata
+							table.insert(remoteEntries, {
+								name = desc.Name,
+								className = desc.ClassName,
+								path = safeGetFullName(desc),
+								risk = result.risk,
+								reason = result.reason,
+								metadata = result.metadata,
+							})
+						end
+					end
+				end
+			end
+		end
+		task.wait()
+
+		statusLabel.Text = "Scanning scripts..."
+		local scriptTargets = {
+			game:GetService("StarterGui"),
+			game:GetService("StarterPlayer"),
+			game:GetService("StarterPack"),
+			game:GetService("ReplicatedStorage"),
+			workspace,
+		}
+		for _, target in scriptTargets do
+			if target then
+				local ok, descendants = pcall(function() return target:GetDescendants() end)
+				if ok then
+					for _, desc in descendants do
+						if desc:IsA("LocalScript") or desc:IsA("ModuleScript") then
+							scriptsFound += 1
+							local sourceOk, source = pcall(function() return desc.Source end)
+							local scriptRisk = "LOW"
+							local scriptReason = "client script"
+							local scriptMeta = {}
+							local scriptVulns = {}
+							if sourceOk and source and #source > 0 then
+								local scanResult = scanScriptSource(source)
+								if scanResult.score >= 5 then
+									scriptRisk = "HIGH"
+									scriptReason = "critical vulnerabilities (score: " .. scanResult.score .. ")"
+								elseif scanResult.score >= 2 then
+									scriptRisk = "MEDIUM"
+									scriptReason = "vulnerabilities found (score: " .. scanResult.score .. ")"
+								else
+									scriptReason = "minor issues (score: " .. scanResult.score .. ")"
+								end
+								local lineCount = 1
+								for _ in source:gmatch("\n") do lineCount += 1 end
+								table.insert(scriptMeta, "lines: " .. lineCount .. " | size: " .. #source .. "b")
+								local shown = 0
+								for _, v in scanResult.vulnerabilities do
+									if shown >= 6 then break end
+									table.insert(scriptVulns, v)
+									vulnCount += 1
+									shown += 1
+								end
+								if #scanResult.vulnerabilities > 6 then
+									table.insert(scriptMeta, "+" .. (#scanResult.vulnerabilities - 6) .. " more findings")
+								end
+								for secretMatch in source:gmatch('["\'][%w_-]+_[%w_-]+_[%w_-]+["\']=') do
+									table.insert(scriptMeta, "secret: " .. secretMatch:sub(1, 30) .. "...")
+									vulnCount += 1
+								end
+								for gMatch in source:gmatch("_G%.[%w_]+%s*=") do
+									table.insert(scriptMeta, "global: " .. gMatch)
+								end
+								if source:find("Chatted:Connect") then
+									table.insert(scriptMeta, "listens: player chat events")
+									for cmdMatch in source:gmatch('%["/(%w+)"%]') do
+										table.insert(scriptMeta, "command: /" .. cmdMatch)
+									end
+								end
+							else
+								table.insert(scriptMeta, "source: not readable (protected)")
+							end
+							if scriptRisk == "HIGH" then highCount += 1 end
+							table.insert(scriptEntries, {
+								name = desc.Name,
+								className = desc.ClassName,
+								path = safeGetFullName(desc),
+								risk = scriptRisk,
+								reason = scriptReason,
+								metadata = scriptMeta,
+								vulns = scriptVulns,
+							})
+						end
+					end
+				end
+			end
+		end
+		task.wait()
+
+		statusLabel.Text = "Scanning workspace..."
+		local ok, wsDescendants = pcall(function() return workspace:GetDescendants() end)
+		if ok then
+			for _, desc in wsDescendants do
+				if desc:IsA("BasePart") and not desc:IsA("Terrain") and not desc:IsA("SpawnLocation") then
+					local partMeta = {}
+					local partRisk = "LOW"
+					local partReason = "static part"
+					local attrsOk, attrs = pcall(function() return desc:GetAttributes() end)
+					if attrsOk then
+						for attrName, attrValue in attrs do
+							table.insert(partMeta, "attr: " .. attrName .. " = " .. tostring(attrValue))
+						end
+					end
+					local hasScripts = false
+					for _, child in desc:GetChildren() do
+						if child:IsA("Script") or child:IsA("LocalScript") then
+							hasScripts = true
+							table.insert(partMeta, "script: " .. child.Name)
+						end
+					end
+					if hasScripts then
+						partRisk = "MEDIUM"
+						partReason = "part with attached scripts (touch-triggered?)"
+					end
+					if not desc.Anchored then
+						table.insert(partMeta, "physics: unanchored (can be pushed)")
+					end
+					local nameLower = string.lower(desc.Name)
+					if nameLower:find("lava") or nameLower:find("kill") or nameLower:find("death") then
+						partRisk = "MEDIUM"
+						partReason = "kill/damage part"
+						table.insert(partMeta, "type: kill brick")
+					elseif nameLower:find("coin") or nameLower:find("reward") or nameLower:find("give") then
+						partRisk = "MEDIUM"
+						partReason = "reward-giving part"
+						table.insert(partMeta, "type: reward giver")
+					elseif nameLower:find("speed") or nameLower:find("boost") then
+						partRisk = "MEDIUM"
+						partReason = "speed/boost part"
+						table.insert(partMeta, "type: speed modifier")
+					elseif nameLower:find("terminal") or nameLower:find("data") then
+						partRisk = "MEDIUM"
+						partReason = "data terminal (info leak?)"
+						table.insert(partMeta, "type: data terminal")
+					end
+					if #partMeta > 0 or partRisk ~= "LOW" then
+						table.insert(partEntries, {
+							name = desc.Name,
+							className = "BasePart",
+							path = safeGetFullName(desc),
+							risk = partRisk,
+							reason = partReason,
+							metadata = partMeta,
+						})
+					end
+				end
+			end
+		end
+		task.wait()
+
+		statusLabel.Text = "Scanning players..."
+		for _, plr in Players:GetPlayers() do
+			if plr ~= LocalPlayer then
+				playersFound += 1
+				local plrMeta = {}
+				table.insert(plrMeta, "userId: " .. plr.UserId)
+				table.insert(plrMeta, "accountAge: " .. plr.AccountAge .. " days")
+				if plr.Character then
+					local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+					if humanoid then
+						table.insert(plrMeta, "health: " .. math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth))
+						table.insert(plrMeta, "speed: " .. humanoid.WalkSpeed)
+					end
+					local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+					if hrp then
+						local pos = hrp.Position
+						table.insert(plrMeta, "position: " .. math.floor(pos.X) .. ", " .. math.floor(pos.Y) .. ", " .. math.floor(pos.Z))
+					end
+					for _, tool in plr.Character:GetChildren() do
+						if tool:IsA("Tool") then
+							table.insert(plrMeta, "tool: " .. tool.Name)
+						end
+					end
+				end
+				table.insert(playerEntries, {
+					name = plr.Name,
+					className = "Player",
+					path = safeGetFullName(plr),
+					risk = "MEDIUM",
+					reason = "player target (can be affected by remotes)",
+					metadata = plrMeta,
+				})
+			end
+		end
+
+		statusLabel.Text = "Scanning globals..."
+		local gMeta = {}
+		for key, value in _G do
+			if type(key) == "string" and key ~= "_G" and key ~= "game" and key ~= "workspace" and key ~= "script" then
+				table.insert(gMeta, "_" .. key .. " = " .. type(value))
+			end
+		end
+		if #gMeta > 0 then
+			table.insert(gMetaEntries, {
+				name = "_G (globals)",
+				className = "Table",
+				path = "_G",
+				risk = "HIGH",
+				reason = "leaked globals detected (data exposure via _G)",
+				metadata = gMeta,
+			})
+			vulnCount += #gMeta
+			highCount += 1
+		end
+
+		clearResults()
+
+		for _, entry in ipairs(remoteEntries) do
+			createDetailedEntry(entry.name, entry.className, entry.path, entry.risk, entry.reason, entry.metadata)
+		end
+		for _, entry in ipairs(scriptEntries) do
+			createDetailedEntry(entry.name, entry.className, entry.path, entry.risk, entry.reason, entry.metadata, entry.vulns)
+		end
+		for _, entry in ipairs(partEntries) do
+			createDetailedEntry(entry.name, entry.className, entry.path, entry.risk, entry.reason, entry.metadata)
+		end
+		for _, entry in ipairs(playerEntries) do
+			createDetailedEntry(entry.name, entry.className, entry.path, entry.risk, entry.reason, entry.metadata)
+		end
+		for _, entry in ipairs(gMetaEntries) do
+			createDetailedEntry(entry.name, entry.className, entry.path, entry.risk, entry.reason, entry.metadata)
+		end
+
+		updateCanvasSize(resultsList)
+
+		statusLabel.Text = string.format(
+			"Done \226\128\148 %d remotes \194\183 %d scripts \194\183 %d players \194\183 %d HIGH \194\183 %d findings",
+			remotesFound, scriptsFound, playersFound, highCount, vulnCount
+		)
+		statusLabel.TextColor3 = if highCount > 0 then COLOR.HIGH else COLOR.LOW
+		cleanupScan()
+	end)
+
+	if not success then
+		warn("Scanner error: " .. tostring(err))
+		cleanupScan()
+		statusLabel.Text = "Scan failed"
+		statusLabel.TextColor3 = COLOR.HIGH
+	end
+end
+
+if scanBtn then
+	scanBtn.MouseButton1Click:Connect(runScan)
+end
+
+if scannerBackBtn then
+	scannerBackBtn.MouseButton1Click:Connect(function()
+		if scanner then scanner.Visible = false end
+		if savedPanel then savedPanel.Visible = false end
+		if mainContent then mainContent.Visible = true end
+	end)
+end
