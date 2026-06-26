@@ -1,0 +1,915 @@
+--^_^ Made By westy
+
+local supported = (identifyexecutor and identifyexecutor():lower():find("xeno")) or (getexecutorname and getexecutorname():lower():find("xeno"))
+
+if supported then
+    local players = game:GetService("Players")
+    local replicatedStorage = game:GetService("ReplicatedStorage")
+    local workspace = game:GetService("Workspace")
+    local localPlayer = players.LocalPlayer
+    local playerGui = localPlayer:WaitForChild("PlayerGui", 30)
+    local events = replicatedStorage:WaitForChild("Events", 30)
+
+    if not playerGui then return end
+    if not events then return end
+
+    local main = playerGui:WaitForChild("Main", 10)
+    if not main then return end
+
+    local frames = main:WaitForChild("Frames", 10)
+    if not frames then return end
+
+    local allBrainrots = {
+        "SvininaBombardino", "TalpaDiFero", "PipiPotato", "BonecaAmbalabu", "BambiniCrostini",
+        "BananitoDelfinito", "GorilloWatermelondrillo",
+        "RhinoToasterino", "BalerinaCapucina", "BanditoBobrito", "BlueberrinniOctopusini",
+        "BombardiroCrocodilo", "AgarriniLaPallini",
+        "BombombiniGusini", "BrrBrrPatapim", "BurbaloniLoliloli", "CactoHipopotamo",
+        "CappuccinoAssassino", "Ben",
+        "ChefCrabracadabra", "AvocadiniGuffo", "ChimpanziniBananini", "ElefantoCocofanto",
+        "FluriFlura", "FrigoCamelo", "GangsterFootera", "CavalloVirtuoso",
+        "Garamararam", "GirafaCelestre", "GlorboFruttodrillo", "JobJobJobSahur",
+        "LiriliLarila", "ChillinChili",
+        "Mateo", "PotHotspot", "TralaleroTralala", "LosTralaleritos",
+        "OrangutiniAnanassini", "LioneloCactuseli", "HappyBananaCat",
+        "NyanCat", "LaVaccaSaturnoSaturnita", "SmurfCat", "Illuminati",
+        "EsokSekolah", "LaGrandeCombinasion",
+        "SixNine", "Pepe", "SixSeven", "TimCheese", "SkibidiToilet"
+    }
+
+    local NPC_ID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local NPC_ID_LENGTH = #NPC_ID_CHARS
+    local generatedNpcIds = {}
+    local stolenNpcIds = {}
+    local begCount = 0
+    local loopCount = 0
+    local lastBegTime = 0
+    local lastInjectTime = 0
+    local lastAdminTime = 0
+    local lastGrantTime = 0
+    local lastManageTime = 0
+    local lastIdCleanup = 0
+    local BEG_COOLDOWN = 0.08
+    local INJECT_COOLDOWN = 8
+    local ADMIN_COOLDOWN = 15
+    local GRANT_COOLDOWN = 12
+    local MANAGE_COOLDOWN = 20
+    local ID_CLEANUP_MAX = 5000
+
+    local autoFarmEnabled = false
+    local autoBegEnabled = false
+    local autoInjectEnabled = false
+    local autoLuckEnabled = false
+    local autoManageEnabled = false
+    local autoAdminEnabled = false
+    local autoGrantsEnabled = false
+    local adminPanelOpen = false
+    local adminSpoofed = false
+    local sniffersActive = false
+
+    local guiActive = true
+    local screenGui = nil
+    local mainFrame = nil
+    local tabButtons = {}
+    local tabFrames = {}
+    local currentTab = nil
+
+    local function generateNpcId()
+        local parts = table.create(7)
+        for i = 1, 7 do
+            local idx = math.random(1, NPC_ID_LENGTH)
+            parts[i] = NPC_ID_CHARS:sub(idx, idx)
+        end
+        return table.concat(parts)
+    end
+
+    for _ = 1, 500 do
+        generatedNpcIds[generateNpcId()] = true
+    end
+
+    local function countKeys(tbl)
+        local n = 0
+        for _ in pairs(tbl) do n = n + 1 end
+        return n
+    end
+
+    local function isValidNpcId(id)
+        if type(id) ~= "string" then return false end
+        if #id ~= 7 then return false end
+        if not id:match("^[%w]+$") then return false end
+        return true
+    end
+
+    local function cleanupIdTables()
+        local now = os.clock()
+        if now - lastIdCleanup < 60 then return end
+        lastIdCleanup = now
+        local genCount = countKeys(generatedNpcIds)
+        if genCount > ID_CLEANUP_MAX then
+            local sorted = {}
+            for id in pairs(generatedNpcIds) do table.insert(sorted, id) end
+            table.sort(sorted)
+            generatedNpcIds = {}
+            for i = 1, ID_CLEANUP_MAX do
+                if sorted[i] then generatedNpcIds[sorted[i]] = true end
+            end
+        end
+        local stolenCount = countKeys(stolenNpcIds)
+        if stolenCount > ID_CLEANUP_MAX then
+            local sorted = {}
+            for id in pairs(stolenNpcIds) do table.insert(sorted, id) end
+            table.sort(sorted)
+            stolenNpcIds = {}
+            for i = 1, ID_CLEANUP_MAX do
+                if sorted[i] then stolenNpcIds[sorted[i]] = true end
+            end
+        end
+    end
+
+    local function clickButton(btn)
+        if not btn then return false end
+        return pcall(function()
+            btn.Active = true
+            btn.AutoButtonColor = true
+            btn.Visible = true
+            for _, conn in ipairs(getconnections(btn.MouseButton1Click)) do
+                pcall(conn.Function)
+            end
+            for _, conn in ipairs(getconnections(btn.Activated)) do
+                pcall(conn.Function)
+            end
+        end)
+    end
+
+    local function fillTextBox(box, value)
+        if not box or not box:IsA("TextBox") then return false end
+        return pcall(function()
+            box.TextEditable = true
+            box.Visible = true
+            box.Text = tostring(value)
+            for _, conn in ipairs(getconnections(box.FocusLost)) do
+                pcall(conn.Function, true)
+            end
+        end)
+    end
+
+    local function findInGui(name)
+        for _, obj in ipairs(playerGui:GetDescendants()) do
+            if obj.Name == name then return obj end
+        end
+        return nil
+    end
+
+    local function fireRemote(name, ...)
+        local remote = events:FindFirstChild(name)
+        if not remote then return false end
+        local ok, result = pcall(function()
+            if remote:IsA("RemoteFunction") then
+                return remote:InvokeServer(...)
+            end
+            remote:FireServer(...)
+            return true
+        end)
+        if ok then return result end
+        return false
+    end
+
+    local function spoofAdmin()
+        if adminSpoofed then return end
+        pcall(function()
+            localPlayer.GetRankInGroup = function() return 255 end
+            adminSpoofed = true
+        end)
+    end
+
+    local function forceOpenAdminPanel()
+        local adminPanel = frames:FindFirstChild("AdminPanel")
+        if not adminPanel then return false end
+        pcall(function()
+            adminPanel.Visible = true
+            for _, obj in ipairs(adminPanel:GetDescendants()) do
+                if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+                    obj.Active = true
+                    obj.AutoButtonColor = true
+                    obj.Visible = true
+                elseif obj:IsA("TextBox") then
+                    obj.TextEditable = true
+                    obj.Visible = true
+                end
+            end
+            local openMenu = events:FindFirstChild("OpenFrameMenu")
+            if openMenu then openMenu:Fire(adminPanel) end
+            adminPanelOpen = true
+        end)
+        return adminPanelOpen
+    end
+
+    local function executeAdminPanelButtons()
+        if not adminPanelOpen then spoofAdmin(); forceOpenAdminPanel(); task.wait(0.5) end
+        local sf = playerGui:FindFirstChild("ScrollingFrame", true)
+        if not sf then return end
+        local sections = {
+            {name = "GlobalLuck", fields = {{"Luck", "999"}, {"Seconds", "999999"}}, btn = "Activate"},
+            {name = "GlobalCash", fields = {{"Mult", "999"}, {"Seconds", "999999"}}, btn = "Activate"},
+            {name = "SuperiorChance", fields = {{"Luck", "999"}, {"Seconds", "999999"}}, btn = "Activate"},
+            {name = "LuckyBlockNPCS", fields = {{"Time", "999999"}}, btn = "Activate"},
+            {name = "SpawnCelestial", fields = {{"Amount", "50"}}, btn = "Spawn"},
+            {name = "SpawnDivine", fields = {{"Amount", "50"}}, btn = "Activate"}
+        }
+        for _, sec in ipairs(sections) do
+            local panel = sf:FindFirstChild(sec.name)
+            if panel then
+                for _, field in ipairs(sec.fields) do
+                    for _, obj in ipairs(panel:GetDescendants()) do
+                        if obj.Name == field[1] and obj:IsA("TextBox") then fillTextBox(obj, field[2]); break end
+                    end
+                end
+                for _, obj in ipairs(panel:GetDescendants()) do
+                    if obj.Name == sec.btn and (obj:IsA("TextButton") or obj:IsA("ImageButton")) then clickButton(obj); break end
+                end
+            end
+            task.wait(math.random(25, 40) / 100)
+        end
+    end
+
+    local function injectBrainrots()
+        local now = os.clock()
+        if now - lastInjectTime < INJECT_COOLDOWN then return end
+        lastInjectTime = now
+        fireRemote("IndexUpdated", {None = {}, Golden = {}, Diamond = {}, Galaxy = {}, Lava = {}, Rainbow = allBrainrots})
+    end
+
+    local function setMaxLuck()
+        fireRemote("ServerLuckUpdate", {remaining = 999999999, tier = 5, duration = 999999999, multiplier = 32, bonus = {NextKind = "Luck", Remaining = 999999999, Active = true, NextMultiplier = 32, Kind = "Luck", Cooldown = 0, Multiplier = 32}})
+    end
+
+    local function tryAdminCommands()
+        local now = os.clock()
+        if now - lastAdminTime < ADMIN_COOLDOWN then return end
+        lastAdminTime = now
+        local cmds = {
+            {"SendAdminGlobalLuck", 999, 999999},
+            {"SendAdminGlobalCash", 999, 999999},
+            {"SendAdminSuperiorChance", 999, 999999},
+            {"SendAdminLuckyBlockNpcs", 1, 999999},
+            {"SendAdminSpawnNpc", "Celestial", 50},
+            {"SendAdminSpawnNpc", "Divine", 50}
+        }
+        for _, cmd in ipairs(cmds) do
+            fireRemote(cmd[1], select(2, unpack(cmd)))
+            task.wait(math.random(18, 30) / 100)
+        end
+    end
+
+    local function tryGrants()
+        local now = os.clock()
+        if now - lastGrantTime < GRANT_COOLDOWN then return end
+        lastGrantTime = now
+        local uid = localPlayer.UserId
+        local grants = {
+            {"AddBrainrotTolnventory", {ConfigName = "SmurfCat", Modifier = "Rainbow", Amount = 1}},
+            {"AddLuckyBlockTolnventory", {ConfigName = "UltraLuckyBlock", Amount = 99}},
+            {"LuckyBlockGrant", {ProductId = 3566286216, PlayerId = uid}},
+            {"IncrementalLuckGrant", {ProductId = 3566794198, PlayerId = uid}},
+            {"SpawnCelestialNpcGrant", {ProductId = 3576301763, PlayerId = uid}},
+            {"SpawnYourNpcGrant", {ProductId = 3576299669, PlayerId = uid}},
+            {"ExclusiveBrainrotGrant", {ProductId = 3577882706, PlayerId = uid}},
+            {"RobuxRebirthGrant", {ProductId = 3565505092, PlayerId = uid}},
+            {"OfflineCashRobuxCollectGrant", {ProductId = 3566024837, PlayerId = uid}},
+            {"GrantSecondChanceReward", {ProductId = 3576310016, PlayerId = uid}},
+            {"AdminSpawnGuaranteedNpcGrant", {Rarity = "Celestial", Amount = 25, PlayerId = uid}}
+        }
+        for _, grant in ipairs(grants) do
+            fireRemote(grant[1], grant[2])
+            task.wait(math.random(12, 20) / 100)
+        end
+    end
+
+    local function autoManage()
+        local now = os.clock()
+        if now - lastManageTime < MANAGE_COOLDOWN then return end
+        lastManageTime = now
+        fireRemote("EquipBestOnPlot")
+        task.wait(math.random(25, 40) / 100)
+        fireRemote("SellBrainrots")
+        task.wait(math.random(25, 40) / 100)
+        fireRemote("CollectOfflineCash")
+        task.wait(math.random(15, 30) / 100)
+        clickButton(findInGui("EquipBest"))
+        task.wait(math.random(15, 30) / 100)
+        clickButton(findInGui("SellBrainrots"))
+        task.wait(math.random(15, 30) / 100)
+        clickButton(findInGui("Collect"))
+        task.wait(math.random(15, 30) / 100)
+        clickButton(findInGui("TeleportHome"))
+    end
+
+    local function scanActiveNpcs()
+        local activeNpcs = workspace:FindFirstChild("ActiveNPCs")
+        if not activeNpcs then return end
+        for _, npc in ipairs(activeNpcs:GetChildren()) do
+            if npc:IsA("Model") then
+                local idVal = npc:FindFirstChild("NpcId") or npc:FindFirstChild("ID")
+                if idVal and idVal:IsA("StringValue") and isValidNpcId(idVal.Value) then
+                    stolenNpcIds[idVal.Value] = true
+                elseif isValidNpcId(npc.Name) then
+                    stolenNpcIds[npc.Name] = true
+                end
+            end
+        end
+    end
+
+    local function sniffNpcIds()
+        if sniffersActive then return end
+        sniffersActive = true
+        local npcBegSync = events:FindFirstChild("NPCBeggedSync")
+        if npcBegSync and npcBegSync:IsA("RemoteFunction") then
+            local conns = getconnections(npcBegSync.OnClientInvoke)
+            if conns and #conns > 0 then
+                for _, conn in ipairs(conns) do
+                    local old = conn.Function
+                    conn.Function = function(...)
+                        local args = {...}
+                        if isValidNpcId(args[1]) then stolenNpcIds[args[1]] = true end
+                        return old(...)
+                    end
+                end
+            end
+        end
+        local secondChance = events:FindFirstChild("SecondChancePrompt")
+        if secondChance then
+            local conns = getconnections(secondChance.OnClientEvent)
+            if conns and #conns > 0 then
+                for _, conn in ipairs(conns) do
+                    local old = conn.Function
+                    conn.Function = function(...)
+                        local args = {...}
+                        if type(args[1]) == "table" and isValidNpcId(args[1].NpcId) then
+                            stolenNpcIds[args[1].NpcId] = true
+                        end
+                        return old(...)
+                    end
+                end
+            end
+        end
+    end
+
+    local function massBeg(count)
+        local now = os.clock()
+        if now - lastBegTime < BEG_COOLDOWN then return 0 end
+        local npcBeg = events:FindFirstChild("NPCBeggedSync")
+        if not npcBeg then return 0 end
+        local allIds = {}
+        for id in pairs(stolenNpcIds) do allIds[id] = true end
+        for id in pairs(generatedNpcIds) do allIds[id] = true end
+        local idList = {}
+        for id in pairs(allIds) do table.insert(idList, id) end
+        local maxBegs = math.min(count or 150, #idList)
+        if maxBegs < 1 then return 0 end
+        local successes = 0
+        for i = 1, maxBegs do
+            if not isValidNpcId(idList[i]) then continue end
+            local ok = pcall(function()
+                if npcBeg:IsA("RemoteFunction") then
+                    npcBeg:InvokeServer(idList[i])
+                else
+                    npcBeg:FireServer(idList[i])
+                end
+            end)
+            if ok then successes = successes + 1 end
+            if i % 50 == 0 then task.wait(math.random(8, 15) / 100) end
+        end
+        lastBegTime = os.clock()
+        begCount = begCount + successes
+        return successes
+    end
+
+    local function createGui()
+        screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "westyHub"
+        screenGui.Parent = playerGui
+
+        mainFrame = Instance.new("Frame")
+        mainFrame.Name = "Main"
+        mainFrame.Size = UDim2.new(0, 450, 0, 380)
+        mainFrame.Position = UDim2.new(0.5, -225, 0.5, -190)
+        mainFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+        mainFrame.BorderSizePixel = 0
+        mainFrame.Active = true
+        mainFrame.Draggable = true
+        mainFrame.Parent = screenGui
+
+        local topBar = Instance.new("Frame")
+        topBar.Name = "TopBar"
+        topBar.Size = UDim2.new(1, 0, 0, 28)
+        topBar.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+        topBar.BorderSizePixel = 0
+        topBar.Parent = mainFrame
+
+        local title = Instance.new("TextLabel")
+        title.Name = "Title"
+        title.Size = UDim2.new(1, -10, 1, 0)
+        title.Position = UDim2.new(0, 10, 0, 0)
+        title.BackgroundTransparency = 1
+        title.Text = "westy hub"
+        title.TextColor3 = Color3.fromRGB(160, 160, 160)
+        title.Font = Enum.Font.Code
+        title.TextSize = 14
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.Parent = topBar
+
+        local closeBtn = Instance.new("TextButton")
+        closeBtn.Name = "Close"
+        closeBtn.Size = UDim2.new(0, 28, 0, 28)
+        closeBtn.Position = UDim2.new(1, -28, 0, 0)
+        closeBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+        closeBtn.BorderSizePixel = 0
+        closeBtn.Text = "X"
+        closeBtn.TextColor3 = Color3.fromRGB(160, 160, 160)
+        closeBtn.Font = Enum.Font.Code
+        closeBtn.TextSize = 14
+        closeBtn.Parent = mainFrame
+        closeBtn.MouseButton1Click:Connect(function()
+            guiActive = not guiActive
+            mainFrame.Visible = guiActive
+        end)
+
+        local tabBar = Instance.new("Frame")
+        tabBar.Name = "TabBar"
+        tabBar.Size = UDim2.new(1, 0, 0, 32)
+        tabBar.Position = UDim2.new(0, 0, 0, 28)
+        tabBar.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+        tabBar.BorderSizePixel = 0
+        tabBar.Parent = mainFrame
+
+        local contentFrame = Instance.new("Frame")
+        contentFrame.Name = "Content"
+        contentFrame.Size = UDim2.new(1, 0, 1, -60)
+        contentFrame.Position = UDim2.new(0, 0, 0, 60)
+        contentFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+        contentFrame.BorderSizePixel = 0
+        contentFrame.Parent = mainFrame
+
+        local tabNames = {"Main", "Auto Farm", "Admin", "Grants"}
+
+        for i, tabName in ipairs(tabNames) do
+            local tabBtn = Instance.new("TextButton")
+            tabBtn.Name = tabName
+            tabBtn.Size = UDim2.new(0, 108, 1, 0)
+            tabBtn.Position = UDim2.new(0, (i - 1) * 110, 0, 0)
+            tabBtn.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+            tabBtn.BorderSizePixel = 0
+            tabBtn.Text = tabName
+            tabBtn.TextColor3 = Color3.fromRGB(140, 140, 140)
+            tabBtn.Font = Enum.Font.Code
+            tabBtn.TextSize = 13
+            tabBtn.Parent = tabBar
+
+            local tabFrame = Instance.new("Frame")
+            tabFrame.Name = tabName .. "Frame"
+            tabFrame.Size = UDim2.new(1, 0, 1, 0)
+            tabFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+            tabFrame.BorderSizePixel = 0
+            tabFrame.Visible = false
+            tabFrame.Parent = contentFrame
+
+            tabButtons[tabName] = tabBtn
+            tabFrames[tabName] = tabFrame
+
+            tabBtn.MouseButton1Click:Connect(function()
+                if currentTab then
+                    tabButtons[currentTab].BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+                    tabFrames[currentTab].Visible = false
+                end
+                currentTab = tabName
+                tabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+                tabFrame.Visible = true
+            end)
+        end
+
+        if tabButtons["Main"] then
+            tabButtons["Main"].BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            tabFrames["Main"].Visible = true
+            currentTab = "Main"
+        end
+
+        local scrollFrame = Instance.new("ScrollingFrame")
+        scrollFrame.Name = "Scroll"
+        scrollFrame.Size = UDim2.new(1, 0, 1, 0)
+        scrollFrame.BackgroundTransparency = 1
+        scrollFrame.BorderSizePixel = 0
+        scrollFrame.ScrollBarThickness = 4
+        scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+        scrollFrame.Parent = tabFrames["Main"]
+
+        local scrollList = Instance.new("UIListLayout")
+        scrollList.Padding = UDim.new(0, 4)
+        scrollList.SortOrder = Enum.SortOrder.LayoutOrder
+        scrollList.Parent = scrollFrame
+
+        local function updateCanvasSize()
+            local totalHeight = 0
+            for _, child in ipairs(scrollFrame:GetChildren()) do
+                if child:IsA("Frame") and child.Name ~= "UIListLayout" then
+                    totalHeight = totalHeight + child.Size.Y.Offset + 4
+                end
+            end
+            scrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 8)
+        end
+
+        local function createButton(parent, text, callback)
+            local btnFrame = Instance.new("Frame")
+            btnFrame.Size = UDim2.new(1, -8, 0, 34)
+            btnFrame.BackgroundColor3 = Color3.fromRGB(34, 34, 34)
+            btnFrame.BorderSizePixel = 0
+            btnFrame.Parent = parent
+
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, 0, 1, 0)
+            btn.BackgroundTransparency = 1
+            btn.Text = text
+            btn.TextColor3 = Color3.fromRGB(180, 180, 180)
+            btn.Font = Enum.Font.Code
+            btn.TextSize = 12
+            btn.Parent = btnFrame
+
+            btn.MouseEnter:Connect(function()
+                btnFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            end)
+            btn.MouseLeave:Connect(function()
+                btnFrame.BackgroundColor3 = Color3.fromRGB(34, 34, 34)
+            end)
+
+            if callback then
+                btn.MouseButton1Click:Connect(callback)
+            end
+
+            updateCanvasSize()
+            return btnFrame
+        end
+
+        local function createToggle(parent, text, callback)
+            local toggleState = false
+
+            local togFrame = Instance.new("Frame")
+            togFrame.Size = UDim2.new(1, -8, 0, 34)
+            togFrame.BackgroundColor3 = Color3.fromRGB(34, 34, 34)
+            togFrame.BorderSizePixel = 0
+            togFrame.Parent = parent
+
+            local indicator = Instance.new("Frame")
+            indicator.Size = UDim2.new(0, 16, 0, 16)
+            indicator.Position = UDim2.new(0, 8, 0.5, -8)
+            indicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            indicator.BorderSizePixel = 0
+            indicator.Parent = togFrame
+
+            local label = Instance.new("TextLabel")
+            label.Size = UDim2.new(1, -32, 1, 0)
+            label.Position = UDim2.new(0, 32, 0, 0)
+            label.BackgroundTransparency = 1
+            label.Text = text
+            label.TextColor3 = Color3.fromRGB(180, 180, 180)
+            label.Font = Enum.Font.Code
+            label.TextSize = 12
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.Parent = togFrame
+
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, 0, 1, 0)
+            btn.BackgroundTransparency = 1
+            btn.Text = ""
+            btn.Parent = togFrame
+
+            btn.MouseButton1Click:Connect(function()
+                toggleState = not toggleState
+                if toggleState then
+                    indicator.BackgroundColor3 = Color3.fromRGB(140, 140, 140)
+                else
+                    indicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                end
+                if callback then callback(toggleState) end
+            end)
+
+            updateCanvasSize()
+            return togFrame
+        end
+
+        local function createSection(parent, title)
+            local secFrame = Instance.new("Frame")
+            secFrame.Size = UDim2.new(1, -8, 0, 20)
+            secFrame.BackgroundTransparency = 1
+            secFrame.Parent = parent
+
+            local secLabel = Instance.new("TextLabel")
+            secLabel.Size = UDim2.new(1, 0, 1, 0)
+            secLabel.Position = UDim2.new(0, 8, 0, 0)
+            secLabel.BackgroundTransparency = 1
+            secLabel.Text = title
+            secLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
+            secLabel.Font = Enum.Font.Code
+            secLabel.TextSize = 11
+            secLabel.TextXAlignment = Enum.TextXAlignment.Left
+            secLabel.Parent = secFrame
+
+            updateCanvasSize()
+            return secFrame
+        end
+
+        createSection(scrollFrame, "-- quick actions")
+        createButton(scrollFrame, "Inject All Brainrots (Rainbow)", function() injectBrainrots() end)
+        createButton(scrollFrame, "Set Max Luck (32x)", function() setMaxLuck() end)
+        createButton(scrollFrame, "Force Open Admin Panel", function() spoofAdmin(); forceOpenAdminPanel() end)
+        createButton(scrollFrame, "Execute Admin Buttons", function() spoofAdmin(); forceOpenAdminPanel(); executeAdminPanelButtons() end)
+        createButton(scrollFrame, "Try Admin Commands", function() tryAdminCommands() end)
+        createButton(scrollFrame, "Try Free Grants", function() tryGrants() end)
+        createButton(scrollFrame, "Auto Manage (Equip/Sell/Collect)", function() autoManage() end)
+        createButton(scrollFrame, "Scan Workspace NPCs", function() scanActiveNpcs() end)
+        createButton(scrollFrame, "Mass Beg (150)", function() massBeg(150) end)
+
+        local afScroll = Instance.new("ScrollingFrame")
+        afScroll.Name = "AFScroll"
+        afScroll.Size = UDim2.new(1, 0, 1, 0)
+        afScroll.BackgroundTransparency = 1
+        afScroll.BorderSizePixel = 0
+        afScroll.ScrollBarThickness = 4
+        afScroll.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
+        afScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+        afScroll.Parent = tabFrames["Auto Farm"]
+
+        local afList = Instance.new("UIListLayout")
+        afList.Padding = UDim.new(0, 4)
+        afList.SortOrder = Enum.SortOrder.LayoutOrder
+        afList.Parent = afScroll
+
+        local afUpdateCanvas = function()
+            local h = 0
+            for _, child in ipairs(afScroll:GetChildren()) do
+                if child:IsA("Frame") and child.Name ~= "UIListLayout" then
+                    h = h + child.Size.Y.Offset + 4
+                end
+            end
+            afScroll.CanvasSize = UDim2.new(0, 0, 0, h + 8)
+        end
+
+        local afCreateButton = function(text, cb)
+            local f = Instance.new("Frame")
+            f.Size = UDim2.new(1, -8, 0, 34)
+            f.BackgroundColor3 = Color3.fromRGB(34, 34, 34)
+            f.BorderSizePixel = 0
+            f.Parent = afScroll
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, 0, 1, 0)
+            b.BackgroundTransparency = 1
+            b.Text = text
+            b.TextColor3 = Color3.fromRGB(180, 180, 180)
+            b.Font = Enum.Font.Code
+            b.TextSize = 12
+            b.Parent = f
+            b.MouseEnter:Connect(function() f.BackgroundColor3 = Color3.fromRGB(40, 40, 40) end)
+            b.MouseLeave:Connect(function() f.BackgroundColor3 = Color3.fromRGB(34, 34, 34) end)
+            if cb then b.MouseButton1Click:Connect(cb) end
+            afUpdateCanvas()
+            return f
+        end
+
+        local afCreateToggle = function(text, cb)
+            local state = false
+            local f = Instance.new("Frame")
+            f.Size = UDim2.new(1, -8, 0, 34)
+            f.BackgroundColor3 = Color3.fromRGB(34, 34, 34)
+            f.BorderSizePixel = 0
+            f.Parent = afScroll
+            local ind = Instance.new("Frame")
+            ind.Size = UDim2.new(0, 16, 0, 16)
+            ind.Position = UDim2.new(0, 8, 0.5, -8)
+            ind.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            ind.BorderSizePixel = 0
+            ind.Parent = f
+            local lab = Instance.new("TextLabel")
+            lab.Size = UDim2.new(1, -32, 1, 0)
+            lab.Position = UDim2.new(0, 32, 0, 0)
+            lab.BackgroundTransparency = 1
+            lab.Text = text
+            lab.TextColor3 = Color3.fromRGB(180, 180, 180)
+            lab.Font = Enum.Font.Code
+            lab.TextSize = 12
+            lab.TextXAlignment = Enum.TextXAlignment.Left
+            lab.Parent = f
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, 0, 1, 0)
+            btn.BackgroundTransparency = 1
+            btn.Text = ""
+            btn.Parent = f
+            btn.MouseButton1Click:Connect(function()
+                state = not state
+                ind.BackgroundColor3 = state and Color3.fromRGB(140, 140, 140) or Color3.fromRGB(80, 80, 80)
+                if cb then cb(state) end
+            end)
+            afUpdateCanvas()
+            return f
+        end
+
+        local afCreateSection = function(title)
+            local f = Instance.new("Frame")
+            f.Size = UDim2.new(1, -8, 0, 20)
+            f.BackgroundTransparency = 1
+            f.Parent = afScroll
+            local l = Instance.new("TextLabel")
+            l.Size = UDim2.new(1, 0, 1, 0)
+            l.Position = UDim2.new(0, 8, 0, 0)
+            l.BackgroundTransparency = 1
+            l.Text = title
+            l.TextColor3 = Color3.fromRGB(120, 120, 120)
+            l.Font = Enum.Font.Code
+            l.TextSize = 11
+            l.TextXAlignment = Enum.TextXAlignment.Left
+            l.Parent = f
+            afUpdateCanvas()
+            return f
+        end
+
+        afCreateSection("-- auto farm toggles")
+        afCreateToggle("Enable Auto Farm", function(state)
+            autoFarmEnabled = state
+            if state then
+                task.spawn(function()
+                    while autoFarmEnabled do
+                        loopCount = (loopCount + 1) % 100000
+                        if autoBegEnabled then scanActiveNpcs(); massBeg(150) end
+                        if autoManageEnabled and loopCount % 5 == 0 then autoManage() end
+                        if autoInjectEnabled and loopCount % 10 == 0 then injectBrainrots() end
+                        if autoLuckEnabled and loopCount % 10 == 0 then setMaxLuck() end
+                        if autoAdminEnabled and loopCount % 15 == 0 then tryAdminCommands() end
+                        if autoGrantsEnabled and loopCount % 20 == 0 then tryGrants() end
+                        cleanupIdTables()
+                        task.wait(3 + math.random(0, 100) / 100)
+                    end
+                end)
+            end
+        end)
+        afCreateToggle("Auto Beg", function(state) autoBegEnabled = state end)
+        afCreateToggle("Auto Manage", function(state) autoManageEnabled = state end)
+        afCreateToggle("Auto Re-Inject", function(state) autoInjectEnabled = state end)
+        afCreateToggle("Auto Re-Luck", function(state) autoLuckEnabled = state end)
+        afCreateToggle("Auto Admin Commands", function(state) autoAdminEnabled = state end)
+        afCreateToggle("Auto Free Grants", function(state) autoGrantsEnabled = state end)
+
+        afCreateSection("-- utilities")
+        afCreateButton("Start NPC ID Sniffer", function() sniffNpcIds() end)
+        afCreateButton("Generate More NPC IDs", function() for _ = 1, 500 do generatedNpcIds[generateNpcId()] = true end end)
+
+        local adScroll = Instance.new("ScrollingFrame")
+        adScroll.Size = UDim2.new(1, 0, 1, 0)
+        adScroll.BackgroundTransparency = 1
+        adScroll.BorderSizePixel = 0
+        adScroll.ScrollBarThickness = 4
+        adScroll.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
+        adScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+        adScroll.Parent = tabFrames["Admin"]
+
+        local adList = Instance.new("UIListLayout")
+        adList.Padding = UDim.new(0, 4)
+        adList.SortOrder = Enum.SortOrder.LayoutOrder
+        adList.Parent = adScroll
+
+        local function adUpdateCanvas()
+            local h = 0
+            for _, c in ipairs(adScroll:GetChildren()) do
+                if c:IsA("Frame") and c.Name ~= "UIListLayout" then h = h + c.Size.Y.Offset + 4 end
+            end
+            adScroll.CanvasSize = UDim2.new(0, 0, 0, h + 8)
+        end
+
+        local function adButton(text, cb)
+            local f = Instance.new("Frame")
+            f.Size = UDim2.new(1, -8, 0, 34)
+            f.BackgroundColor3 = Color3.fromRGB(34, 34, 34)
+            f.BorderSizePixel = 0
+            f.Parent = adScroll
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, 0, 1, 0)
+            b.BackgroundTransparency = 1
+            b.Text = text
+            b.TextColor3 = Color3.fromRGB(180, 180, 180)
+            b.Font = Enum.Font.Code
+            b.TextSize = 12
+            b.Parent = f
+            b.MouseEnter:Connect(function() f.BackgroundColor3 = Color3.fromRGB(40, 40, 40) end)
+            b.MouseLeave:Connect(function() f.BackgroundColor3 = Color3.fromRGB(34, 34, 34) end)
+            if cb then b.MouseButton1Click:Connect(cb) end
+            adUpdateCanvas()
+            return f
+        end
+
+        local function adSection(title)
+            local f = Instance.new("Frame")
+            f.Size = UDim2.new(1, -8, 0, 20)
+            f.BackgroundTransparency = 1
+            f.Parent = adScroll
+            local l = Instance.new("TextLabel")
+            l.Size = UDim2.new(1, 0, 1, 0)
+            l.Position = UDim2.new(0, 8, 0, 0)
+            l.BackgroundTransparency = 1
+            l.Text = title
+            l.TextColor3 = Color3.fromRGB(120, 120, 120)
+            l.Font = Enum.Font.Code
+            l.TextSize = 11
+            l.TextXAlignment = Enum.TextXAlignment.Left
+            l.Parent = f
+            adUpdateCanvas()
+            return f
+        end
+
+        adSection("-- admin commands")
+        adButton("Send Global Luck (999x)", function() fireRemote("SendAdminGlobalLuck", 999, 999999) end)
+        adButton("Send Global Cash (999x)", function() fireRemote("SendAdminGlobalCash", 999, 999999) end)
+        adButton("Send Superior Chance (999x)", function() fireRemote("SendAdminSuperiorChance", 999, 999999) end)
+        adButton("Activate Lucky Block NPCs", function() fireRemote("SendAdminLuckyBlockNpcs", 1, 999999) end)
+        adButton("Spawn Celestial NPCs (50)", function() fireRemote("SendAdminSpawnNpc", "Celestial", 50) end)
+        adButton("Spawn Divine NPCs (50)", function() fireRemote("SendAdminSpawnNpc", "Divine", 50) end)
+
+        local grScroll = Instance.new("ScrollingFrame")
+        grScroll.Size = UDim2.new(1, 0, 1, 0)
+        grScroll.BackgroundTransparency = 1
+        grScroll.BorderSizePixel = 0
+        grScroll.ScrollBarThickness = 4
+        grScroll.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
+        grScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+        grScroll.Parent = tabFrames["Grants"]
+
+        local grList = Instance.new("UIListLayout")
+        grList.Padding = UDim.new(0, 4)
+        grList.SortOrder = Enum.SortOrder.LayoutOrder
+        grList.Parent = grScroll
+
+        local function grUpdateCanvas()
+            local h = 0
+            for _, c in ipairs(grScroll:GetChildren()) do
+                if c:IsA("Frame") and c.Name ~= "UIListLayout" then h = h + c.Size.Y.Offset + 4 end
+            end
+            grScroll.CanvasSize = UDim2.new(0, 0, 0, h + 8)
+        end
+
+        local function grButton(text, cb)
+            local f = Instance.new("Frame")
+            f.Size = UDim2.new(1, -8, 0, 34)
+            f.BackgroundColor3 = Color3.fromRGB(34, 34, 34)
+            f.BorderSizePixel = 0
+            f.Parent = grScroll
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, 0, 1, 0)
+            b.BackgroundTransparency = 1
+            b.Text = text
+            b.TextColor3 = Color3.fromRGB(180, 180, 180)
+            b.Font = Enum.Font.Code
+            b.TextSize = 12
+            b.Parent = f
+            b.MouseEnter:Connect(function() f.BackgroundColor3 = Color3.fromRGB(40, 40, 40) end)
+            b.MouseLeave:Connect(function() f.BackgroundColor3 = Color3.fromRGB(34, 34, 34) end)
+            if cb then b.MouseButton1Click:Connect(cb) end
+            grUpdateCanvas()
+            return f
+        end
+
+        local function grSection(title)
+            local f = Instance.new("Frame")
+            f.Size = UDim2.new(1, -8, 0, 20)
+            f.BackgroundTransparency = 1
+            f.Parent = grScroll
+            local l = Instance.new("TextLabel")
+            l.Size = UDim2.new(1, 0, 1, 0)
+            l.Position = UDim2.new(0, 8, 0, 0)
+            l.BackgroundTransparency = 1
+            l.Text = title
+            l.TextColor3 = Color3.fromRGB(120, 120, 120)
+            l.Font = Enum.Font.Code
+            l.TextSize = 11
+            l.TextXAlignment = Enum.TextXAlignment.Left
+            l.Parent = f
+            grUpdateCanvas()
+            return f
+        end
+
+        grSection("-- free grants")
+        local uid = localPlayer.UserId
+        grButton("Add SmurfCat (Rainbow)", function() fireRemote("AddBrainrotTolnventory", {ConfigName = "SmurfCat", Modifier = "Rainbow", Amount = 1}) end)
+        grButton("Add 99 Ultra Lucky Blocks", function() fireRemote("AddLuckyBlockTolnventory", {ConfigName = "UltraLuckyBlock", Amount = 99}) end)
+        grButton("Grant Max Incremental Luck", function() fireRemote("IncrementalLuckGrant", {ProductId = 3566794198, PlayerId = uid}) end)
+        grButton("Grant Skibidi Toilet", function() fireRemote("ExclusiveBrainrotGrant", {ProductId = 3577882706, PlayerId = uid}) end)
+        grButton("Grant Max Rebirth", function() fireRemote("RobuxRebirthGrant", {ProductId = 3565505092, PlayerId = uid}) end)
+        grButton("Spawn Celestial NPC (Free)", function() fireRemote("SpawnCelestialNpcGrant", {ProductId = 3576301763, PlayerId = uid}) end)
+        grButton("Spawn Personal NPC (Free)", function() fireRemote("SpawnYourNpcGrant", {ProductId = 3576299669, PlayerId = uid}) end)
+        grButton("Grant All Second Chance", function() fireRemote("GrantSecondChanceReward", {ProductId = 3576310016, PlayerId = uid}) end)
+        grButton("Grant Offline Cash Collect", function() fireRemote("OfflineCashRobuxCollectGrant", {ProductId = 3566024837, PlayerId = uid}) end)
+        grButton("Admin Spawn NPCs (25)", function() fireRemote("AdminSpawnGuaranteedNpcGrant", {Rarity = "Celestial", Amount = 25, PlayerId = uid}) end)
+        grButton("FIRE ALL GRANTS", function() tryGrants() end)
+    end
+
+    createGui()
+    spoofAdmin()
+    forceOpenAdminPanel()
+    sniffNpcIds()
+    scanActiveNpcs()
+end
